@@ -11,7 +11,8 @@ import conversion_math
 # NOTES:
 Input_object = collections.namedtuple('Input_object',
 	['PR1','FRIC','depth','start_gridx', 'finish_gridx', 'start_gridy', 'finish_gridy', 'xinc', 'yinc', 'minlon','maxlon','zerolon','minlat','maxlat','zerolat','source_object','receiver_object'])
-Faults_object = collections.namedtuple('Faults_object',['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
+Faults_object = collections.namedtuple('Faults_object',
+	['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
 Out_object = collections.namedtuple('Out_object',
 	['x','y','x2d','y2d','u_disp','v_disp','w_disp']);
 
@@ -34,8 +35,10 @@ def split_subfaults(params,inputs):
 	rec_faults=inputs.receiver_object;
 	for i in range(len(rec_faults.xstart)):
 		# We have a receiver fault. 
-		# In the future, we may want to split this up using params. 
+		# FOR TOMORROW, we may want to split this up using params. 
 		# This is not well integrated right now. 
+		xsplit = params.x_num_receivers;
+		ysplit = params.y_num_receivers;
 		print("Receiver faults not split yet.")
 	return;
 
@@ -61,7 +64,7 @@ def compute_surface_disp(params, inputs):
 		depth       = inputs.source_object.top[i];
 		strike      = inputs.source_object.strike[i];
 		dip         = inputs.source_object.dipangle[i];
-		strike_slip = inputs.source_object.rtlat[i];
+		strike_slip = inputs.source_object.rtlat[i]*-1;  # The dc3d coordinate system has left-lateral positive. 
 		dip_slip    = inputs.source_object.reverse[i];		
 
 		# Preparing to rotate to a fault-oriented coordinate system.
@@ -89,12 +92,6 @@ def compute_surface_disp(params, inputs):
 	return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
 	
 
-def get_receiver_center(receiver_object):
-	center = [0,0,0]; 
-	# Will fix tomorrow.
-	return center; 
-
-
 def compute_strains_stresses(params, inputs):
 
 	# Pseudocode: 
@@ -105,12 +102,9 @@ def compute_strains_stresses(params, inputs):
 	number_of_receivers=len(inputs.receiver_object.xstart);
 	
 	# A few variables for asthetic use in plotting later. 
-	receiver_corners_x=[];
-	receiver_corners_y=[];
-	receiver_corners_z=[];  # WILL POPULATE TOMORROW. 
-	receiver_center_x=[];
-	receiver_center_y=[];
-	receiver_center_z=[];
+	# WILL POPULATE TOMORROW. 
+	receiver_corners_x=[]; receiver_corners_y=[]; receiver_corners_z=[];  
+	receiver_center_x=[]; receiver_center_y=[]; receiver_center_z=[];
 	receiver_rake=[];
 
 	# The values we're actually going to output. 
@@ -120,7 +114,7 @@ def compute_strains_stresses(params, inputs):
 
 
 	for m in range(number_of_receivers):
-		centercoords = get_receiver_center(inputs.receiver_object[m]);
+		centercoords = conversion_math.get_fault_center(inputs.receiver_object,m);
 		receiver_center_x.append(centercoords[0]);
 		receiver_center_y.append(centercoords[1]);
 		receiver_center_z.append(centercoords[2]);
@@ -133,7 +127,7 @@ def compute_strains_stresses(params, inputs):
 			depth       = inputs.source_object.top[i];
 			strike      = inputs.source_object.strike[i];
 			dip         = inputs.source_object.dipangle[i];
-			strike_slip = inputs.source_object.rtlat[i];
+			strike_slip = inputs.source_object.rtlat[i]*-1; # The dc3d coordinate system has left-lateral positive. 
 			dip_slip    = inputs.source_object.reverse[i];
 
 			# Preparing to rotate to a fault-oriented coordinate system.

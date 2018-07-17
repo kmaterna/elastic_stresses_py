@@ -107,6 +107,12 @@ def surface_def_plot(params, inputs, out_object):
 	for i in range(len(rec_total_x)):
 		plt.plot(rec_total_x[i], rec_total_y[i],'b',linewidth=1);
 		plt.plot(rec_updip_x[i], rec_updip_y[i],'b',linewidth=3);
+	for i in range(len(inputs.receiver_object.xstart)):
+		center=conversion_math.get_fault_center(inputs.receiver_object,i);
+		plt.plot(center[0],center[1],'.b',markersize=8);
+	for i in range(len(inputs.source_object.xstart)):
+		center=conversion_math.get_fault_center(inputs.source_object,i);
+		plt.plot(center[0],center[1],'.g',markersize=8);		
 	plt.xlim([out_object.x.min(),out_object.x.max()])
 	plt.ylim([out_object.y.min(),out_object.y.max()])
 	plt.grid()

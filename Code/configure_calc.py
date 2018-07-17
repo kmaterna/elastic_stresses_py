@@ -2,7 +2,8 @@
 
 import collections
 
-Params = collections.namedtuple('Params',['input_file','x_num_receivers','y_num_receivers','fixed_rake','mu','lame1','alpha','outdir']);
+Params = collections.namedtuple('Params',
+	['input_file','x_num_receivers','y_num_receivers','fixed_rake','mu','lame1','alpha','outdir']);
 
 
 def configure_stress_calculation():
@@ -12,7 +13,7 @@ def configure_stress_calculation():
 	y_num_receivers = 1;  # how many sub-faults do you want? 
 
 	mu = 30e9; # 30 GPa for shear modulus
-	lame1 = 0;  # FIX THIS VALUE TOMORROW. THIS is LAMDA, I don't want to use Lamda as a variable name. 
+	lame1 = 30e9;  # This is LAMDA, but I'm not using Lamda as a variable name. 
 
 	alpha = 2.0/3.0;  # a parameter for the Okada functions. Check if this is appropriate. It is (lamda+mu)/(lamda+2*mu).  See documentation for DC3D.f
 	fixed_rake = 90; # on receiver faults, we need to specify the rake globally if we're using .inp format. 90=reverse. 

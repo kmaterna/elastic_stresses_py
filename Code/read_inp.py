@@ -13,7 +13,8 @@ import conversion_math
 
 Input_object = collections.namedtuple('Input_object',
 	['PR1','FRIC','depth','start_gridx', 'finish_gridx', 'start_gridy', 'finish_gridy', 'xinc', 'yinc', 'minlon','maxlon','zerolon','minlat','maxlat','zerolat','source_object','receiver_object'])
-Faults_object = collections.namedtuple('Faults_object',['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
+Faults_object = collections.namedtuple('Faults_object',
+	['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
 # These objects will be common between the inp and inr formats. 
 
 

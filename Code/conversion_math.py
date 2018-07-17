@@ -66,8 +66,19 @@ def add_vector_to_point(x0,y0,vector_mag,vector_heading):
 	return x1, y1;
 
 def get_rake(strike_slip, dip_slip):
-	# This is something that I'm too tired to think about right now. 
-	# WILL DO THE TRIGONOMETRY TOMORROW. 
+	# Positive slip is right lateral, and reverse. 
+	# Range is -180 to 180.
+	rake = np.rad2deg(math.atan2(dip_slip,strike_slip));
+	return rake;
 
-	return 0;
-
+def get_fault_center(fault_object, index):
+	# Compute the x-y-z coordinates of the center of a fault patch. 
+	# Index is the i'th fault patch in this fault_object
+	W = get_downdip_width(fault_object.top[index],fault_object.bottom[index],fault_object.dipangle[index]);
+	center_z = (fault_object.top[index]+fault_object.bottom[index])/2.0;
+	updip_center_x=(fault_object.xstart[index]+fault_object.xfinish[index])/2.0;
+	updip_center_y=(fault_object.ystart[index]+fault_object.yfinish[index])/2.0;
+	vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle[index]))/2.0;  # how far the middle is displaced downdip from map-view
+	center_point = add_vector_to_point(updip_center_x,updip_center_y,vector_mag, fault_object.strike[index]+90);  # strike+90 = downdip direction. 
+	center = [center_point[0],center_point[1],center_z]; 
+	return center; 

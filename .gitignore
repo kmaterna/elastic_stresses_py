@@ -1,3 +1,4 @@
 *.pyc
 Inputs/*
 Outputs/*
+Code/__pycache__/*
