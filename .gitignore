@@ -1,4 +1,5 @@
 *.pyc
 Inputs/*
 Outputs/*
-Code/__pycache__/*
+Code/__pycache__/
+Coulomb_tool.txt

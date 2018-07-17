@@ -8,6 +8,8 @@
 # It only calculates stress on faults. 
 # Does not have functionality to do cross-sections yet. 
 # Requirements: Python 3, Ben Thompson's DC3D.f python wrapper on your pythonpath. 
+# Convention: positive strike slip is right-lateral. 
+# Convention: positive dip slip is reverse. 
 
 import configure_calc
 import input_values
