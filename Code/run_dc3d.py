@@ -16,6 +16,7 @@ Faults_object = collections.namedtuple('Faults_object',
 Out_object = collections.namedtuple('Out_object',
 	['x','y','x2d','y2d','u_disp','v_disp','w_disp','source_object','receiver_object','receiver_normal','receiver_shear','receiver_coulomb']);
 
+
 def do_stress_computation(params, inputs):
 	# Step 0. Split receiver fault into many sub-faults if necessary
 	# Step 1. Compute strains and displacements
@@ -131,27 +132,28 @@ def compute_strains_stresses(params, inputs):
 			# Preparing to rotate to a fault-oriented coordinate system.
 			theta=inputs.source_object.strike[i]-90;
 			theta=np.deg2rad(theta);
-			R=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
-			R2=np.array([[np.cos(-theta),-np.sin(-theta)],[np.sin(-theta),np.cos(-theta)]])
+			R=np.array([[np.cos(theta),-np.sin(theta), 0],[np.sin(theta),np.cos(theta), 0],[0,0,1]]);  # horizontal rotation into strike-aligned coordinates.
+			R2=np.array([[np.cos(-theta),-np.sin(-theta),0],[np.sin(-theta),np.cos(-theta),0],[0,0,1]]); 
 			
 			# Compute the position relative to the translated, rotated fault. 
-			translated_pos = np.array([[centercoords[0]-inputs.source_object.xstart[i]],[centercoords[1]-inputs.source_object.ystart[i]]]);
-			xy=R.dot(translated_pos);
-			success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  # solve for displacements at the surface
-			urot=R2.dot(np.array([[u[0]], [u[1]]]));
+			translated_pos = np.array([[centercoords[0]-inputs.source_object.xstart[i]],[centercoords[1]-inputs.source_object.ystart[i]],[-centercoords[2]] ]);
+			xyz=R.dot(translated_pos);
+			success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  
+			# Solve for displacement gradients at center of receiver fault
 
-			print(grad_u);
-			rotated_grad_u=grad_u;  # FIX THIS TOMORROW.
-			# Here I'm going to rotate grad_u back into the unprimed coordinates. 
+			# Rotate grad_u back into the unprimed coordinates.  Divide by 1000 because coordinate units (km) and slip units (m) are different by 1000. 
+			desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
+			desired_coords_grad_u = [i/1000.0 for i in desired_coords_grad_u];
+			
 			# Then rotate again into receiver coordinates. 
-			strain_tensor=conversion_math.get_strain_tensor(rotated_grad_u);
+			strain_tensor=conversion_math.get_strain_tensor(desired_coords_grad_u);
 			stress_tensor=conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu);
 
 			# Then compute shear, normal, and coulomb stresses. 
 			[normal, shear, coulomb]=conversion_math.get_coulomb_stresses(stress_tensor,strike,inputs.receiver_object.rake[m],dip,inputs.FRIC);
 			normal_sum=normal_sum+normal;
 			shear_sum=shear_sum+shear;
-			couloumb_sum=coulomb_sum+coulomb;
+			coulomb_sum=coulomb_sum+coulomb;
 
 		receiver_normal.append(normal_sum);
 		receiver_shear.append(shear_sum);

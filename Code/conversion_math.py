@@ -31,12 +31,74 @@ def get_stress_tensor(eij, lamda, mu):
 				stress_tensor[i][j]=2*mu*eij[i][j];
 	return stress_tensor;
 
+
+
 def get_coulomb_stresses(tau, strike, dip, rake, friction):
-	# WILL DO TOMORROW. 
-	normal=0;
-	shear=0;
-	coulomb=0;
+	# Given a strike, rake, and dip
+	# Resolve the stress changes on the fault plane. 
+	# Return in KPa
+
+	strike_unit_vector= get_strike_vector(strike);  # a horizontal 3d vector. 
+	dip_unit_vector = get_dip_vector(strike, dip);  # a 3d vector
+	plane_normal = get_plane_normal(strike, dip);  # a 3d vector.
+	traction_vector = np.dot(tau,plane_normal);
+
+	# The stress that's normal to the receiver fault plane:
+	normal_stress = np.dot(plane_normal, traction_vector);
+
+	# The shear stress causing strike slip (in the receiver fault plane).
+	shear_rtlat = np.dot(strike_unit_vector, traction_vector);
+
+	# The shear stress causing reverse slip (in the receiver fault plane).
+	shear_reverse = np.dot(dip_unit_vector, traction_vector);
+
+	# The shear that we want (in the rake direction). 
+	rake_rad=np.deg2rad(rake);
+	R = np.array([[np.cos(rake_rad),-np.sin(rake_rad)],[np.sin(rake_rad),np.cos(rake_rad)]]);
+	shear_vector = [shear_rtlat, shear_reverse];
+	shear_total = get_vector_magnitude(shear_vector);
+	rotated_shear = np.dot(R,shear_vector);
+	shear_in_rake_dir = rotated_shear[0];
+
+	# Finally, do unit conversion	
+	normal=normal_stress/1000.0;  # convert to KPa
+	shear=shear_in_rake_dir/1000.0;
+	coulomb=-normal_stress/1000.0+(friction*shear_in_rake_dir/1000.0);
 	return normal, shear, coulomb;
+
+
+
+def get_plane_normal(strike, dip):
+	# Given a strike and dip, find the orthogonal unit vectors aligned with strike and dip directions that sit within the plane. 
+	# The plane normal is their cross product. 
+	# Returns in x, y, z coordinates. 
+	strike_vector=get_strike_vector(strike); # unit vector
+	dip_vector = get_dip_vector(strike, dip); # unit vector
+	plane_normal = np.cross(dip_vector, strike_vector);  # dip x strike for outward facing normal, by right hand rule. 
+	return plane_normal;
+
+
+def get_strike_vector(strike):
+	# Returns a unit vector in x-y-z coordinates 
+	theta=np.deg2rad(90-strike);
+	strike_vector=[np.cos(theta),np.sin(theta),0];
+	return strike_vector;
+
+def get_dip_vector(strike,dip):
+	# Returns a unit vector in x-y-z coordinates
+	downdip_direction_theta = np.deg2rad(-strike);  # theta(strike+90)
+	dip_unit_vector_z=np.sin(np.deg2rad(dip))  # the vertical component of the downdip unit vector
+	dip_unit_vector_xy = np.sqrt(1-dip_unit_vector_z*dip_unit_vector_z);  # the horizontal component of the downdip unit vector
+	dip_vector = [ dip_unit_vector_xy*np.cos(downdip_direction_theta), dip_unit_vector_xy*np.sin(downdip_direction_theta), -dip_unit_vector_z];
+	return dip_vector;
+
+def get_vector_magnitude(vector):
+	total=0;
+	for i in range(len(vector)):
+		total=total+vector[i]*vector[i];
+		magnitude=np.sqrt(total);
+	return magnitude;
+
 
 def get_strike(deltax, deltay):
 	# Returns the strike of a line (in cw degrees from north) given the deltax and deltay in km. 

@@ -19,8 +19,8 @@ Out_object = collections.namedtuple('Out_object',
 def produce_outputs(params, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
 	surface_def_plot(params,out_object);
-	# stress_plot(params,out_object,'shear');  
-	# stress_plot(params,out_object,'normal');
+	stress_plot(params,out_object,'shear');  
+	stress_plot(params,out_object,'normal');
 	stress_plot(params,out_object,'coulomb');
 	map_plot();
 	write_output_files(params,out_object);
@@ -109,8 +109,8 @@ def stress_plot(params, out_object, stress_type):
 	# Select boundaries of color map. 
 	# smallest_stress = np.min(stress_component);
 	# largest_stress = np.max(stress_component);
-	smallest_stress = -100;  # units: KPa
-	largest_stress = 100;  # units: KPa
+	smallest_stress = -14;  # units: KPa
+	largest_stress = 14;  # units: KPa
 	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
 	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='jet_r');
 
