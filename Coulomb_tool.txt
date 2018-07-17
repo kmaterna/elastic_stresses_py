@@ -1,0 +1,13 @@
+# To-Do:
+
+
+# Rotate stress tensor to receiver faults
+# Calculate strains and stresses and coulomb stresses
+
+
+
+# OPTIONAL FANCY TRICKS: My own input format: 
+# Define my useful parameters for source slip. 
+# Write xyz2latlon
+# Write latlon2xyz
+# Set up source faults
