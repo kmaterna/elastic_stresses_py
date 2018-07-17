@@ -1,4 +1,6 @@
+# Stress and strain functions
 # Conversion functions
+# Fault plane geometric functions
 
 
 import numpy as np 
@@ -30,7 +32,7 @@ def get_stress_tensor(eij, lamda, mu):
 	return stress_tensor;
 
 def get_coulomb_stresses(tau, strike, dip, rake, friction):
-	# THIS IS IMPORTANT. WILL DO TOMORROW. 
+	# WILL DO TOMORROW. 
 	normal=0;
 	shear=0;
 	coulomb=0;
@@ -82,3 +84,23 @@ def get_fault_center(fault_object, index):
 	center_point = add_vector_to_point(updip_center_x,updip_center_y,vector_mag, fault_object.strike[index]+90);  # strike+90 = downdip direction. 
 	center = [center_point[0],center_point[1],center_z]; 
 	return center; 
+
+def get_fault_four_corners(fault_object, i):
+	# Get the four corners of the object, including updip and downdip. 
+	W = get_downdip_width(fault_object.top[i],fault_object.bottom[i],fault_object.dipangle[i]);
+	depth       = fault_object.top[i];
+	strike      = fault_object.strike[i];
+	dip         = fault_object.dipangle[i];
+
+	updip_point0 = [fault_object.xstart[i],fault_object.ystart[i]];
+	updip_point1 = [fault_object.xfinish[i],fault_object.yfinish[i]];
+	vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle[i]));  # how far the bottom edge is displaced downdip from map-view
+	downdip_point0 = add_vector_to_point(fault_object.xstart[i],fault_object.ystart[i],vector_mag, strike+90);  # strike+90 = downdip direction. 
+	downdip_point1 = add_vector_to_point(fault_object.xfinish[i],fault_object.yfinish[i], vector_mag, strike+90);
+
+	x_total = [updip_point0[0], updip_point1[0], downdip_point1[0], downdip_point0[0],updip_point0[0]];
+	y_total = [updip_point0[1], updip_point1[1], downdip_point1[1], downdip_point0[1],updip_point0[1]];
+	x_updip = [updip_point0[0], updip_point1[0]];
+	y_updip = [updip_point0[1], updip_point1[1]];
+	return [x_total, y_total, x_updip, y_updip];
+

@@ -1,8 +1,10 @@
 # To-Do:
 
-
+# TASKS
+# Split receiver faults
 # Rotate stress tensor to receiver faults
-# Calculate strains and stresses and coulomb stresses
+# Calculate shear, normal, and coulomb stresses
+
 
 
 
@@ -11,3 +13,4 @@
 # Write xyz2latlon
 # Write latlon2xyz
 # Set up source faults
+# Make a map

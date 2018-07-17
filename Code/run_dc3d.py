@@ -14,19 +14,21 @@ Input_object = collections.namedtuple('Input_object',
 Faults_object = collections.namedtuple('Faults_object',
 	['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
 Out_object = collections.namedtuple('Out_object',
-	['x','y','x2d','y2d','u_disp','v_disp','w_disp']);
+	['x','y','x2d','y2d','u_disp','v_disp','w_disp','source_object','receiver_object','receiver_normal','receiver_shear','receiver_coulomb']);
 
 def do_stress_computation(params, inputs):
 	# Step 0. Split receiver fault into many sub-faults if necessary
 	# Step 1. Compute strains and displacements
 	# Step 2. Resolve stresses on receiver faults
+
+	print("Number of sources: %d " % len(inputs.source_object.xstart));
+	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
+
 	split_subfaults(params, inputs);
 	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp(params, inputs);
-
-	[] = compute_strains_stresses(params, inputs);
-
-	MyOutObject = Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements);  
-	# this object will have more outputs tomorrow, like strains and stresses. 
+	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, inputs);
+	MyOutObject = Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
+		source_object=source_object, receiver_object=receiver_object, receiver_normal=receiver_normal, receiver_shear=receiver_shear, receiver_coulomb=receiver_coulomb); 
 
 	return MyOutObject;
 
@@ -35,8 +37,7 @@ def split_subfaults(params,inputs):
 	rec_faults=inputs.receiver_object;
 	for i in range(len(rec_faults.xstart)):
 		# We have a receiver fault. 
-		# FOR TOMORROW, we may want to split this up using params. 
-		# This is not well integrated right now. 
+		# FOR TOMORROW, we may want to split this up using params. This is not well integrated right now. 
 		xsplit = params.x_num_receivers;
 		ysplit = params.y_num_receivers;
 		print("Receiver faults not split yet.")
@@ -54,9 +55,8 @@ def compute_surface_disp(params, inputs):
 	numrows=np.shape(u_displacements)[0]
 	numcols=np.shape(u_displacements)[1]
 
-
-	for i in range(len(inputs.source_object.xstart)):
 	# A major compute loop for each source object. 
+	for i in range(len(inputs.source_object.xstart)):
 
 		# Fault parameters
 		L = conversion_math.get_strike_length(inputs.source_object.xstart[i],inputs.source_object.xfinish[i],inputs.source_object.ystart[i],inputs.source_object.yfinish[i]);
@@ -96,28 +96,26 @@ def compute_strains_stresses(params, inputs):
 
 	# Pseudocode: 
 	# For each receiver, at the center point, sum up the strain and stress for each source.
-	# Return an object with: receiver fault corners x, y, z, fault center x, y, z, rake, shear stress, normal stress, and coulomb stress. 
-	# This is an important function. 
+	# Return : source object, receiver object, shear stress, normal stress, and coulomb stress on each receiver. 
 
 	number_of_receivers=len(inputs.receiver_object.xstart);
 	
-	# A few variables for asthetic use in plotting later. 
-	# WILL POPULATE TOMORROW. 
-	receiver_corners_x=[]; receiver_corners_y=[]; receiver_corners_z=[];  
+	# Where do we calculate the stress tensor? 
 	receiver_center_x=[]; receiver_center_y=[]; receiver_center_z=[];
-	receiver_rake=[];
 
 	# The values we're actually going to output. 
 	receiver_shear=[];
 	receiver_normal=[];
 	receiver_coulomb=[];
 
-
 	for m in range(number_of_receivers):
 		centercoords = conversion_math.get_fault_center(inputs.receiver_object,m);
 		receiver_center_x.append(centercoords[0]);
 		receiver_center_y.append(centercoords[1]);
 		receiver_center_z.append(centercoords[2]);
+		normal_sum=0;
+		shear_sum=0;
+		coulomb_sum=0;
 
 		for i in range(len(inputs.source_object.xstart)):
 		# A major compute loop for each source object. 
@@ -151,8 +149,16 @@ def compute_strains_stresses(params, inputs):
 
 			# Then compute shear, normal, and coulomb stresses. 
 			[normal, shear, coulomb]=conversion_math.get_coulomb_stresses(stress_tensor,strike,inputs.receiver_object.rake[m],dip,inputs.FRIC);
+			normal_sum=normal_sum+normal;
+			shear_sum=shear_sum+shear;
+			couloumb_sum=coulomb_sum+coulomb;
 
-	return []; 
+		receiver_normal.append(normal_sum);
+		receiver_shear.append(shear_sum);
+		receiver_coulomb.append(coulomb_sum);
+
+		# Maybe return a source_object, receiver_object, and lists of normal, shear, coulomb values. 
+	return [inputs.source_object, inputs.receiver_object, receiver_normal, receiver_shear, receiver_coulomb]; 
 	
 
 
