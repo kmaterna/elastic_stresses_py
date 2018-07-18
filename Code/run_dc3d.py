@@ -7,6 +7,7 @@ import collections
 import sys
 from okada_wrapper import dc3dwrapper
 import conversion_math
+import read_inp
 
 # NOTES:
 Input_object = collections.namedtuple('Input_object',
@@ -25,6 +26,7 @@ def do_stress_computation(params, inputs):
 	print("Number of sources: %d " % len(inputs.source_object.xstart));
 	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
 	subfaulted_inputs = split_subfaults(params, inputs);
+	read_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
 	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp(params, subfaulted_inputs);
 	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 	MyOutObject = Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 

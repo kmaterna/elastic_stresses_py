@@ -8,10 +8,12 @@ Params = collections.namedtuple('Params',
 
 def configure_stress_calculation():
 	# input_file = "../Inputs/Example-2CSZ_LL.inp";
-	input_file = "../Inputs/see_stress_shadow.inp";
-	outdir = "../Outputs/shadow_"
-	strike_num_receivers = 18;  # in the strike direction
-	dip_num_receivers = 18;  # in the dip direction. how many sub-faults do you want? 
+	# input_file = "../Inputs/see_stress_shadow.inp";
+	# outdir = "../Outputs/shadow_"
+	input_file = "../Inputs/simplest_receiver.inp";
+	outdir="../Outputs/simple_"
+	strike_num_receivers = 10;  # in the strike direction
+	dip_num_receivers = 10;  # in the dip direction. how many sub-faults do you want? 
 
 	mu = 30e9; # 30 GPa for shear modulus
 	lame1 = 30e9;  # This is LAMDA, but I'm not using Lamda as a variable name. 

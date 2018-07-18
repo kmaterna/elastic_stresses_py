@@ -33,7 +33,7 @@ def get_stress_tensor(eij, lamda, mu):
 
 
 
-def get_coulomb_stresses(tau, strike, dip, rake, friction):
+def get_coulomb_stresses(tau, strike, rake, dip, friction):
 	# Given a strike, rake, and dip
 	# Resolve the stress changes on the fault plane. 
 	# Return in KPa
@@ -44,7 +44,7 @@ def get_coulomb_stresses(tau, strike, dip, rake, friction):
 	traction_vector = np.dot(tau,plane_normal);
 
 	# The stress that's normal to the receiver fault plane:
-	normal_stress = np.dot(plane_normal, traction_vector);
+	normal_stress = np.dot(plane_normal, traction_vector);  # positive for unclamping stress or clamping stress?
 
 	# The shear stress causing strike slip (in the receiver fault plane).
 	shear_rtlat = np.dot(strike_unit_vector, traction_vector);
@@ -55,19 +55,16 @@ def get_coulomb_stresses(tau, strike, dip, rake, friction):
 	# The shear that we want (in the rake direction). 
 	rake_rad=np.deg2rad(rake);
 	R = np.array([[np.cos(rake_rad),-np.sin(rake_rad)],[np.sin(rake_rad),np.cos(rake_rad)]]);
-	shear_vector = [shear_rtlat, shear_reverse];
-	shear_total = get_vector_magnitude(shear_vector);
+	shear_vector = [-shear_rtlat, shear_reverse];  # There is a critical minus sign here to define right lateral as positive. 
 	rotated_shear = np.dot(R,shear_vector);
 	shear_in_rake_dir = rotated_shear[0];
-
-	# Will need to define conventions of stress directions. 
 
 	# Finally, do unit conversion	
 	normal_stress=normal_stress/1000.0;  # convert to KPa
 	shear_stress=shear_in_rake_dir/1000.0;
 
 	# The Coulomb Failure Hypothesis
-	coulomb_stress = shear_stress - (friction*normal_stress);  
+	coulomb_stress = shear_stress + (friction*normal_stress);  
 
 	return normal_stress, shear_stress, coulomb_stress;
 
