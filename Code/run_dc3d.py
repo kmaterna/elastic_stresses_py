@@ -24,25 +24,117 @@ def do_stress_computation(params, inputs):
 
 	print("Number of sources: %d " % len(inputs.source_object.xstart));
 	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
-
-	split_subfaults(params, inputs);
-	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp(params, inputs);
-	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, inputs);
+	subfaulted_inputs = split_subfaults(params, inputs);
+	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp(params, subfaulted_inputs);
+	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 	MyOutObject = Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
-		source_object=source_object, receiver_object=receiver_object, receiver_normal=receiver_normal, receiver_shear=receiver_shear, receiver_coulomb=receiver_coulomb); 
-
+		source_object=source_object, receiver_object=receiver_object, receiver_normal=receiver_normal, receiver_shear=receiver_shear, 
+		receiver_coulomb=receiver_coulomb); 
 	return MyOutObject;
 
 
+
+
 def split_subfaults(params,inputs):
-	rec_faults=inputs.receiver_object;
-	for i in range(len(rec_faults.xstart)):
-		# We have a receiver fault. 
-		# FOR TOMORROW, we may want to split this up using params. This is not well integrated right now. 
-		xsplit = params.x_num_receivers;
-		ysplit = params.y_num_receivers;
-		print("Receiver faults not split yet.")
-	return;
+	receiver_object = inputs.receiver_object;
+	strike_split = params.strike_num_receivers;
+	dip_split = params.dip_num_receivers;
+
+	if strike_split==1 and dip_split==1:
+		# If we're not splitting the subfaults...
+		subfaulted_receivers=inputs.receiver_object;
+		print("Not subdividing receiver faults further.");
+	else:
+		print("Split %d receiver faults into %d subfaults each." % (len(receiver_object.xstart), strike_split*dip_split) );
+		new_xstart=[];
+		new_xfinish=[];
+		new_ystart=[];
+		new_yfinish=[];
+		new_Kode=[];
+		new_rtlat=[];
+		new_reverse=[];
+		new_strike=[];
+		new_dipangle=[];
+		new_rake=[];
+		new_top=[];
+		new_bottom=[];
+		new_comment=[];
+
+		for i in range(len(receiver_object.xstart)):
+			# For each receiver... 
+
+			# We find the depths corresponding to the tops and bottoms of our new sub-faults
+			zsplit_array = get_split_z_array(inputs.receiver_object.top[i],inputs.receiver_object.bottom[i],dip_split);
+			x0=inputs.receiver_object.xstart[i];
+			y0=inputs.receiver_object.ystart[i];
+			x1=inputs.receiver_object.xfinish[i];
+			y1=inputs.receiver_object.yfinish[i];			
+
+			for j in range(dip_split):
+				# First we split it up by dip. 
+
+				# Get the new coordinates of the top of the fault plane. 
+				W = conversion_math.get_downdip_width(inputs.receiver_object.top[i],zsplit_array[j],inputs.receiver_object.dipangle[i]);
+				vector_mag = W*np.cos(np.deg2rad(inputs.receiver_object.dipangle[i]));  # how far the bottom edge is displaced downdip from map-view
+
+				# Get the starting points for the next row of fault subpatches. 
+				[start_x_top, start_y_top] = conversion_math.add_vector_to_point(x0,y0,vector_mag,inputs.receiver_object.strike[i]+90);
+				[finish_x_top, finish_y_top] = conversion_math.add_vector_to_point(x1,y1,vector_mag,inputs.receiver_object.strike[i]+90);
+
+				[xsplit_array, ysplit_array] = get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, strike_split);
+
+				for k in range(strike_split):
+					new_xstart.append(xsplit_array[k]);
+					new_xfinish.append(xsplit_array[k+1]);
+					new_ystart.append(ysplit_array[k]);
+					new_yfinish.append(ysplit_array[k+1]);
+					new_Kode.append(receiver_object.Kode[i]);
+					new_rtlat.append(receiver_object.rtlat[i]);
+					new_reverse.append(receiver_object.reverse[i]);
+					new_strike.append(receiver_object.strike[i]);
+					new_dipangle.append(receiver_object.dipangle[i]);
+					new_rake.append(receiver_object.rake[i]);
+					new_top.append(zsplit_array[j]);
+					new_bottom.append(zsplit_array[j+1]);
+					new_comment.append(receiver_object.comment[i]);
+
+		subfaulted_receivers = Faults_object(xstart=new_xstart, xfinish=new_xfinish, ystart=new_ystart, yfinish=new_yfinish, Kode=new_Kode, rtlat=new_rtlat, 
+			reverse=new_reverse, strike=new_strike, dipangle=new_dipangle, rake=new_rake, top=new_top, bottom=new_bottom, comment=new_comment);
+	
+	subfaulted_inputs = Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx, 
+		start_gridy=inputs.start_gridy, finish_gridy=inputs.finish_gridy, xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon,maxlon=inputs.maxlon,
+		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,source_object=inputs.source_object,
+		receiver_object=subfaulted_receivers);
+
+	return subfaulted_inputs;
+
+
+
+def get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, strike_split):
+	# Take the coordinates of the top of a receiver fault plane. 
+	# Generate the list of coordinates that will help split it up along-strike
+	if start_x_top==finish_x_top:
+		xsplit_array = [start_x_top for j in range(strike_split+1)];
+	else:
+		xincrement = (finish_x_top-start_x_top)/strike_split;
+		xsplit_array = np.arange(start_x_top,finish_x_top+xincrement,xincrement);  
+		# length : xsplit+1. contains all the xlocations that could be used as start-stop points in the top row. 
+	if start_y_top==finish_y_top:
+		ysplit_array = [start_y_top for j in range(strike_split+1)];
+	else:
+		yincrement = (finish_y_top-start_y_top)/strike_split;
+		ysplit_array = np.arange(start_y_top,finish_y_top+yincrement,yincrement); 
+		# length : xsplit+1. contains all the ylocations that could be used as start-stop points in the top row. 
+	return [xsplit_array, ysplit_array] ;
+
+
+def get_split_z_array(top,bottom,dip_split):
+	if top==bottom:
+		zsplit_array = [top for j in range(dip_split+1)];
+	else:
+		zincrement = abs(top-bottom)/dip_split;
+		zsplit_array = np.arange(top,bottom+zincrement,zincrement); 
+	return zsplit_array;
 
 
 def compute_surface_disp(params, inputs):
@@ -114,6 +206,9 @@ def compute_strains_stresses(params, inputs):
 		receiver_center_x.append(centercoords[0]);
 		receiver_center_y.append(centercoords[1]);
 		receiver_center_z.append(centercoords[2]);
+		receiver_strike = inputs.receiver_object.strike[m];
+		receiver_dip    = inputs.receiver_object.dipangle[m];
+		receiver_rake   = inputs.receiver_object.rake[m];
 		normal_sum=0;
 		shear_sum=0;
 		coulomb_sum=0;
@@ -143,14 +238,14 @@ def compute_strains_stresses(params, inputs):
 
 			# Rotate grad_u back into the unprimed coordinates.  Divide by 1000 because coordinate units (km) and slip units (m) are different by 1000. 
 			desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
-			desired_coords_grad_u = [i/1000.0 for i in desired_coords_grad_u];
+			desired_coords_grad_u = [k/1000.0 for k in desired_coords_grad_u];
 			
 			# Then rotate again into receiver coordinates. 
 			strain_tensor=conversion_math.get_strain_tensor(desired_coords_grad_u);
 			stress_tensor=conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu);
 
 			# Then compute shear, normal, and coulomb stresses. 
-			[normal, shear, coulomb]=conversion_math.get_coulomb_stresses(stress_tensor,strike,inputs.receiver_object.rake[m],dip,inputs.FRIC);
+			[normal, shear, coulomb]=conversion_math.get_coulomb_stresses(stress_tensor,receiver_strike,receiver_rake,receiver_dip,inputs.FRIC);
 			normal_sum=normal_sum+normal;
 			shear_sum=shear_sum+shear;
 			coulomb_sum=coulomb_sum+coulomb;

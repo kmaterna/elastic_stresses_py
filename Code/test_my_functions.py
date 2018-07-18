@@ -29,11 +29,6 @@ if __name__=="__main__":
 	angle = -160;
 	test_strike(np.cos(np.deg2rad(angle)), np.sin(np.deg2rad(angle)), 250);
 
-	# test_rake(1, 0, 0)
-	# test_rake(0,1,90);
-	# test_rake(0,-1,-90);
-	# test_rake(-1,0,180);
-
 	test_plane_normal(0, 0, '[0, 0, 1]');
 	test_plane_normal(90, 89, '[0, -1, verysmall]');
 	test_plane_normal(270, 89, '[0, 1, verysmall]');

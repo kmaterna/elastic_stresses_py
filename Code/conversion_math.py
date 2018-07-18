@@ -60,10 +60,13 @@ def get_coulomb_stresses(tau, strike, dip, rake, friction):
 	rotated_shear = np.dot(R,shear_vector);
 	shear_in_rake_dir = rotated_shear[0];
 
+	# Will need to define conventions of stress directions. 
+
 	# Finally, do unit conversion	
 	normal=normal_stress/1000.0;  # convert to KPa
 	shear=shear_in_rake_dir/1000.0;
-	coulomb=-normal_stress/1000.0+(friction*shear_in_rake_dir/1000.0);
+
+	coulomb=(friction*normal_stress/1000.0)-shear_in_rake_dir/1000.0;
 	return normal, shear, coulomb;
 
 

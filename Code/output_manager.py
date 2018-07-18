@@ -24,6 +24,7 @@ def produce_outputs(params, out_object):
 	stress_plot(params,out_object,'coulomb');
 	map_plot();
 	write_output_files(params,out_object);
+	side_on_plot(params);
 
 	return;
 
@@ -112,7 +113,7 @@ def stress_plot(params, out_object, stress_type):
 	smallest_stress = -14;  # units: KPa
 	largest_stress = 14;  # units: KPa
 	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
-	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='jet_r');
+	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
 
 	# Figure of stresses. 
 	plt.figure(figsize=(12,10));
@@ -162,11 +163,30 @@ def stress_plot(params, out_object, stress_type):
 	return;
 
 
+def side_on_plot(params):
+	[x,y,z,normal,shear,coulomb]=np.loadtxt(params.outdir+'stresses.txt',skiprows=1,unpack=True)
+	plt.figure(figsize=(10,7));
+	plt.scatter(x,z,c=coulomb,s=1450,marker='s');
+	# plt.scatter(x,z,c=normal,s=1450,marker='s');
+	# plt.scatter(x,z,c=shear,s=1450,marker='s');
+	plt.ylim(z.min()-2,z.max()+2);
+	plt.xlim(x.min()-10,x.max()+10);
+	plt.xlabel('X axis (km)');
+	plt.ylabel('Depth (km)')
+	plt.gca().invert_yaxis();
+	plt.colorbar();
+	plt.savefig(params.outdir+'Sideways.eps');
+	plt.close();
+
+	return;
+
 
 def map_plot():
 	# FUTURE FEATURE: Make Map
 
 	return
+
+
 
 
 
