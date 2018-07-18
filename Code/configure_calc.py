@@ -7,8 +7,8 @@ Params = collections.namedtuple('Params',
 
 
 def configure_stress_calculation():
-	# input_file = "../Inputs/Example-2KZM_LL.inp";
-	input_file = "../Inputs/see_shadow.inp";
+	# input_file = "../Inputs/Example-2CSZ_LL.inp";
+	input_file = "../Inputs/see_stress_shadow.inp";
 	outdir = "../Outputs/shadow_"
 	strike_num_receivers = 18;  # in the strike direction
 	dip_num_receivers = 18;  # in the dip direction. how many sub-faults do you want? 
