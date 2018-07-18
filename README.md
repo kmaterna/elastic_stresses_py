@@ -5,8 +5,9 @@ This code uses Okada's (1992) DC3D function to compute elastic displacements, st
 ### Capabilities: ###
 * Reads source and receiver faults from .inp formatted Coulomb input files.
 * Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
-* Writes .inp formatted Coulomb input files with split-subfaults.
-* Plots displacement, shear stress, normal stress, and Coulomb stress.
+* Writes .inp formatted Coulomb files with split subfaults.
+* Plots displacements at the surface.
+* Plots shear stress, normal stress, and Coulomb stress on receiver faults.
 * Produces output tables of quantities.
 
 ### Future work: ###
