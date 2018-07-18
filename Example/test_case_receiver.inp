@@ -1,0 +1,43 @@
+This is a test file for the Coulomb 1.0                      
+This file is prepared to check mainly thrust faulting calculation
+#reg1=  0  #reg2=  0   #fixed=  2  sym=  1
+ PR1=       .250      PR2=       .250    DEPTH=        7.5
+  E1=   0.800000E+06   E2=   0.800000E+06
+XSYM=       .000     YSYM=       .000
+FRIC=       .400
+S1DR=    19.0001     S1DP=     -0.0001    S1IN=    100.000     S1GD=   .000000
+S3DR=    89.9999     S3DP=      89.999    S3IN=     30.000     S3GD=   .000000
+S2DR=   109.0001     S2DP=     -0.0001    S2IN=      0.000     S2GD=   .000000
+
+  #   X-start    Y-start     X-fin      Y-fin   Kode  rt.lat    reverse   dip angle     top      bot
+xxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx
+  1    -10.0       0.000    10.0000     0.000   100   1.0000    0.0000      85.90      10.00    20.00     11/24 18:50 M7.3 40-km rupture  
+  1    -25.00   -10.0000    25.0000   -10.000   100   0.0000    0.0000      85.90      0.00     30.00     receiver-1 test 1 
+
+    Grid Parameters
+  1  ----------------------------  Start-x =    -126.83000
+  2  ----------------------------  Start-y =    -166.79000
+  3  --------------------------   Finish-x =     126.83000
+  4  --------------------------   Finish-y =     166.79000
+  5  ------------------------  x-increment =     4.230000
+  6  ------------------------  y-increment =     5.560000
+     Size Parameters
+  1  --------------------------  Plot size =     2.000000
+  2  --------------  Shade/Color increment =     1.000000
+  3  ------  Exaggeration for disp.& dist. =     10000.00
+
+Cross section default
+  1  ----------------------------  Start-x =    -36.00000
+  2  ----------------------------  Start-y =     36.00000
+  3  --------------------------   Finish-x =     38.00000
+  4  --------------------------   Finish-y =    -36.00000
+  5  ------------------  Distant-increment =     1.000000
+  6  ----------------------------  Z-depth =     30.00000
+  7  ------------------------  Z-increment =     1.000000
+     Map infomation
+  1  ---------------------------- min. lon =    -126.0000    
+  2  ---------------------------- max. lon =    -123.0000    
+  3  ---------------------------- zero lon =    -124.5000    
+  4  ---------------------------- min. lat =      39.0000    
+  5  ---------------------------- max. lat =      42.0000    
+  6  ---------------------------- zero lat =      40.5000    
