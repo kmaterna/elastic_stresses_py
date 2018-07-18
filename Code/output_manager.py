@@ -85,6 +85,7 @@ def surface_def_plot(params, out_object):
 	plt.grid();
 	plt.title('Surface Dipslacement',fontsize=28)
 	plt.savefig(params.outdir+"Displacement_model.eps")
+	plt.savefig(params.outdir+"Displacement_model.png")
 	plt.close();
 
 	return;
@@ -165,7 +166,7 @@ def stress_plot(params, out_object, stress_type):
 
 def side_on_plot(params):
 	[x,y,z,normal,shear,coulomb]=np.loadtxt(params.outdir+'stresses.txt',skiprows=1,unpack=True)
-	plt.figure(figsize=(10,7));
+	plt.figure(figsize=(10,6));
 	plt.scatter(x,z,c=coulomb,s=1450,marker='s');
 	# plt.scatter(x,z,c=normal,s=1450,marker='s');
 	# plt.scatter(x,z,c=shear,s=1450,marker='s');
@@ -175,8 +176,10 @@ def side_on_plot(params):
 	plt.ylabel('Depth (km)')
 	plt.gca().invert_yaxis();
 	cb = plt.colorbar();
+	plt.title('Coulomb stress change for right-lat slip (KPa)',fontsize=20)
 	cb.set_label('Kilopascals',fontsize=18);
 	plt.savefig(params.outdir+'Sideways.eps');
+	plt.savefig(params.outdir+'Sideways.png');
 	plt.close();
 
 	return;

@@ -9,7 +9,7 @@ import math
 
 def get_strain_tensor(dUidUj):
 	# Starts with displacement gradient tensor (3x3 2D array);
-	# Returns a strain tensor (3x3 2d array). 
+	# Returns a strain tensor (3x3 2D array). 
 	rows,cols=np.shape(dUidUj);
 	strain_tensor=np.zeros(np.shape(dUidUj));
 	for i in range(rows):
@@ -18,8 +18,8 @@ def get_strain_tensor(dUidUj):
 	return strain_tensor;
 
 def get_stress_tensor(eij, lamda, mu):
-	# Starts with displacement gradient tensor (3x3 2D array);
-	# Returns a strain tensor (3x3 2d array). 
+	# Starts with strain tensor (3x3 2D array);
+	# Returns a stress tensor (3x3 2D array). 
 	# lamda and mu are Lame parameters
 	rows,cols=np.shape(eij);
 	stress_tensor=np.zeros(np.shape(eij));
@@ -34,12 +34,12 @@ def get_stress_tensor(eij, lamda, mu):
 
 
 def get_coulomb_stresses(tau, strike, rake, dip, friction):
-	# Given a strike, rake, and dip
+	# Given a stress tensor, strike, rake, and dip
 	# Resolve the stress changes on the fault plane. 
 	# Return in KPa
 
-	strike_unit_vector= get_strike_vector(strike);  # a horizontal 3d vector. 
-	dip_unit_vector = get_dip_vector(strike, dip);  # a 3d vector
+	strike_unit_vector= get_strike_vector(strike);  # a 3d vector in the horizontal plane. 
+	dip_unit_vector = get_dip_vector(strike, dip);  # a 3d vector.
 	plane_normal = get_plane_normal(strike, dip);  # a 3d vector.
 	traction_vector = np.dot(tau,plane_normal);
 

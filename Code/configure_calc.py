@@ -8,8 +8,6 @@ Params = collections.namedtuple('Params',
 
 def configure_stress_calculation():
 	# input_file = "../Inputs/Example-2CSZ_LL.inp";
-	# input_file = "../Inputs/see_stress_shadow.inp";
-	# outdir = "../Outputs/shadow_"
 	input_file = "../Inputs/simplest_receiver.inp";
 	outdir="../Outputs/simple_"
 	strike_num_receivers = 10;  # in the strike direction
@@ -17,7 +15,7 @@ def configure_stress_calculation():
 
 	mu = 30e9; # 30 GPa for shear modulus
 	lame1 = 30e9;  # This is LAMDA, but I'm not using Lamda as a variable name. 
-	alpha = 2.0/3.0;  # a parameter for the Okada functions. Check if this is appropriate. It is (lamda+mu)/(lamda+2*mu).  See documentation for DC3D.f
+	alpha = (lame1+mu)/(lame1+2*mu);  # a parameter for the Okada functions. It is (lamda+mu)/(lamda+2*mu): 2.0/3.0 for simplest case.  See documentation for DC3D.f
 
 	fixed_rake = 0; # on receiver faults, we need to specify the rake globally if we're using .inp format. 90=reverse. 
 	# No effect if you're using .inr format. 
