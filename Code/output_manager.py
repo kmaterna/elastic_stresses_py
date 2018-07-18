@@ -174,7 +174,8 @@ def side_on_plot(params):
 	plt.xlabel('X axis (km)');
 	plt.ylabel('Depth (km)')
 	plt.gca().invert_yaxis();
-	plt.colorbar();
+	cb = plt.colorbar();
+	cb.set_label('Kilopascals',fontsize=18);
 	plt.savefig(params.outdir+'Sideways.eps');
 	plt.close();
 

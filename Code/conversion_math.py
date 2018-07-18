@@ -63,11 +63,13 @@ def get_coulomb_stresses(tau, strike, dip, rake, friction):
 	# Will need to define conventions of stress directions. 
 
 	# Finally, do unit conversion	
-	normal=normal_stress/1000.0;  # convert to KPa
-	shear=shear_in_rake_dir/1000.0;
+	normal_stress=normal_stress/1000.0;  # convert to KPa
+	shear_stress=shear_in_rake_dir/1000.0;
 
-	coulomb=(friction*normal_stress/1000.0)-shear_in_rake_dir/1000.0;
-	return normal, shear, coulomb;
+	# The Coulomb Failure Hypothesis
+	coulomb_stress = shear_stress - (friction*normal_stress);  
+
+	return normal_stress, shear_stress, coulomb_stress;
 
 
 
