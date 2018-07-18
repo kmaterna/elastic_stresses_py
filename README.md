@@ -3,12 +3,11 @@
 This code uses Okada's (1992) DC3D function to compute elastic displacements, strains, and stresses in an elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases, it reproduces the Coulomb outputs (see Examples). 
 
 ### Capabilities: ###
-* Reads source and receiver faults from .inr formatted Coulomb input files.
-* Takes a single receiver fault and split it into subfaults in the dip- and strike- directions.
-* Writes .inr formatted Coulomb input files with split-subfaults.
+* Reads source and receiver faults from .inp formatted Coulomb input files.
+* Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
+* Writes .inp formatted Coulomb input files with split-subfaults.
 * Plots displacement, shear stress, normal stress, and Coulomb stress.
 * Produces output tables of quantities.
-
 
 ### Future work: ###
 * Convert to map coordinates and plot a map
