@@ -7,7 +7,7 @@ import collections
 import sys
 from okada_wrapper import dc3dwrapper
 import conversion_math
-import read_inp
+import io_inp
 
 # NOTES:
 Input_object = collections.namedtuple('Input_object',
@@ -26,7 +26,6 @@ def do_stress_computation(params, inputs):
 	print("Number of sources: %d " % len(inputs.source_object.xstart));
 	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
 	subfaulted_inputs = split_subfaults(params, inputs);
-	read_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
 	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp(params, subfaulted_inputs);
 	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 	MyOutObject = Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
@@ -144,9 +143,9 @@ def compute_surface_disp(params, inputs):
 	x=np.linspace(inputs.start_gridx,inputs.finish_gridx,(inputs.finish_gridx-inputs.start_gridx)/inputs.xinc);
 	y=np.linspace(inputs.start_gridy,inputs.finish_gridy,(inputs.finish_gridy-inputs.start_gridy)/inputs.yinc);
 	[x2d,y2d] = np.meshgrid(x,y);
-	u_displacements = np.zeros((len(x), len(y)));
-	v_displacements = np.zeros((len(x), len(y)));
-	w_displacements = np.zeros((len(x), len(y)));
+	u_displacements = np.zeros((len(y), len(x)));
+	v_displacements = np.zeros((len(y), len(x)));
+	w_displacements = np.zeros((len(y), len(x)));
 	numrows=np.shape(u_displacements)[0]
 	numcols=np.shape(u_displacements)[1]
 
@@ -172,6 +171,7 @@ def compute_surface_disp(params, inputs):
 			for kx in range(numcols):
 
 				# Compute the position relative to the translated, rotated fault. 
+				# print("%d %d " %(kx, ky));
 				translated_pos = np.array([[x2d[ky][kx]-inputs.source_object.xstart[i]],[y2d[ky][kx]-inputs.source_object.ystart[i]]]);
 				xy=R.dot(translated_pos);
 				success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  # solve for displacements at the surface

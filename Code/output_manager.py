@@ -6,26 +6,33 @@ import matplotlib
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from mpl_toolkits.basemap import Basemap
 from subprocess import call
 import collections
 import conversion_math
+import io_inp
+
 
 
 # For reference: 
+Input_object = collections.namedtuple('Input_object',
+	['PR1','FRIC','depth','start_gridx', 'finish_gridx', 'start_gridy', 'finish_gridy', 'xinc', 'yinc', 'minlon','maxlon','zerolon','minlat','maxlat','zerolat','source_object','receiver_object'])
+Faults_object = collections.namedtuple('Faults_object',
+	['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
 Out_object = collections.namedtuple('Out_object',
 	['x','y','x2d','y2d','u_disp','v_disp','w_disp','source_object','receiver_object','receiver_normal','receiver_shear','receiver_coulomb']);
 
 
-def produce_outputs(params, out_object):
+def produce_outputs(params, inputs, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
+	io_inp.write_inp(params.outdir+'subfaulted.inp',inputs);
 	surface_def_plot(params,out_object);
 	stress_plot(params,out_object,'shear');  
 	stress_plot(params,out_object,'normal');
 	stress_plot(params,out_object,'coulomb');
-	map_plot();
+	map_plot(params, inputs, out_object);
 	write_output_files(params,out_object);
 	side_on_plot(params);
-
 	return;
 
 
@@ -83,6 +90,7 @@ def surface_def_plot(params, out_object):
 	for l in plt.gca().xaxis.get_ticklabels():
 		l.set_size(18);	
 	plt.grid();
+	plt.axis('equal');
 	plt.title('Surface Dipslacement',fontsize=28)
 	plt.savefig(params.outdir+"Displacement_model.eps")
 	plt.savefig(params.outdir+"Displacement_model.png")
@@ -165,7 +173,7 @@ def stress_plot(params, out_object, stress_type):
 
 
 def side_on_plot(params):
-	[x,y,z,normal,shear,coulomb]=np.loadtxt(params.outdir+'stresses.txt',skiprows=1,unpack=True)
+	[x,y,z,rake,normal,shear,coulomb]=np.loadtxt(params.outdir+'stresses.txt',skiprows=1,unpack=True)
 	plt.figure(figsize=(10,6));
 	plt.scatter(x,z,c=coulomb,s=1450,marker='s');
 	# plt.scatter(x,z,c=normal,s=1450,marker='s');
@@ -178,21 +186,86 @@ def side_on_plot(params):
 	cb = plt.colorbar();
 	plt.title('Coulomb stress change for right-lat slip (KPa)',fontsize=20)
 	cb.set_label('Kilopascals',fontsize=18);
-	plt.savefig(params.outdir+'Sideways.eps');
-	plt.savefig(params.outdir+'Sideways.png');
+	plt.savefig(params.outdir+'side_view.eps');
+	plt.savefig(params.outdir+'side_view.png');
 	plt.close();
 
 	return;
 
 
-def map_plot():
-	# FUTURE FEATURE: Make Map
+def map_plot(params, inputs, out_object):
+	#Basemap: Make Map
+	plt.figure(figsize=(12,10));
+
+	# Make stress bounds for map. 
+	smallest_stress = -14;  # units: KPa
+	largest_stress = 14;  # units: KPa
+	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
+	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
+
+
+	# use low resolution coastlines.
+	mymap=Basemap(projection='merc',llcrnrlat=inputs.minlat,llcrnrlon=inputs.minlon, urcrnrlat=inputs.maxlat, urcrnrlon=inputs.maxlon,resolution='i');
+	mymap.drawcoastlines(linewidth=0.25,color='black');
+	# draw coastlines, country boundaries, fill continents.
+	mymap.fillcontinents(color='white',lake_color='white')
+	# draw the edge of the map projection region (the projection limb)
+
+	mymap.drawmapboundary(fill_color='white')
+	# draw lat/lon grid lines every degree.
+	mymap.drawmeridians(np.arange(inputs.minlon,inputs.maxlon,1),labels=[1,0,0,1])
+	mymap.drawparallels(np.arange(inputs.minlat,inputs.maxlat,1),labels=[1,0,0,1])
+
+	# Draw each source
+	for i in range(len(out_object.source_object.xstart)):
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.source_object,i);
+		lons=[];
+		lats=[];
+		for j in range(len(x_total)):
+			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
+			lons.append(mylon);
+			lats.append(mylat);
+		draw_screen_poly( lats, lons, mymap, [0,0,0] );
+
+	# Draw each receiver
+	for i in range(len(out_object.receiver_object.xstart)):
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
+		patch_color=custom_cmap.to_rgba(out_object.receiver_coulomb[i]);  # coloring the map by coulomb stresses. 
+		lons=[];
+		lats=[];
+		for j in range(len(x_total)):
+			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
+			lons.append(mylon);
+			lats.append(mylat);
+		draw_screen_poly( lats, lons, mymap, patch_color );
+
+	# Annotate with earthquake location.
+	draw_earthquake(params.eqlon, params.eqlat, mymap);
+
+	# Map colorbar. 
+	custom_cmap.set_array(range(smallest_stress,largest_stress));
+	cb = plt.colorbar(custom_cmap);
+	cb.set_label('Coulomb Stress (Kilopascals)',fontsize=22);
+
+	plt.title('Coulomb Stresses')
+	plt.savefig(params.outdir+'coulomb_basemap.eps');
+	plt.close();
 
 	return
 
 
+def draw_earthquake(eqlon, eqlat, m):
+	x,y=m(eqlon, eqlat);
+	m.plot(x,y,marker='D',color='m');
+	return;
 
 
+def draw_screen_poly( lats, lons, m, color ):
+    x, y = m( lons, lats )
+    xy = zip(x,y)
+    poly = Polygon( xy, facecolor=color, alpha=0.7 )
+    plt.gca().add_patch(poly)
+    return;
 
 def write_output_files(params, out_object):
 
@@ -206,11 +279,11 @@ def write_output_files(params, out_object):
 
 	# Write output file for stresses. 
 	ofile=open(params.outdir+'stresses.txt','w');
-	ofile.write("Format: centerx centery centerz normal shear coulomb (kpa)\n");
+	ofile.write("Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
 	for i in range(len(out_object.receiver_object.xstart)):
 		# [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(fault_object, i);
 		center=conversion_math.get_fault_center(out_object.receiver_object,i);
-		ofile.write("%f %f %f %f %f %f \n" % (center[0], center[1], center[2], out_object.receiver_normal[i], out_object.receiver_shear[i], out_object.receiver_coulomb[i]) );
+		ofile.write("%f %f %f %f %f %f %f \n" % (center[0], center[1], center[2], out_object.receiver_object.rake[i], out_object.receiver_normal[i], out_object.receiver_shear[i], out_object.receiver_coulomb[i]) );
 	ofile.close();
 	print("Outputs written to file.")
 

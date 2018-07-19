@@ -168,3 +168,15 @@ def get_fault_four_corners(fault_object, i):
 	y_updip = [updip_point0[1], updip_point1[1]];
 	return [x_total, y_total, x_updip, y_updip];
 
+def xy2lonlat(xi,yi,reflon,reflat):
+	lat=reflat+( yi*1/111.000 );
+	lon=reflon+( xi*1/(111.000*abs(np.cos(np.deg2rad(reflat)))) );
+	return lon, lat;
+
+
+def latlon2xy(loni,lati,lon0,lat0):
+	x=0; y=0;
+	return x, y
+
+
+

@@ -4,17 +4,16 @@
 # .inr (Coulomb)
 # .intxt (My own definition, convenient for an experiment I'm running)
 
-import read_inp
-import read_inr
+import io_inp
+import io_inr
 
 
 def read_inputs(params):
 	print("Reading %s. " % params.input_file);
 	if '.inp' in params.input_file:
-		input_object = read_inp.read_inp(params.input_file,params.fixed_rake);
-		read_inp.write_inp('../Inputs/test.inp',input_object);
+		input_object = io_inp.read_inp(params.input_file,params.fixed_rake);
 	elif '.inr' in params.input_file:
-		input_object = read_inr.read_inr(params.input_file);
+		input_object = io_inr.read_inr(params.input_file);
 	elif '.intxt' in params.input_file:
 		input_object = [];  # Will write later. 
 	else:
