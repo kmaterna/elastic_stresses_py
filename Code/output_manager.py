@@ -184,7 +184,10 @@ def side_on_plot(params):
 	plt.ylabel('Depth (km)')
 	plt.gca().invert_yaxis();
 	cb = plt.colorbar();
-	plt.title('Coulomb stress change for right-lat slip (KPa)',fontsize=20)
+	if len(set(rake))==1:
+		plt.title('Coulomb stress change on fault planes, rake = %.1f (KPa)' % rake[0],fontsize=20);
+	else:
+		plt.title('Coulomb stress change for variable rake (KPa)',fontsize=20);
 	cb.set_label('Kilopascals',fontsize=18);
 	plt.savefig(params.outdir+'side_view.eps');
 	plt.savefig(params.outdir+'side_view.png');
