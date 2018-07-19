@@ -8,10 +8,10 @@ This code uses Okada's (1992) DC3D function to compute elastic displacements, st
 * Writes .inp formatted Coulomb files with split subfaults.
 * Plots displacements at the surface.
 * Plots shear stress, normal stress, and Coulomb stress on receiver faults.
+* Maps the coordinates of the faults using Basemap
 * Produces output tables of quantities.
 
 ### Future work: ###
-* Convert to map coordinates and plot a map
 * Read .inr files
 * Read user-defined input files (based on EQ lat/lon, source parameters, etc.)
 
