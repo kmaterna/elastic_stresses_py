@@ -63,7 +63,7 @@ def surface_def_plot(params, out_object):
 
 	#Plot of elastic surface deformation from the given input model. 
 	plt.figure(figsize=(16,16))
-	plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp);
+	plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp,cmap='jet');
 	cb = plt.colorbar();	
 	cb.set_label('Vertical displacement (meters)',fontsize=22);
 	for l in cb.ax.yaxis.get_ticklabels():
@@ -175,7 +175,7 @@ def stress_plot(params, out_object, stress_type):
 def side_on_plot(params):
 	[x,y,z,rake,normal,shear,coulomb]=np.loadtxt(params.outdir+'stresses.txt',skiprows=1,unpack=True)
 	plt.figure(figsize=(10,6));
-	plt.scatter(x,z,c=coulomb,s=1450,marker='s');
+	plt.scatter(x,z,c=coulomb,s=1450,marker='s',cmap='jet',edgecolor='black');
 	# plt.scatter(x,z,c=normal,s=1450,marker='s');
 	# plt.scatter(x,z,c=shear,s=1450,marker='s');
 	plt.ylim(z.min()-2,z.max()+2);
@@ -211,7 +211,7 @@ def map_plot(params, inputs, out_object):
 	mymap=Basemap(projection='merc',llcrnrlat=inputs.minlat,llcrnrlon=inputs.minlon, urcrnrlat=inputs.maxlat, urcrnrlon=inputs.maxlon,resolution='i');
 	mymap.drawcoastlines(linewidth=0.25,color='black');
 	# draw coastlines, country boundaries, fill continents.
-	mymap.fillcontinents(color='white',lake_color='white')
+	# mymap.fillcontinents(color='white',lake_color='white')
 	# draw the edge of the map projection region (the projection limb)
 
 	mymap.drawmapboundary(fill_color='white')
@@ -265,7 +265,7 @@ def draw_earthquake(eqlon, eqlat, m):
 
 def draw_screen_poly( lats, lons, m, color ):
     x, y = m( lons, lats )
-    xy = zip(x,y)
+    xy = list(zip(x,y));
     poly = Polygon( xy, facecolor=color, alpha=0.7 )
     plt.gca().add_patch(poly)
     return;
