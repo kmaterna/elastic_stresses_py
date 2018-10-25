@@ -15,6 +15,7 @@ import configure_calc
 import input_values
 import run_dc3d
 import output_manager
+import sys
 
 def do_calculation():
 	params = configure_calc.configure_stress_calculation();

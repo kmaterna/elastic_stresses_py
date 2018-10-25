@@ -6,6 +6,7 @@
 
 import io_inp
 import io_inr
+import io_intxt
 
 
 def read_inputs(params):
@@ -15,7 +16,7 @@ def read_inputs(params):
 	elif '.inr' in params.input_file:
 		input_object = io_inr.read_inr(params.input_file);
 	elif '.intxt' in params.input_file:
-		input_object = [];  # Will write later. 
+		input_object = io_intxt.read_intxt(params.input_file);  # Will write later. 
 	else:
 		print("Error! Unrecognized type of input file!");
 		input_object = [];

@@ -266,7 +266,7 @@ def draw_earthquake(eqlon, eqlat, m):
 def draw_screen_poly( lats, lons, m, color ):
     x, y = m( lons, lats )
     xy = list(zip(x,y));
-    poly = Polygon( xy, facecolor=color, alpha=0.7 )
+    poly = Polygon( xy, facecolor=color, edgecolor='black',alpha=0.7 )
     plt.gca().add_patch(poly)
     return;
 

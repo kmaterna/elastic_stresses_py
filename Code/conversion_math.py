@@ -5,6 +5,7 @@
 
 import numpy as np 
 import math
+import haversine
 
 
 def get_strain_tensor(dUidUj):
@@ -111,7 +112,7 @@ def get_strike(deltax, deltay):
 	return strike;
 
 def get_rtlat_dip_slip(slip, rake):
-	strike_slip = slip * np.cos(np.deg2rad(rake));
+	strike_slip = -slip * np.cos(np.deg2rad(rake));  # negative sign for convention of right lateral slip
 	dip_slip = slip * np.sin(np.deg2rad(rake));
 	return strike_slip, dip_slip;
 
@@ -123,6 +124,17 @@ def get_strike_length(x0,x1,y0,y1):
 def get_downdip_width(top,bottom,dip):
 	W = abs(top-bottom)/np.sin(np.deg2rad(dip));  # guaranteed to be between 0 and 90
 	return W;
+
+def get_top_bottom(center_depth, width,dip):
+	# Given a fault, where is the top and bottom? 
+	# Width is total downdip width of the fault. 
+	top=center_depth-(width/2.0*np.sin(np.deg2rad(dip)));
+	bottom=center_depth+(width/2.0*np.sin(np.deg2rad(dip)));
+	return top,bottom;
+
+def get_top_bottom_from_top(top_depth, width,dip):
+	bottom=top_depth+(width*np.sin(np.deg2rad(dip)));
+	return top_depth,bottom;
 
 def add_vector_to_point(x0,y0,vector_mag,vector_heading):
 	# Vector heading defined as strike- CW from north.
@@ -175,8 +187,13 @@ def xy2lonlat(xi,yi,reflon,reflat):
 
 
 def latlon2xy(loni,lati,lon0,lat0):
-	x=0; y=0;
-	return x, y
+	# returns the distance between a point and a reference in km. 
+	radius = haversine.distance([lat0,lon0], [lati,loni]);
+	bearing = haversine.calculate_initial_compass_bearing((lat0, lon0),(lati, loni))
+	azimuth = 90 - bearing;
+	x = radius * np.cos(np.deg2rad(azimuth));
+	y = radius * np.sin(np.deg2rad(azimuth));
+	return [x, y];
 
 
 
