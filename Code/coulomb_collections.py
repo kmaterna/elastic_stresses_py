@@ -10,7 +10,7 @@ Params = collections.namedtuple('Params',[
 	'mu','lame1',
 	'eqlon','eqlat',
 	'alpha',
-	'outdir']);
+	'outdir', 'title']);
 
 
 Input_object = collections.namedtuple('Input_object',[

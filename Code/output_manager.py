@@ -252,7 +252,7 @@ def map_plot(params, inputs, out_object):
 	cb.set_label('Coulomb Stress (Kilopascals)',fontsize=22);
 	cb.ax.tick_params(labelsize=20);
 
-	plt.title('Coulomb Stresses',fontsize=22);
+	plt.title(params.title,fontsize=22);
 	plt.savefig(params.outdir+'coulomb_basemap.eps');
 	plt.close();
 
