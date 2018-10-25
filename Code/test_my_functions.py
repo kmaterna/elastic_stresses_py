@@ -34,3 +34,25 @@ if __name__=="__main__":
 	test_plane_normal(270, 89, '[0, 1, verysmall]');
 	test_plane_normal(0, 1, '[verysmall, 0, 1]');
 	test_plane_normal(180, 1, '[-verysmall, 0, 1]');
+
+
+
+# Testing wells and coppersmith code. 
+import wells_and_coppersmith as wc 
+
+length=45.47;
+width=14.4;
+m=6.8;
+fault_type='SS';
+
+length=wc.RLD_from_M(m, fault_type);
+print(length);
+
+width=wc.RW_from_M(m, fault_type);
+print(width);
+
+slip=wc.rectangular_slip(length*1000, width*1000, m);
+print(slip);
+
+m2=wc.get_magnitude(length*1000, width*1000, slip);
+print(m2)
