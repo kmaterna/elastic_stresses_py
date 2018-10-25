@@ -247,7 +247,7 @@ def map_plot(params, inputs, out_object):
 		draw_aftershocks(params.aftershocks,mymap);
 
 	# Map colorbar. 
-	custom_cmap.set_array(range(smallest_stress,largest_stress));
+	custom_cmap.set_array(np.arange(smallest_stress,largest_stress,(largest_stress-smallest_stress)/100.0));
 	cb = plt.colorbar(custom_cmap);
 	cb.set_label('Coulomb Stress (Kilopascals)',fontsize=22);
 	cb.ax.tick_params(labelsize=20);

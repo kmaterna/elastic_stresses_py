@@ -11,17 +11,22 @@ def configure_stress_calculation():
 	# outdir="../Outputs/simple/"
 	# eqlon=0; eqlat=0; # for plotting. 
 
-	# # PARAMETER SET: THE 2014 EARTHQUAKE
-	# input_file = "../Inputs/M6.8_convenient_inputs.intxt";
-	# aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
-	# outdir="../Outputs/M6p8/";
-	# eqlon=-125.134; eqlat=40.829;
-
 	# PARAMETER SET: THE 2010 EARTHQUAKE
-	input_file = "../Inputs/M6p5.inp";
-	aftershocks="../Inputs/20100110_aftershocks_ncsn.txt";
-	outdir="../Outputs/M6p5/"
-	eqlon=-124.693; eqlat=40.652;
+	# input_file = "../Inputs/M6p5.inp";
+	# aftershocks="../Inputs/20100110_aftershocks_ncsn.txt";
+	# outdir="../Outputs/M6p5/"
+	# eqlon=-124.693; eqlat=40.652;
+
+	# # PARAMETER SET: THE 2014 EARTHQUAKE
+	input_file = "../Inputs/M6.8_2014.intxt";
+	aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
+	outdir="../Outputs/M6p8/";
+	eqlon=-125.134; eqlat=40.829;
+
+	# PARAMETER SET: THE 2016 EARTHQUAKE
+	# input_file = "../Inputs/M6.6_2016.intxt";
+	# outdir="../Outputs/M6p6/"
+	# eqlon=-126.194; eqlat=40.454;
 
 	strike_num_receivers = 10;  # in the strike direction
 	dip_num_receivers = 10;  # in the dip direction. how many sub-faults do you want? 
@@ -33,5 +38,7 @@ def configure_stress_calculation():
 	fixed_rake = 90; # on receiver faults, we need to specify the rake globally if we're using .inp format. 90=reverse. 
 	# No effect if you're using .inr format. 
 
-	MyParams = coulomb_collections.Params(input_file=input_file, aftershocks=aftershocks, strike_num_receivers=strike_num_receivers, dip_num_receivers=dip_num_receivers, fixed_rake=fixed_rake, mu=mu, lame1=lame1, eqlon=eqlon, eqlat=eqlat, alpha=alpha, outdir=outdir);
+	MyParams = coulomb_collections.Params(input_file=input_file, aftershocks=aftershocks, 
+		strike_num_receivers=strike_num_receivers, dip_num_receivers=dip_num_receivers, fixed_rake=fixed_rake, 
+		mu=mu, lame1=lame1, eqlon=eqlon, eqlat=eqlat, alpha=alpha, outdir=outdir);
 	return MyParams;

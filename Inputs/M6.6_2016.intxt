@@ -1,0 +1,12 @@
+# convenient input format defined by K. Materna
+# Source: strike rake dip magnitude faulting_type fault_center_lon fault_center_lat fault_center_depth
+# Receivers: strike rake dip length width updip_corner_lon updip_corner_lat updip_corner_dep
+# General: PR1 FRIC lon_min lon_max lon_zero lat_min lat_max lat_zero
+# 
+# Example: M6.6 Transform Fault
+# Source retrieved from USGS moment tensor (https://earthquake.usgs.gov/earthquakes/eventpage/us20007z6r/moment-tensor)
+# Receiver is a guess to the Cascadia megathrust
+
+S: 95 -159 81.0 6.6 SS -126.194 40.454 8.5 # the catalog case. 
+R: 355 90 12 140 120 -124.56 40.3 10.8
+G: 0.250 0.40 -126.50 -122.60 -124.50 39.30 41.70 40.30
