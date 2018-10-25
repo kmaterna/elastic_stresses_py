@@ -8,24 +8,20 @@ from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 from mpl_toolkits.basemap import Basemap
 from subprocess import call
-import collections
+import coulomb_collections
 import conversion_math
 import io_inp
-
-
-
-# For reference: 
-Input_object = collections.namedtuple('Input_object',
-	['PR1','FRIC','depth','start_gridx', 'finish_gridx', 'start_gridy', 'finish_gridy', 'xinc', 'yinc', 'minlon','maxlon','zerolon','minlat','maxlat','zerolat','source_object','receiver_object'])
-Faults_object = collections.namedtuple('Faults_object',
-	['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
-Out_object = collections.namedtuple('Out_object',
-	['x','y','x2d','y2d','u_disp','v_disp','w_disp','source_object','receiver_object','receiver_normal','receiver_shear','receiver_coulomb']);
+import io_aftershocks
 
 
 def produce_outputs(params, inputs, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
-	io_inp.write_inp(params.outdir+'subfaulted.inp',inputs);
+	subfaulted_inputs=coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,
+		start_gridx=inputs.start_gridx,start_gridy=inputs.start_gridy,finish_gridx=inputs.finish_gridx,
+		finish_gridy=inputs.finish_gridy,xinc=inputs.xinc,yinc=inputs.yinc,minlon=inputs.minlon,maxlon=inputs.maxlon,
+		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,
+		source_object=out_object.source_object,receiver_object=out_object.receiver_object); # make a new object of the subfaulted configuration.
+	io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
 	surface_def_plot(params,out_object);
 	stress_plot(params,out_object,'shear');  
 	stress_plot(params,out_object,'normal');
@@ -197,27 +193,28 @@ def side_on_plot(params):
 
 
 def map_plot(params, inputs, out_object):
-	#Basemap: Make Map
-	plt.figure(figsize=(12,10));
 
 	# Make stress bounds for map. 
-	smallest_stress = -14;  # units: KPa
-	largest_stress = 14;  # units: KPa
+	stress_bound=14;  # units: KPa
+	smallest_stress = -stress_bound;  # units: KPa
+	largest_stress = stress_bound;  # units: KPa
 	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
 	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
 
+	#Basemap: Make Map
+	plt.figure(figsize=(12,10));
 
 	# use low resolution coastlines.
 	mymap=Basemap(projection='merc',llcrnrlat=inputs.minlat,llcrnrlon=inputs.minlon, urcrnrlat=inputs.maxlat, urcrnrlon=inputs.maxlon,resolution='i');
-	mymap.drawcoastlines(linewidth=0.25,color='black');
+	mymap.drawcoastlines(linewidth=1.0,color='black');
 	# draw coastlines, country boundaries, fill continents.
 	# mymap.fillcontinents(color='white',lake_color='white')
 	# draw the edge of the map projection region (the projection limb)
 
 	mymap.drawmapboundary(fill_color='white')
 	# draw lat/lon grid lines every degree.
-	mymap.drawmeridians(np.arange(inputs.minlon,inputs.maxlon,1),labels=[1,0,0,1])
-	mymap.drawparallels(np.arange(inputs.minlat,inputs.maxlat,1),labels=[1,0,0,1])
+	mymap.drawmeridians(np.arange(inputs.minlon,inputs.maxlon,1),labels=[1,0,0,1],fontsize=20);
+	mymap.drawparallels(np.arange(inputs.minlat,inputs.maxlat,1),labels=[1,0,0,1],fontsize=20);
 
 	# Draw each source
 	for i in range(len(out_object.source_object.xstart)):
@@ -245,12 +242,17 @@ def map_plot(params, inputs, out_object):
 	# Annotate with earthquake location.
 	draw_earthquake(params.eqlon, params.eqlat, mymap);
 
+	# Annotate with aftershock locations
+	if len(params.aftershocks)>0:
+		draw_aftershocks(params.aftershocks,mymap);
+
 	# Map colorbar. 
 	custom_cmap.set_array(range(smallest_stress,largest_stress));
 	cb = plt.colorbar(custom_cmap);
 	cb.set_label('Coulomb Stress (Kilopascals)',fontsize=22);
+	cb.ax.tick_params(labelsize=20);
 
-	plt.title('Coulomb Stresses')
+	plt.title('Coulomb Stresses',fontsize=22);
 	plt.savefig(params.outdir+'coulomb_basemap.eps');
 	plt.close();
 
@@ -269,6 +271,13 @@ def draw_screen_poly( lats, lons, m, color ):
     poly = Polygon( xy, facecolor=color, edgecolor='black',alpha=0.7 )
     plt.gca().add_patch(poly)
     return;
+
+def draw_aftershocks(aftershock_file, m):
+	[lon, lat, depth, magnitude, time]=io_aftershocks.read_aftershock_table(aftershock_file);
+	for i in range(len(lon)):
+		x,y=m(lon[i], lat[i]);
+		m.plot(x,y,marker='D',color='b',markersize=1);
+	return;
 
 def write_output_files(params, out_object):
 

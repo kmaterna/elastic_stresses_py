@@ -3,19 +3,10 @@
 
 import numpy as np 
 import matplotlib.pyplot as plt 
-import collections
 import sys
 from okada_wrapper import dc3dwrapper
+import coulomb_collections
 import conversion_math
-import io_inp
-
-# NOTES:
-Input_object = collections.namedtuple('Input_object',
-	['PR1','FRIC','depth','start_gridx', 'finish_gridx', 'start_gridy', 'finish_gridy', 'xinc', 'yinc', 'minlon','maxlon','zerolon','minlat','maxlat','zerolat','source_object','receiver_object'])
-Faults_object = collections.namedtuple('Faults_object',
-	['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
-Out_object = collections.namedtuple('Out_object',
-	['x','y','x2d','y2d','u_disp','v_disp','w_disp','source_object','receiver_object','receiver_normal','receiver_shear','receiver_coulomb']);
 
 
 def do_stress_computation(params, inputs):
@@ -28,7 +19,7 @@ def do_stress_computation(params, inputs):
 	subfaulted_inputs = split_subfaults(params, inputs);
 	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp(params, subfaulted_inputs);
 	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
-	MyOutObject = Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
+	MyOutObject = coulomb_collections.Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
 		source_object=source_object, receiver_object=receiver_object, receiver_normal=receiver_normal, receiver_shear=receiver_shear, 
 		receiver_coulomb=receiver_coulomb); 
 	return MyOutObject;
@@ -99,10 +90,10 @@ def split_subfaults(params,inputs):
 					new_bottom.append(zsplit_array[j+1]);
 					new_comment.append(receiver_object.comment[i]);
 
-		subfaulted_receivers = Faults_object(xstart=new_xstart, xfinish=new_xfinish, ystart=new_ystart, yfinish=new_yfinish, Kode=new_Kode, rtlat=new_rtlat, 
+		subfaulted_receivers = coulomb_collections.Faults_object(xstart=new_xstart, xfinish=new_xfinish, ystart=new_ystart, yfinish=new_yfinish, Kode=new_Kode, rtlat=new_rtlat, 
 			reverse=new_reverse, strike=new_strike, dipangle=new_dipangle, rake=new_rake, top=new_top, bottom=new_bottom, comment=new_comment);
 	
-	subfaulted_inputs = Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx, 
+	subfaulted_inputs = coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx, 
 		start_gridy=inputs.start_gridy, finish_gridy=inputs.finish_gridy, xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon,maxlon=inputs.maxlon,
 		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,source_object=inputs.source_object,
 		receiver_object=subfaulted_receivers);

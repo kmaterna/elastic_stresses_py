@@ -1,27 +1,27 @@
 # Configures a stress calculation 
 
-import collections
-
-Params = collections.namedtuple('Params',
-	['input_file','strike_num_receivers','dip_num_receivers','fixed_rake','mu','lame1','eqlon','eqlat','alpha','outdir']);
+import coulomb_collections
 
 
 def configure_stress_calculation():
+	aftershocks='';  # by default, we don't include an aftershocks file. Format is from NCEDC search. 
+
 	# # PARAMETER SET: THE EXAMPLE
 	# input_file = "../Inputs/simplest_receiver.inp";
 	# outdir="../Outputs/simple/"
-	# eqlon=0; eqlat=0;
+	# eqlon=0; eqlat=0; # for plotting. 
 
 	# # PARAMETER SET: THE 2014 EARTHQUAKE
-	# input_file = "../Inputs/M6p8.inp";
-	input_file = "../Inputs/M6.8_convenient_inputs.intxt";
-	outdir="../Outputs/M6p8/"	
-	eqlon=-125.134; eqlat=40.829;
+	# input_file = "../Inputs/M6.8_convenient_inputs.intxt";
+	# aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
+	# outdir="../Outputs/M6p8/";
+	# eqlon=-125.134; eqlat=40.829;
 
 	# PARAMETER SET: THE 2010 EARTHQUAKE
-	# input_file = "../Inputs/M6p5.inp";
-	# outdir="../Outputs/M6p5/"
-	# eqlon=-124.693; eqlat=40.652;
+	input_file = "../Inputs/M6p5.inp";
+	aftershocks="../Inputs/20100110_aftershocks_ncsn.txt";
+	outdir="../Outputs/M6p5/"
+	eqlon=-124.693; eqlat=40.652;
 
 	strike_num_receivers = 10;  # in the strike direction
 	dip_num_receivers = 10;  # in the dip direction. how many sub-faults do you want? 
@@ -33,5 +33,5 @@ def configure_stress_calculation():
 	fixed_rake = 90; # on receiver faults, we need to specify the rake globally if we're using .inp format. 90=reverse. 
 	# No effect if you're using .inr format. 
 
-	MyParams = Params(input_file=input_file, strike_num_receivers=strike_num_receivers, dip_num_receivers=dip_num_receivers, fixed_rake=fixed_rake, mu=mu, lame1=lame1, eqlon=eqlon, eqlat=eqlat, alpha=alpha, outdir=outdir);
+	MyParams = coulomb_collections.Params(input_file=input_file, aftershocks=aftershocks, strike_num_receivers=strike_num_receivers, dip_num_receivers=dip_num_receivers, fixed_rake=fixed_rake, mu=mu, lame1=lame1, eqlon=eqlon, eqlat=eqlat, alpha=alpha, outdir=outdir);
 	return MyParams;

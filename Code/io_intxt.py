@@ -4,19 +4,13 @@
 # We have to do a few other conversions too. 
 # This input file assumes a fixed rake specified initially in the configure file, same as the .inp file format
 
-import numpy as np 
-import collections
+import numpy as np
 import matplotlib.pyplot as plt 
 import haversine
 import conversion_math
+import coulomb_collections
 import wells_and_coppersmith
 import sys
-
-Input_object = collections.namedtuple('Input_object',
-	['PR1','FRIC','depth','start_gridx', 'finish_gridx', 'start_gridy', 'finish_gridy', 'xinc', 'yinc', 'minlon','maxlon','zerolon','minlat','maxlat','zerolat','source_object','receiver_object'])
-Faults_object = collections.namedtuple('Faults_object',
-	['xstart','xfinish','ystart','yfinish','Kode','rtlat','reverse','strike','dipangle','rake','top','bottom','comment']);
-# These objects are common between the input formats. 
 
 
 def read_intxt(input_file):
@@ -60,10 +54,10 @@ def read_intxt(input_file):
 	[xstart_src, xfinish_src, ystart_src, yfinish_src, Kode_src, rtlat_src, reverse_src, top_src, bottom_src, comment_src] = compute_params_for_source(strike_src, dipangle_src, rake_src, magnitude_src, faulting_type_src, fault_center_lon_src, fault_center_lat_src, fault_dep_src, zerolon, zerolat);
 	[xstart_rec, xfinish_rec, ystart_rec, yfinish_rec, Kode_rec, rtlat_rec, reverse_rec, top_rec, bottom_rec, comment_rec] = compute_params_for_receiver(strike_rec, dipangle_rec, rake_rec, length_rec, width_rec, updip_corner_lon_rec, updip_corner_lat_rec, updip_corner_dep_rec, zerolon, zerolat);
 
-	receivers=Faults_object(xstart=xstart_rec, xfinish=xfinish_rec, ystart=ystart_rec, yfinish=yfinish_rec, Kode=Kode_rec, rtlat=rtlat_rec, reverse=reverse_rec, strike=strike_rec, dipangle=dipangle_rec, rake=rake_rec, top=top_rec, bottom=bottom_rec, comment=comment_rec);
-	sources=Faults_object(xstart=xstart_src, xfinish=xfinish_src, ystart=ystart_src, yfinish=yfinish_src, Kode=Kode_src, rtlat=rtlat_src, reverse=reverse_src, strike=strike_src, dipangle=dipangle_src, rake=rake_src, top=top_src, bottom=bottom_src, comment=comment_src);
+	receivers=coulomb_collections.Faults_object(xstart=xstart_rec, xfinish=xfinish_rec, ystart=ystart_rec, yfinish=yfinish_rec, Kode=Kode_rec, rtlat=rtlat_rec, reverse=reverse_rec, strike=strike_rec, dipangle=dipangle_rec, rake=rake_rec, top=top_rec, bottom=bottom_rec, comment=comment_rec);
+	sources=coulomb_collections.Faults_object(xstart=xstart_src, xfinish=xfinish_src, ystart=ystart_src, yfinish=yfinish_src, Kode=Kode_src, rtlat=rtlat_src, reverse=reverse_src, strike=strike_src, dipangle=dipangle_src, rake=rake_src, top=top_src, bottom=bottom_src, comment=comment_src);
 
-	input_obj=Input_object(PR1=PR1,FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
+	input_obj=coulomb_collections.Input_object(PR1=PR1,FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
 		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, receiver_object=receivers, source_object=sources);
 
 	return input_obj;
@@ -152,8 +146,9 @@ def compute_params_for_source(strike, dip, rake, mag, eq_type, eqlon, eqlat, eqd
 		slip = wells_and_coppersmith.rectangular_slip(L*1000,W*1000,mag[i]);  # must input in meters
 		print("Fault slip: %f" % slip);
 		
-		xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);
-		xifinish,yifinish=conversion_math.add_vector_to_point(xcenter,ycenter,L/2.0,strike[i]);
+		# xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);  # if the hypocenter is really the center of the rupture
+		xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,0,strike[i]); # if the hypocenter is on one side of the rupture
+		xifinish,yifinish=conversion_math.add_vector_to_point(xcenter,ycenter,L,strike[i]);
 		rtlati,reversei=conversion_math.get_rtlat_dip_slip(slip, rake[i]);
 		topi, bottomi=conversion_math.get_top_bottom(eqdep[i],W,dip[i]);
 

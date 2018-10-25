@@ -4,7 +4,7 @@
 # General: PR1 FRIC lon_min lon_max lon_zero lat_min lat_max lat_zero
 # 
 # Example: M6.8 off Mendocino, 
-# Source retrieved from USGS moment tensor
+# Source retrieved from USGS moment tensor (https://earthquake.usgs.gov/earthquakes/eventpage/nc72182046/executive)
 # Receiver is a guess to the Cascadia megathrust
 
 # S: 52 0 89.0 6.8 SS -125.3 40.73 15.0 # a special case to test the conversion code. 
