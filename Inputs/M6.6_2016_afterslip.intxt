@@ -7,6 +7,6 @@
 # Source retrieved from USGS moment tensor (https://earthquake.usgs.gov/earthquakes/eventpage/us20007z6r/moment-tensor)
 # Receiver is a guess to the Cascadia megathrust
 
-S: 95 -159 81.0 6.3 SS -126.194 40.454 18.5 # guessing 10km deeper, 0.3Mag less slip. 
+S: 95 -159 81.0 6.4 SS -126.194 40.454 18.5 # guessing 10km deeper, 0.2Mag less slip. 
 R: 355 90 12 140 120 -124.56 40.3 10.8
 G: 0.250 0.40 -126.50 -122.60 -124.50 39.30 41.70 40.30
