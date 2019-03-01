@@ -9,7 +9,7 @@ import coulomb_collections
 import conversion_math
 
 
-def do_stress_computation(params, inputs):
+def do_stress_computation(params, inputs, disp_points):
 	# Step 0. Split receiver fault into many sub-faults if necessary
 	# Step 1. Compute strains and displacements
 	# Step 2. Resolve stresses on receiver faults
@@ -17,9 +17,13 @@ def do_stress_computation(params, inputs):
 	print("Number of sources: %d " % len(inputs.source_object.xstart));
 	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
 	subfaulted_inputs = split_subfaults(params, inputs);
-	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp(params, subfaulted_inputs);
+	
+	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp_grid(params, subfaulted_inputs);
+	[u_ll, v_ll, w_ll] = compute_surface_disp_ll(params, subfaulted_inputs, disp_points);
 	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
+
 	MyOutObject = coulomb_collections.Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
+		u_ll=u_ll, v_ll=v_ll, w_ll=w_ll, 
 		source_object=source_object, receiver_object=receiver_object, receiver_normal=receiver_normal, receiver_shear=receiver_shear, 
 		receiver_coulomb=receiver_coulomb); 
 	return MyOutObject;
@@ -130,7 +134,7 @@ def get_split_z_array(top,bottom,dip_split):
 	return zsplit_array;
 
 
-def compute_surface_disp(params, inputs):
+def compute_surface_disp_grid(params, inputs):
 
 	x=np.linspace(inputs.start_gridx,inputs.finish_gridx,(inputs.finish_gridx-inputs.start_gridx)/inputs.xinc);
 	y=np.linspace(inputs.start_gridy,inputs.finish_gridy,(inputs.finish_gridy-inputs.start_gridy)/inputs.yinc);
@@ -178,6 +182,62 @@ def compute_surface_disp(params, inputs):
 	# OUTPUT GRIDS AND DISPLACEMENTS
 	return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
 	
+
+
+def compute_surface_disp_ll(params, inputs, disp_points):
+	x=[]; y=[];
+	if disp_points==[]:
+		return [ [], [], [] ];
+
+	# convert here
+	for i in range(len(disp_points[0])):
+		[xi,yi]=conversion_math.latlon2xy(disp_points[0][i],disp_points[1][i],inputs.zerolon,inputs.zerolat);
+		x.append(xi);
+		y.append(yi);
+
+	u_ll = np.zeros(len(x));
+	v_ll = np.zeros(len(x));
+	w_ll = np.zeros(len(x));
+
+	# A major compute loop for each source object. 
+	for i in range(len(inputs.source_object.xstart)):
+
+		# Fault parameters
+		L = conversion_math.get_strike_length(inputs.source_object.xstart[i],inputs.source_object.xfinish[i],inputs.source_object.ystart[i],inputs.source_object.yfinish[i]);
+		W = conversion_math.get_downdip_width(inputs.source_object.top[i],inputs.source_object.bottom[i],inputs.source_object.dipangle[i]);
+		depth       = inputs.source_object.top[i];
+		strike      = inputs.source_object.strike[i];
+		dip         = inputs.source_object.dipangle[i];
+		strike_slip = inputs.source_object.rtlat[i]*-1;  # The dc3d coordinate system has left-lateral positive. 
+		dip_slip    = inputs.source_object.reverse[i];		
+
+		# Preparing to rotate to a fault-oriented coordinate system.
+		theta=inputs.source_object.strike[i]-90;
+		theta=np.deg2rad(theta);
+		R=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
+		R2=np.array([[np.cos(-theta),-np.sin(-theta)],[np.sin(-theta),np.cos(-theta)]])
+ 
+		for k in range(len(x)):
+
+			# Compute the position relative to the translated, rotated fault. 
+			# print("%d %d " %(kx, ky));
+			translated_pos = np.array([[x[k]-inputs.source_object.xstart[i]],[y[k]-inputs.source_object.ystart[i]]]);
+			xy=R.dot(translated_pos);
+			success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  # solve for displacements at the surface
+			urot=R2.dot(np.array([[u[0]], [u[1]]]));
+
+			# Update the displacements from all sources 
+			u_ll[k]=u_ll[k] + urot[0];
+			v_ll[k]=v_ll[k] + urot[1];
+			w_ll[k]=w_ll[k] + u[2];  # vertical
+
+
+	# OUTPUT GRIDS AND DISPLACEMENTS
+	return [u_ll, v_ll, w_ll];
+
+
+
+
 
 def compute_strains_stresses(params, inputs):
 

@@ -1,6 +1,7 @@
 *.pyc
 Inputs/Example*
 Inputs/test*
+Inputs/*.txt
 Inputs/*aftershocks*
 Outputs/*
 Code/__pycache__/

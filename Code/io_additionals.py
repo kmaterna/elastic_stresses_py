@@ -18,3 +18,16 @@ def read_aftershock_table(infile):
 			magnitude.append(float(temp[5]));
 
 	return [lon, lat, depth, magnitude, time];
+
+
+def read_disp_points(infile):
+	lon=[]; lat=[]; 
+	ifile=open(infile,'r');
+	for line in ifile:
+		temp=line.split();
+		if temp[0][0]=='#':
+			continue;
+		else:
+			lon.append(float(temp[0]));
+			lat.append(float(temp[1]));
+	return [lon, lat]; 

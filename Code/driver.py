@@ -19,9 +19,9 @@ import sys
 
 def do_calculation():
 	params = configure_calc.configure_stress_calculation();
-	inputs = input_values.read_inputs(params);
-	out_object = run_dc3d.do_stress_computation(params, inputs);
-	output_manager.produce_outputs(params, inputs, out_object);
+	[inputs, disp_points] = input_values.read_inputs(params);
+	out_object = run_dc3d.do_stress_computation(params, inputs, disp_points);
+	output_manager.produce_outputs(params, inputs, disp_points, out_object);
 	return;
 
 

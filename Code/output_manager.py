@@ -11,10 +11,10 @@ from subprocess import call
 import coulomb_collections
 import conversion_math
 import io_inp
-import io_aftershocks
+import io_additionals
 
 
-def produce_outputs(params, inputs, out_object):
+def produce_outputs(params, inputs, disp_points, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
 	subfaulted_inputs=coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,
 		start_gridx=inputs.start_gridx,start_gridy=inputs.start_gridy,finish_gridx=inputs.finish_gridx,
@@ -27,8 +27,9 @@ def produce_outputs(params, inputs, out_object):
 	stress_plot(params,out_object,'normal');
 	stress_plot(params,out_object,'coulomb');
 	map_plot(params, inputs, out_object);
-	write_output_files(params,out_object);
+	write_output_files(params,inputs, disp_points, out_object);
 	side_on_plot(params);
+	call(['cp',params.input_file,params.outdir],shell=False);
 	return;
 
 
@@ -273,17 +274,17 @@ def draw_screen_poly( lats, lons, m, color ):
     return;
 
 def draw_aftershocks(aftershock_file, m):
-	[lon, lat, depth, magnitude, time]=io_aftershocks.read_aftershock_table(aftershock_file);
+	[lon, lat, depth, magnitude, time]=io_additionals.read_aftershock_table(aftershock_file);
 	for i in range(len(lon)):
 		x,y=m(lon[i], lat[i]);
 		m.plot(x,y,marker='D',color='b',markersize=1);
 	return;
 
-def write_output_files(params, out_object):
+def write_output_files(params, inputs, disp_points, out_object):
 
 	# Write displacement output file
 	ofile=open(params.outdir+'disps.txt','w');
-	ofile.write("Format: x y udisp vdisp wdisp (m) \n");
+	ofile.write("# Format: x y udisp vdisp wdisp (m) \n");
 	for i in np.arange(0,len(out_object.y)):
 		for j in np.arange(0,len(out_object.x)):
 			ofile.write("%f %f %f %f %f\n" % (out_object.x2d[i][j], out_object.y2d[i][j], out_object.u_disp[i][j], out_object.v_disp[i][j], out_object.w_disp[i][j]));	
@@ -291,13 +292,20 @@ def write_output_files(params, out_object):
 
 	# Write output file for stresses. 
 	ofile=open(params.outdir+'stresses.txt','w');
-	ofile.write("Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
+	ofile.write("# Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
 	for i in range(len(out_object.receiver_object.xstart)):
 		# [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(fault_object, i);
 		center=conversion_math.get_fault_center(out_object.receiver_object,i);
 		ofile.write("%f %f %f %f %f %f %f \n" % (center[0], center[1], center[2], out_object.receiver_object.rake[i], out_object.receiver_normal[i], out_object.receiver_shear[i], out_object.receiver_coulomb[i]) );
 	ofile.close();
 	print("Outputs written to file.")
+
+	if disp_points != []:
+		ofile = open(params.outdir+'ll_disps.txt','w');
+		ofile.write("# Format: lon lat u v w (m)\n");
+		for i in range(len(out_object.u_ll)):
+			ofile.write("%f %f %f %f %f\n" % (disp_points[0][i], disp_points[1][i], out_object.u_ll[i], out_object.v_ll[i], out_object.w_ll[i]) );
+		ofile.close();
 
 	return;
 

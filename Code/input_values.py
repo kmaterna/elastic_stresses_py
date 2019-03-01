@@ -7,6 +7,7 @@
 import io_inp
 import io_inr
 import io_intxt
+import io_additionals
 
 
 def read_inputs(params):
@@ -20,4 +21,10 @@ def read_inputs(params):
 	else:
 		print("Error! Unrecognized type of input file!");
 		input_object = [];
-	return input_object;
+	if params.disp_points_file=='':
+		print("Not reading any GPS points for displacements.");
+		disp_points = [];
+	else:
+		disp_points = io_additionals.read_disp_points(params.disp_points_file);
+
+	return [input_object, disp_points];
