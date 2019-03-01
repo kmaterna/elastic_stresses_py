@@ -8,7 +8,6 @@ Params = collections.namedtuple('Params',[
 	'dip_num_receivers',
 	'fixed_rake',
 	'mu','lame1',
-	'eqlon','eqlat',
 	'alpha',
 	'outdir', 'title']);
 
@@ -22,6 +21,7 @@ Input_object = collections.namedtuple('Input_object',[
 	'zerolon',
 	'minlat','maxlat',
 	'zerolat',
+	'eqlon','eqlat',
 	'source_object',
 	'receiver_object'])
 

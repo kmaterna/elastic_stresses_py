@@ -58,17 +58,11 @@ def read_intxt(input_file):
 	sources=coulomb_collections.Faults_object(xstart=xstart_src, xfinish=xfinish_src, ystart=ystart_src, yfinish=yfinish_src, Kode=Kode_src, rtlat=rtlat_src, reverse=reverse_src, strike=strike_src, dipangle=dipangle_src, rake=rake_src, top=top_src, bottom=bottom_src, comment=comment_src);
 
 	input_obj=coulomb_collections.Input_object(PR1=PR1,FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
-		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, receiver_object=receivers, source_object=sources);
+		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, eqlon=fault_center_lon_src[0], eqlat=fault_center_lat_src[0], 
+		receiver_object=receivers, source_object=sources);
 
 	return input_obj;
 
-
-	# plt.figure();
-	# plt.plot([xstart,xfinish],[ystart,yfinish],'b');
-	# plt.plot(xcenter,ycenter,'.r');
-	# plt.xlim([-100,100]);
-	# plt.ylim([-100,100]);
-	# plt.savefig('test.eps');
 
 
 

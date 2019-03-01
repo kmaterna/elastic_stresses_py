@@ -1,6 +1,7 @@
 *.pyc
 Inputs/Example*
 Inputs/test*
+Inputs/*aftershocks*
 Outputs/*
 Code/__pycache__/
 Coulomb_task_list.txt

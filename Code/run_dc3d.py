@@ -95,7 +95,8 @@ def split_subfaults(params,inputs):
 	
 	subfaulted_inputs = coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx, 
 		start_gridy=inputs.start_gridy, finish_gridy=inputs.finish_gridy, xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon,maxlon=inputs.maxlon,
-		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,source_object=inputs.source_object,
+		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,eqlon=inputs.eqlon, eqlat=inputs.eqlat,
+		source_object=inputs.source_object,
 		receiver_object=subfaulted_receivers);
 
 	return subfaulted_inputs;

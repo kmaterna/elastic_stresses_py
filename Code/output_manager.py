@@ -19,7 +19,7 @@ def produce_outputs(params, inputs, out_object):
 	subfaulted_inputs=coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,
 		start_gridx=inputs.start_gridx,start_gridy=inputs.start_gridy,finish_gridx=inputs.finish_gridx,
 		finish_gridy=inputs.finish_gridy,xinc=inputs.xinc,yinc=inputs.yinc,minlon=inputs.minlon,maxlon=inputs.maxlon,
-		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,
+		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,eqlon=inputs.eqlon, eqlat=inputs.eqlat,
 		source_object=out_object.source_object,receiver_object=out_object.receiver_object); # make a new object of the subfaulted configuration.
 	io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
 	surface_def_plot(params,out_object);
@@ -240,7 +240,7 @@ def map_plot(params, inputs, out_object):
 		draw_screen_poly( lats, lons, mymap, patch_color );
 
 	# Annotate with earthquake location.
-	draw_earthquake(params.eqlon, params.eqlat, mymap);
+	draw_earthquake(inputs.eqlon, inputs.eqlat, mymap);
 
 	# Annotate with aftershock locations
 	if len(params.aftershocks)>0:
