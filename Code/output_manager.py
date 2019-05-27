@@ -26,7 +26,9 @@ def produce_outputs(params, inputs, disp_points, out_object):
 	stress_plot(params,out_object,'shear');  
 	stress_plot(params,out_object,'normal');
 	stress_plot(params,out_object,'coulomb');
-	map_plot(params, inputs, out_object);
+	map_plot(params, inputs, out_object, 'coulomb');
+	map_plot(params, inputs, out_object, 'normal');
+	map_plot(params, inputs, out_object, 'shear');
 	write_output_files(params,inputs, disp_points, out_object);
 	side_on_plot(params);
 	call(['cp',params.input_file,params.outdir],shell=False);
@@ -193,12 +195,26 @@ def side_on_plot(params):
 	return;
 
 
-def map_plot(params, inputs, out_object):
+def map_plot(params, inputs, out_object, stress_component):
+
+	# Some options: 
+	if stress_component=='shear':
+		plotting_stress = out_object.receiver_shear;
+		label='Shear';
+	elif stress_component=='normal':
+		plotting_stress = out_object.receiver_normal;
+		label='Normal';
+	else:
+		plotting_stress = out_object.receiver_coulomb; # The default option
+		label='Coulomb';
 
 	# Make stress bounds for map. 
-	stress_bound=14;  # units: KPa
-	smallest_stress = -stress_bound;  # units: KPa
-	largest_stress = stress_bound;  # units: KPa
+	# stress_bound=14;  # units: KPa
+	stress_bounds=[abs(np.min(plotting_stress)),abs(np.max(plotting_stress))];
+	stress_bound = np.max(stress_bounds);  # setting the scale to symmetric about zero
+	smallest_stress = -stress_bound; # units: KPa
+	largest_stress = stress_bound; # units: KPa
+
 	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
 	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
 
@@ -231,7 +247,7 @@ def map_plot(params, inputs, out_object):
 	# Draw each receiver
 	for i in range(len(out_object.receiver_object.xstart)):
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
-		patch_color=custom_cmap.to_rgba(out_object.receiver_coulomb[i]);  # coloring the map by coulomb stresses. 
+		patch_color=custom_cmap.to_rgba(plotting_stress[i]);  # coloring the map by coulomb stresses. 
 		lons=[];
 		lats=[];
 		for j in range(len(x_total)):
@@ -250,11 +266,11 @@ def map_plot(params, inputs, out_object):
 	# Map colorbar. 
 	custom_cmap.set_array(np.arange(smallest_stress,largest_stress,(largest_stress-smallest_stress)/100.0));
 	cb = plt.colorbar(custom_cmap);
-	cb.set_label('Coulomb Stress (Kilopascals)',fontsize=22);
+	cb.set_label(label+' Stress (Kilopascals)',fontsize=22);
 	cb.ax.tick_params(labelsize=20);
 
-	plt.title(params.title,fontsize=22);
-	plt.savefig(params.outdir+'coulomb_basemap.eps');
+	plt.title(label+" "+params.title,fontsize=22);
+	plt.savefig(params.outdir+label+'_basemap.eps');
 	plt.close();
 
 	return

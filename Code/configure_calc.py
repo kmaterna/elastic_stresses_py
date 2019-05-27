@@ -15,24 +15,29 @@ def configure_stress_calculation():
 	# exp_name = "M6.5"
 	# input_file = "../Inputs/"+exp_name+".inp";
 	# aftershocks="../Inputs/20100110_aftershocks_ncsn.txt";
-	# title="Coulomb Stresses for 2010 M6.5";
+	# title="Stresses for 2010 M6.5";
 
 	# PARAMETER SET: THE 2014 EARTHQUAKE
 	# exp_name = "M6.8_2014";
 	# input_file = "../Inputs/"+exp_name+".intxt";
 	# aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
-	# title="Coulomb Stresses for 2014 M6.8";
+	# title="Stresses for 2014 M6.8";
 
 	# PARAMETER SET: THE 2016 EARTHQUAKE
-	# exp_name = "M6.6_2016";
-	# input_file = "../Inputs/"+exp_name+".intxt";
-	# title="Coulomb Stresses for 2016 M6.6";
-
-	# PARAMETER SET: THE 2014 AFTERSLIP
-	exp_name = "M6.8_2014_afterslip"
+	exp_name = "M6.6_2016";
 	input_file = "../Inputs/"+exp_name+".intxt";
-	aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
-	title="Afterslip for 2014 M6.8";
+	title="Stresses for 2016 M6.6";
+
+	# # PARAMETER SET: THE 2014 AFTERSLIP
+	# exp_name = "M6.8_2014_afterslip"
+	# input_file = "../Inputs/"+exp_name+".intxt";
+	# aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
+	# title="Afterslip for 2014 M6.8";
+
+	# # PARAMETER SET: THE 2005 AFTERSLIP
+	# exp_name = "M7.2_2005_afterslip"
+	# input_file = "../Inputs/"+exp_name+".intxt";
+	# title="Afterslip for 2005 M7.2";
 
 	# PARAMETER SET: THE 2016 AFTERSLIP
 	# exp_name = "M6.6_2016_afterslip"
