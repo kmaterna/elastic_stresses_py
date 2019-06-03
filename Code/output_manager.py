@@ -119,7 +119,7 @@ def stress_plot(params, out_object, stress_type):
 	# smallest_stress = np.min(stress_component);
 	# largest_stress = np.max(stress_component);
 	smallest_stress = -14;  # units: KPa
-	largest_stress = 14;  # units: KPa
+	largest_stress = 14;  # units: KPa  # was 14
 	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
 	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
 

@@ -18,15 +18,15 @@ def configure_stress_calculation():
 	# title="Stresses for 2010 M6.5";
 
 	# PARAMETER SET: THE 2014 EARTHQUAKE
-	# exp_name = "M6.8_2014";
-	# input_file = "../Inputs/"+exp_name+".intxt";
-	# aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
-	# title="Stresses for 2014 M6.8";
-
-	# PARAMETER SET: THE 2016 EARTHQUAKE
-	exp_name = "M6.6_2016";
+	exp_name = "M6.8_2014";
 	input_file = "../Inputs/"+exp_name+".intxt";
-	title="Stresses for 2016 M6.6";
+	aftershocks="../Inputs/20140310_aftershocks_ncsn.txt";
+	title="Stresses for 2014 M6.8";
+
+	# # PARAMETER SET: THE 2016 EARTHQUAKE
+	# exp_name = "M6.6_2016";
+	# input_file = "../Inputs/"+exp_name+".intxt";
+	# title="Stresses for 2016 M6.6";
 
 	# # PARAMETER SET: THE 2014 AFTERSLIP
 	# exp_name = "M6.8_2014_afterslip"
