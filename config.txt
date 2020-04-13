@@ -1,0 +1,17 @@
+
+####################
+[io-config]
+exp_name = M6.8_TEST
+title = Stresses for 2014 M6.8
+aftershocks = Inputs/20140310_aftershocks_ncsn.txt
+input_file = Inputs/M6.8_2014.intxt
+gps_disp_points = Inputs/GPS_ll.txt
+output_dir = Outputs/
+
+####################
+[compute-config]
+mu = 30e9 
+lame1 = 30e9
+fixed_rake = 90
+strike_num_receivers = 10
+dip_num_receivers = 10

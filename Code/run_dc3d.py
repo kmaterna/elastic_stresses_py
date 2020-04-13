@@ -14,6 +14,7 @@ def do_stress_computation(params, inputs, disp_points):
 	# Step 1. Compute strains and displacements
 	# Step 2. Resolve stresses on receiver faults
 
+	print("Beginning stress calcultaion.");
 	print("Number of sources: %d " % len(inputs.source_object.xstart));
 	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
 	subfaulted_inputs = split_subfaults(params, inputs);
@@ -41,7 +42,7 @@ def split_subfaults(params,inputs):
 		subfaulted_receivers=inputs.receiver_object;
 		print("Not subdividing receiver faults further.");
 	else:
-		print("Split %d receiver faults into %d subfaults each." % (len(receiver_object.xstart), strike_split*dip_split) );
+		print("Splitting %d receiver faults into %d subfaults each." % (len(receiver_object.xstart), strike_split*dip_split) );
 		new_xstart=[];
 		new_xfinish=[];
 		new_ystart=[];

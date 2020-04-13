@@ -14,6 +14,7 @@ import sys
 
 
 def read_intxt(input_file):
+	print("Reading source and receiver fault information from file %s " % input_file);
 	
 	strike_src=[]; dipangle_src=[]; rake_src=[]; magnitude_src=[]; faulting_type_src=[]; fault_center_lon_src=[]; fault_center_lat_src=[]; fault_dep_src=[];
 	strike_rec=[]; dipangle_rec=[]; rake_rec=[]; length_rec=[]; width_rec=[]; updip_corner_lon_rec=[]; updip_corner_lat_rec=[]; updip_corner_dep_rec=[];

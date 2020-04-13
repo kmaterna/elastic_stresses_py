@@ -3,6 +3,7 @@
 
 
 def read_aftershock_table(infile):
+	print("Reading aftershocks from file %s " % infile);
 	lon=[]; lat=[]; time=[]; depth=[]; magnitude=[];
 
 	ifile=open(infile);
@@ -21,6 +22,7 @@ def read_aftershock_table(infile):
 
 
 def read_disp_points(infile):
+	print("Reading displacement points from file %s " % infile);
 	lon=[]; lat=[]; 
 	ifile=open(infile,'r');
 	for line in ifile:

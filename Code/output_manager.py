@@ -6,7 +6,7 @@ import matplotlib
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-from mpl_toolkits.basemap import Basemap
+# from mpl_toolkits.basemap import Basemap
 from subprocess import call
 import coulomb_collections
 import conversion_math
@@ -16,6 +16,7 @@ import io_additionals
 
 def produce_outputs(params, inputs, disp_points, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
+	call(['cp','config.txt',params.outdir],shell=False);
 	subfaulted_inputs=coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,
 		start_gridx=inputs.start_gridx,start_gridy=inputs.start_gridy,finish_gridx=inputs.finish_gridx,
 		finish_gridy=inputs.finish_gridy,xinc=inputs.xinc,yinc=inputs.yinc,minlon=inputs.minlon,maxlon=inputs.maxlon,
@@ -23,12 +24,12 @@ def produce_outputs(params, inputs, disp_points, out_object):
 		source_object=out_object.source_object,receiver_object=out_object.receiver_object); # make a new object of the subfaulted configuration.
 	io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
 	surface_def_plot(params,out_object);
-	stress_plot(params,out_object,'shear');  
+	stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
 	stress_plot(params,out_object,'normal');
 	stress_plot(params,out_object,'coulomb');
-	map_plot(params, inputs, out_object, 'coulomb');
-	map_plot(params, inputs, out_object, 'normal');
-	map_plot(params, inputs, out_object, 'shear');
+	# map_plot(params, inputs, out_object, 'coulomb');
+	# map_plot(params, inputs, out_object, 'normal');
+	# map_plot(params, inputs, out_object, 'shear');
 	write_output_files(params,inputs, disp_points, out_object);
 	side_on_plot(params);
 	call(['cp',params.input_file,params.outdir],shell=False);
@@ -57,8 +58,8 @@ def surface_def_plot(params, out_object):
 	[src_total_x, src_total_y, src_updip_x, src_updip_y] = get_plotting_traces(out_object.source_object);
 	[rec_total_x, rec_total_y, rec_updip_x, rec_updip_y] = get_plotting_traces(out_object.receiver_object);
 
-	print("Max vertical displacement is %f m" % (out_object.w_disp.max()) );
-	print("Making displacement plot.")
+	print("Making plot of predicted displacement throughout model domain.")
+	print("Max vertical displacement is %f m" % (out_object.w_disp.max()) );	
 
 	#Plot of elastic surface deformation from the given input model. 
 	plt.figure(figsize=(16,16))
@@ -91,17 +92,18 @@ def surface_def_plot(params, out_object):
 	plt.grid();
 	plt.axis('equal');
 	plt.title('Surface Dipslacement',fontsize=28)
-	plt.savefig(params.outdir+"Displacement_model.eps")
-	plt.savefig(params.outdir+"Displacement_model.png")
+	plt.savefig(params.outdir+"Displacement_model_on_grid.eps")
 	plt.close();
 
 	return;
 
 
 
-def stress_plot(params, out_object, stress_type):
+def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
+	# default vmin,vmax are in KPa
 	# Here we will put plots of fault patches, colored by the magnitude of the stress component. 
 
+	print("Making plot of %s stress on receiver fault patches. " % stress_type);
 	# Get the updip and downdip traces of the faults for plotting purposes. 
 	[src_total_x, src_total_y, src_updip_x, src_updip_y] = get_plotting_traces(out_object.source_object);
 	[rec_total_x, rec_total_y, rec_updip_x, rec_updip_y] = get_plotting_traces(out_object.receiver_object);
@@ -116,11 +118,11 @@ def stress_plot(params, out_object, stress_type):
 		print("Error! Invalid stress type : %s " % stress_type );
 
 	# Select boundaries of color map. 
-	# smallest_stress = np.min(stress_component);
-	# largest_stress = np.max(stress_component);
-	smallest_stress = -14;  # units: KPa
-	largest_stress = 14;  # units: KPa  # was 14
-	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
+	if vmin=="":
+		vmin = np.min(stress_component);
+	if vmax=="":
+		vmax = np.max(stress_component);
+	color_boundary_object=matplotlib.colors.Normalize(vmin=vmin,vmax=vmax, clip=True);
 	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
 
 	# Figure of stresses. 
@@ -137,7 +139,7 @@ def stress_plot(params, out_object, stress_type):
 		mypolygon = Polygon(fault_vertices,color=patch_color,alpha=0.5);
 		plt.gca().add_patch(mypolygon);
 
-	custom_cmap.set_array(range(smallest_stress,largest_stress));
+	custom_cmap.set_array(np.arange(vmin,vmax,100));
 	cb = plt.colorbar(custom_cmap);
 	cb.set_label('Kilopascals',fontsize=22);
 	for l in cb.ax.yaxis.get_ticklabels():
@@ -189,7 +191,7 @@ def side_on_plot(params):
 		plt.title('Coulomb stress change for variable rake (KPa)',fontsize=20);
 	cb.set_label('Kilopascals',fontsize=18);
 	plt.savefig(params.outdir+'side_view.eps');
-	plt.savefig(params.outdir+'side_view.png');
+	# plt.savefig(params.outdir+'side_view.png');
 	plt.close();
 
 	return;
@@ -256,6 +258,19 @@ def map_plot(params, inputs, out_object, stress_component):
 			lats.append(mylat);
 		draw_screen_poly( lats, lons, mymap, patch_color );
 
+
+	# # Draw a special receiver, for the MTJ project
+	# for i in [70]:
+	# 	[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
+	# 	patch_color=custom_cmap.to_rgba(plotting_stress[i]);  # coloring the map by coulomb stresses. 
+	# 	lons=[];
+	# 	lats=[];
+	# 	for j in range(len(x_total)):
+	# 		mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
+	# 		lons.append(mylon);
+	# 		lats.append(mylat);
+	# 	draw_screen_poly_thick( lats, lons, mymap, patch_color );
+
 	# Annotate with earthquake location.
 	draw_earthquake(inputs.eqlon, inputs.eqlat, mymap);
 
@@ -286,6 +301,13 @@ def draw_screen_poly( lats, lons, m, color ):
     x, y = m( lons, lats )
     xy = list(zip(x,y));
     poly = Polygon( xy, facecolor=color, edgecolor='black',alpha=0.7 )
+    plt.gca().add_patch(poly)
+    return;
+
+def draw_screen_poly_thick( lats, lons, m, color ):
+    x, y = m( lons, lats )
+    xy = list(zip(x,y));
+    poly = Polygon( xy, facecolor=color, edgecolor='black',alpha=0.7, linewidth=4 )
     plt.gca().add_patch(poly)
     return;
 
