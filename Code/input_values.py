@@ -11,7 +11,6 @@ import io_additionals
 
 
 def read_inputs(params):
-	print("Reading %s. " % params.input_file);
 	if '.inp' in params.input_file:
 		input_object = io_inp.read_inp(params.input_file,params.fixed_rake);  # fixed rake format
 	elif '.inr' in params.input_file:

@@ -6,7 +6,7 @@ import matplotlib
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-# from mpl_toolkits.basemap import Basemap
+import pygmt
 from subprocess import call
 import coulomb_collections
 import conversion_math
@@ -17,24 +17,22 @@ import io_additionals
 def produce_outputs(params, inputs, disp_points, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
 	call(['cp','config.txt',params.outdir],shell=False);
+	call(['cp',params.input_file,params.outdir],shell=False);	
 	subfaulted_inputs=coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,
 		start_gridx=inputs.start_gridx,start_gridy=inputs.start_gridy,finish_gridx=inputs.finish_gridx,
 		finish_gridy=inputs.finish_gridy,xinc=inputs.xinc,yinc=inputs.yinc,minlon=inputs.minlon,maxlon=inputs.maxlon,
 		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,eqlon=inputs.eqlon, eqlat=inputs.eqlat,
 		source_object=out_object.source_object,receiver_object=out_object.receiver_object); # make a new object of the subfaulted configuration.
 	io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
-	surface_def_plot(params,out_object);
-	stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
-	stress_plot(params,out_object,'normal');
-	stress_plot(params,out_object,'coulomb');
-	# map_plot(params, inputs, out_object, 'coulomb');
+	# surface_def_plot(params,out_object);
+	# stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
+	# stress_plot(params,out_object,'normal');
+	# stress_plot(params,out_object,'coulomb');
+	map_plot(params, inputs, out_object, 'coulomb');
 	# map_plot(params, inputs, out_object, 'normal');
 	# map_plot(params, inputs, out_object, 'shear');
 	write_output_files(params,inputs, disp_points, out_object);
-	side_on_plot(params);
-	call(['cp',params.input_file,params.outdir],shell=False);
 	return;
-
 
 
 def get_plotting_traces(fault_object):
@@ -47,7 +45,6 @@ def get_plotting_traces(fault_object):
 		total_y.append(y_total);
 		updip_x.append(x_updip);  # a 1x2 list
 		updip_y.append(y_updip);
-
 	return [total_x, total_y, updip_x, updip_y];
 
 
@@ -94,7 +91,6 @@ def surface_def_plot(params, out_object):
 	plt.title('Surface Dipslacement',fontsize=28)
 	plt.savefig(params.outdir+"Displacement_model_on_grid.eps")
 	plt.close();
-
 	return;
 
 
@@ -169,31 +165,6 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
 	plt.ylim([out_object.y.min(),out_object.y.max()])		
 	plt.savefig(params.outdir+'Stresses_'+stress_type+'.eps');
 	plt.close();
-
-	return;
-
-
-def side_on_plot(params):
-	[x,y,z,rake,normal,shear,coulomb]=np.loadtxt(params.outdir+'stresses.txt',skiprows=1,unpack=True)
-	plt.figure(figsize=(10,6));
-	plt.scatter(x,z,c=coulomb,s=1450,marker='s',cmap='jet',edgecolor='black');
-	# plt.scatter(x,z,c=normal,s=1450,marker='s');
-	# plt.scatter(x,z,c=shear,s=1450,marker='s');
-	plt.ylim(z.min()-2,z.max()+2);
-	plt.xlim(x.min()-10,x.max()+10);
-	plt.xlabel('X axis (km)');
-	plt.ylabel('Depth (km)')
-	plt.gca().invert_yaxis();
-	cb = plt.colorbar();
-	if len(set(rake))==1:
-		plt.title('Coulomb stress change on fault planes, rake = %.1f (KPa)' % rake[0],fontsize=20);
-	else:
-		plt.title('Coulomb stress change for variable rake (KPa)',fontsize=20);
-	cb.set_label('Kilopascals',fontsize=18);
-	plt.savefig(params.outdir+'side_view.eps');
-	# plt.savefig(params.outdir+'side_view.png');
-	plt.close();
-
 	return;
 
 
@@ -211,31 +182,29 @@ def map_plot(params, inputs, out_object, stress_component):
 		label='Coulomb';
 
 	# Make stress bounds for map. 
-	# stress_bound=14;  # units: KPa
 	stress_bounds=[abs(np.min(plotting_stress)),abs(np.max(plotting_stress))];
 	stress_bound = np.max(stress_bounds);  # setting the scale to symmetric about zero
 	smallest_stress = -stress_bound; # units: KPa
 	largest_stress = stress_bound; # units: KPa
+	smallest_stress = -1; # units: KPa
+	largest_stress = 1; # units: KPa	
 
 	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
 	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
 
-	#Basemap: Make Map
-	plt.figure(figsize=(12,10));
+	# Make cpt
+	pygmt.makecpt(C="jet",T=str(smallest_stress-0.1)+"/"+str(largest_stress+0.1)+"/0.05",H="mycpt.cpt",D=True);
 
-	# use low resolution coastlines.
-	mymap=Basemap(projection='merc',llcrnrlat=inputs.minlat,llcrnrlon=inputs.minlon, urcrnrlat=inputs.maxlat, urcrnrlon=inputs.maxlon,resolution='i');
-	mymap.drawcoastlines(linewidth=1.0,color='black');
-	# draw coastlines, country boundaries, fill continents.
-	# mymap.fillcontinents(color='white',lake_color='white')
-	# draw the edge of the map projection region (the projection limb)
+	# Make Map
+	region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+	proj = "M7i"
+	fig = pygmt.Figure()
+	title="+t\""+stress_component+" stress\"";  # must put escaped quotations around the title. 
+	fig.basemap(region=region,projection=proj,B=title);
+	fig.coast(shorelines="1.0p,black",region=region,projection=proj,B="1.0");  # the boundary. 
+	fig.coast(region=region,projection=proj,N='1',W='0.5p,black',S='white',L="g-125.5/39.6+c1.5+w50");
 
-	mymap.drawmapboundary(fill_color='white')
-	# draw lat/lon grid lines every degree.
-	mymap.drawmeridians(np.arange(inputs.minlon,inputs.maxlon,1),labels=[1,0,0,1],fontsize=20);
-	mymap.drawparallels(np.arange(inputs.minlat,inputs.maxlat,1),labels=[1,0,0,1],fontsize=20);
-
-	# Draw each source
+	# # Draw each source
 	for i in range(len(out_object.source_object.xstart)):
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.source_object,i);
 		lons=[];
@@ -244,84 +213,52 @@ def map_plot(params, inputs, out_object, stress_component):
 			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
 			lons.append(mylon);
 			lats.append(mylat);
-		draw_screen_poly( lats, lons, mymap, [0,0,0] );
+		fig.plot( x=lons, y=lats, pen="thick,black");
 
-	# Draw each receiver
+	# Draw each receiver outline. This will eventually be fixed in a later pygmt, I hope. 
 	for i in range(len(out_object.receiver_object.xstart)):
-		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
-		patch_color=custom_cmap.to_rgba(plotting_stress[i]);  # coloring the map by coulomb stresses. 
 		lons=[];
 		lats=[];
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
 		for j in range(len(x_total)):
 			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
 			lons.append(mylon);
 			lats.append(mylat);
-		draw_screen_poly( lats, lons, mymap, patch_color );
+		fig.plot(x=lons, y=lats, pen="thick,black");  # Outline only
 
+	# Draw data into each receiver. This will eventually be fixed in a later pygmt, I hope. 
+	lons=[]; lats=[]; colors=[]; sizes=[];
+	for i in range(len(out_object.receiver_object.xstart)):
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
+		mylon_top, mylat_top = conversion_math.xy2lonlat(x_total[0],y_total[0],inputs.zerolon,inputs.zerolat);
+		mylon_bot, mylat_bot = conversion_math.xy2lonlat(x_total[2],y_total[2],inputs.zerolon,inputs.zerolat);
+		lons.append((mylon_top+mylon_bot)/2);
+		lats.append((mylat_top+mylat_bot)/2);
+		colors.append(plotting_stress[i]);
+		sizes.append(5.0);
+	fig.plot(x=lons, y=lats, color=colors, style="c0.8c", pen="thick,black", C="mycpt.cpt"); 
 
-	# # Draw a special receiver, for the MTJ project
-	# for i in [70]:
-	# 	[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
-	# 	patch_color=custom_cmap.to_rgba(plotting_stress[i]);  # coloring the map by coulomb stresses. 
-	# 	lons=[];
-	# 	lats=[];
-	# 	for j in range(len(x_total)):
-	# 		mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
-	# 		lons.append(mylon);
-	# 		lats.append(mylat);
-	# 	draw_screen_poly_thick( lats, lons, mymap, patch_color );
+	# Colorbar annotation
+	fig.colorbar(D="jBr+w3.5i/0.2i+o2.5c/1.5c+h",C="mycpt.cpt",I="0.8",G=str(smallest_stress)+"/"+str(largest_stress-0.1),B=["x"+str(0.2),"y+L\"KPa\""]); 
 
 	# Annotate with earthquake location.
-	draw_earthquake(inputs.eqlon, inputs.eqlat, mymap);
+	fig.plot(inputs.eqlon, inputs.eqlat, style='s0.3c',G="purple",pen="thin,black");
 
 	# Annotate with aftershock locations
 	if len(params.aftershocks)>0:
-		draw_aftershocks(params.aftershocks,mymap);
+		[lon, lat, depth, magnitude, time]=io_additionals.read_aftershock_table(params.aftershocks);
+		for i in range(len(lon)):
+			fig.plot(lon,lat,style='c0.1c',G='black',pen="thin,black");	
 
-	# Map colorbar. 
-	custom_cmap.set_array(np.arange(smallest_stress,largest_stress,(largest_stress-smallest_stress)/100.0));
-	cb = plt.colorbar(custom_cmap);
-	cb.set_label(label+' Stress (Kilopascals)',fontsize=22);
-	cb.ax.tick_params(labelsize=20);
-
-	plt.title(label+" "+params.title,fontsize=22);
-	plt.savefig(params.outdir+label+'_basemap.eps');
+	fig.savefig(params.outdir+label+'_map.eps');
 	plt.close();
-
 	return
 
-
-def draw_earthquake(eqlon, eqlat, m):
-	x,y=m(eqlon, eqlat);
-	m.plot(x,y,marker='D',color='m');
-	return;
-
-
-def draw_screen_poly( lats, lons, m, color ):
-    x, y = m( lons, lats )
-    xy = list(zip(x,y));
-    poly = Polygon( xy, facecolor=color, edgecolor='black',alpha=0.7 )
-    plt.gca().add_patch(poly)
-    return;
-
-def draw_screen_poly_thick( lats, lons, m, color ):
-    x, y = m( lons, lats )
-    xy = list(zip(x,y));
-    poly = Polygon( xy, facecolor=color, edgecolor='black',alpha=0.7, linewidth=4 )
-    plt.gca().add_patch(poly)
-    return;
-
-def draw_aftershocks(aftershock_file, m):
-	[lon, lat, depth, magnitude, time]=io_additionals.read_aftershock_table(aftershock_file);
-	for i in range(len(lon)):
-		x,y=m(lon[i], lat[i]);
-		m.plot(x,y,marker='D',color='b',markersize=1);
-	return;
 
 def write_output_files(params, inputs, disp_points, out_object):
 
 	# Write displacement output file
-	ofile=open(params.outdir+'disps.txt','w');
+	ofile=open(params.outdir+'disps_model_grid.txt','w');
 	ofile.write("# Format: x y udisp vdisp wdisp (m) \n");
 	for i in np.arange(0,len(out_object.y)):
 		for j in np.arange(0,len(out_object.x)):
@@ -344,6 +281,5 @@ def write_output_files(params, inputs, disp_points, out_object):
 		for i in range(len(out_object.u_ll)):
 			ofile.write("%f %f %f %f %f\n" % (disp_points[0][i], disp_points[1][i], out_object.u_ll[i], out_object.v_ll[i], out_object.w_ll[i]) );
 		ofile.close();
-
 	return;
 

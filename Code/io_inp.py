@@ -13,7 +13,7 @@ import conversion_math
 
 
 def read_inp(input_file,fixed_rake):
-	print("Reading source and receiver information from file %s " % input_file);
+	print("Reading source and receiver information from file %s with fixed_rake = %f " % (input_file, fixed_rake) );
 	# inp files require a fixed rake for the receiver faults, since they don't provide a fault-specific one inside the input file. 
 	read_faults=0;
 	read_maps=0;

@@ -137,8 +137,8 @@ def get_split_z_array(top,bottom,dip_split):
 
 def compute_surface_disp_grid(params, inputs):
 
-	x=np.linspace(inputs.start_gridx,inputs.finish_gridx,(inputs.finish_gridx-inputs.start_gridx)/inputs.xinc);
-	y=np.linspace(inputs.start_gridy,inputs.finish_gridy,(inputs.finish_gridy-inputs.start_gridy)/inputs.yinc);
+	x=np.linspace(inputs.start_gridx,inputs.finish_gridx,int((inputs.finish_gridx-inputs.start_gridx)/inputs.xinc));
+	y=np.linspace(inputs.start_gridy,inputs.finish_gridy,int((inputs.finish_gridy-inputs.start_gridy)/inputs.yinc));
 	[x2d,y2d] = np.meshgrid(x,y);
 	u_displacements = np.zeros((len(y), len(x)));
 	v_displacements = np.zeros((len(y), len(x)));
