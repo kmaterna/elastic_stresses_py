@@ -1,10 +1,10 @@
 
 ####################
 [io-config]
-exp_name = M6.8_PT_SRC
+exp_name = M6.8_TEST
 title = Stresses for 2014 M6.8
 aftershocks = Inputs/20140310_aftershocks_ncsn.txt
-input_file = Inputs/M6.8_2014.inzero
+input_file = Inputs/M6.8_2014.intxt
 gps_disp_points = Inputs/GPS_ll.txt
 output_dir = Outputs/
 

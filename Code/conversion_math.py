@@ -45,7 +45,7 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction):
 	traction_vector = np.dot(tau,plane_normal);
 
 	# The stress that's normal to the receiver fault plane:
-	normal_stress = np.dot(plane_normal, traction_vector);  # positive for unclamping stress or clamping stress?
+	normal_stress = np.dot(plane_normal, traction_vector);  # positive for unclamping stress (same as Coulomb software)
 
 	# The shear stress causing strike slip (in the receiver fault plane).
 	shear_rtlat = np.dot(strike_unit_vector, traction_vector);
@@ -65,7 +65,7 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction):
 	shear_stress=shear_in_rake_dir/1000.0;
 
 	# The Coulomb Failure Hypothesis
-	coulomb_stress = shear_stress + (friction*normal_stress);  
+	coulomb_stress = shear_stress + (friction*normal_stress);   # the sign here is important. 
 
 	return normal_stress, shear_stress, coulomb_stress;
 

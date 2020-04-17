@@ -32,6 +32,7 @@ def produce_outputs(params, inputs, disp_points, out_object):
 	map_plot(params, inputs, out_object, 'normal');
 	map_plot(params, inputs, out_object, 'shear');
 	write_output_files(params,inputs, disp_points, out_object);
+	side_on_plot(params);
 	return;
 
 
@@ -132,7 +133,7 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
 		fault_vertices=np.column_stack((xcoords, ycoords));
 		patch_color=custom_cmap.to_rgba(stress_component[i]);
 		
-		mypolygon = Polygon(fault_vertices,color=patch_color,alpha=0.5);
+		mypolygon = Polygon(fault_vertices,color=patch_color,alpha=1.0);
 		plt.gca().add_patch(mypolygon);
 
 	custom_cmap.set_array(np.arange(vmin,vmax,100));
@@ -167,9 +168,37 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
 	plt.close();
 	return;
 
+def side_on_plot(params):
+	[x,y,z,rake,normal,shear,coulomb]=np.loadtxt(params.outdir+'stresses.txt',skiprows=1,unpack=True)
+	plt.figure(figsize=(10,6));
+	plotting_data="Normal";
+	# plotting_data="Coulomb";
+	# plotting_data="Shear";
+	vmin=-1; vmax=1;
+	if plotting_data=="Coulomb":
+		plt.scatter(x,z,c=coulomb,s=1450,marker='s',cmap='jet',edgecolor='black', vmin=vmin, vmax=vmax);
+	elif plotting_data=="Normal":
+		plt.scatter(x,z,c=normal,s=1450,marker='s',cmap='jet',edgecolor='black', vmin=vmin, vmax=vmax);
+	else:
+		plt.scatter(x,z,c=shear,s=1450,marker='s',cmap='jet',edgecolor='black', vmin=vmin, vmax=vmax);
+	plt.ylim(z.min()-2,z.max()+2);
+	plt.xlim(x.min()-10,x.max()+10);
+	plt.xlabel('X axis (km)');
+	plt.ylabel('Depth (km)')
+	plt.gca().invert_yaxis();
+	cb = plt.colorbar();
+	if len(set(rake))==1:
+		plt.title(plotting_data+' stress change on fault planes, rake = %.1f (KPa)' % rake[0],fontsize=20);
+	else:
+		plt.title(plotting_data+' stress change for variable rake (KPa)',fontsize=20);
+	cb.set_label('Kilopascals',fontsize=18);
+	plt.savefig(params.outdir+'side_view.eps');
+	plt.close();
+	return;
+
 
 def map_plot(params, inputs, out_object, stress_component):
-
+	# Using PyGMT
 	# Some options: 
 	if stress_component=='shear':
 		plotting_stress = out_object.receiver_shear;
@@ -189,9 +218,6 @@ def map_plot(params, inputs, out_object, stress_component):
 	smallest_stress = -1; # units: KPa
 	largest_stress = 1; # units: KPa	
 
-	color_boundary_object=matplotlib.colors.Normalize(vmin=smallest_stress,vmax=largest_stress, clip=True);
-	custom_cmap = cm.ScalarMappable(norm=color_boundary_object,cmap='RdYlBu_r');
-
 	# Make cpt
 	pygmt.makecpt(C="jet",T=str(smallest_stress-0.1)+"/"+str(largest_stress+0.1)+"/0.05",H="mycpt.cpt",D=True);
 
@@ -204,41 +230,30 @@ def map_plot(params, inputs, out_object, stress_component):
 	fig.coast(shorelines="1.0p,black",region=region,projection=proj,B="1.0");  # the boundary. 
 	fig.coast(region=region,projection=proj,N='1',W='0.5p,black',S='white',L="g-125.5/39.6+c1.5+w50");
 
-	# # Draw each source
+	# Draw each source
 	for i in range(len(out_object.source_object.xstart)):
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.source_object,i);
-		lons=[];
-		lats=[];
+		lons=[]; lats=[];
 		for j in range(len(x_total)):
 			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
 			lons.append(mylon);
 			lats.append(mylat);
-		fig.plot( x=lons, y=lats, pen="thick,black");
+		fig.plot(x=lons, y=lats, pen="thick,black");
 
-	# Draw each receiver outline. This will eventually be fixed in a later pygmt, I hope. 
+	# Draw each receiver, with associated data
 	for i in range(len(out_object.receiver_object.xstart)):
-		lons=[];
-		lats=[];
-		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
-		for j in range(len(x_total)):
-			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
-			lons.append(mylon);
-			lats.append(mylat);
-		fig.plot(x=lons, y=lats, pen="thick,black");  # Outline only
-
-	# Draw data into each receiver. This will eventually be fixed in a later pygmt, I hope. 
-	lons=[]; lats=[]; colors=[]; sizes=[];
-	for i in range(len(out_object.receiver_object.xstart)):
+		lons=[]; lats=[];		
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
 		mylon_top, mylat_top = conversion_math.xy2lonlat(x_total[0],y_total[0],inputs.zerolon,inputs.zerolat);
 		mylon_bot, mylat_bot = conversion_math.xy2lonlat(x_total[2],y_total[2],inputs.zerolon,inputs.zerolat);
-		lons.append((mylon_top+mylon_bot)/2);
-		lats.append((mylat_top+mylat_bot)/2);
-		colors.append(plotting_stress[i]);
-		sizes.append(5.0);
-	fig.plot(x=lons, y=lats, color=colors, style="c0.8c", pen="thick,black", C="mycpt.cpt"); 
+		for j in range(len(x_total)):
+			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
+			lons.append(mylon);
+			lats.append(mylat);	
+		fig.plot(x=lons, y=lats, Z="f"+str(plotting_stress[i]), pen="thick,black", C="mycpt.cpt");   # coloring by stress value
 
 	# Colorbar annotation
+	fig.coast(shorelines="1.0p,black",region=region,projection=proj);  # the boundary. 
 	fig.colorbar(D="jBr+w3.5i/0.2i+o2.5c/1.5c+h",C="mycpt.cpt",I="0.8",G=str(smallest_stress)+"/"+str(largest_stress-0.1),B=["x"+str(0.2),"y+L\"KPa\""]); 
 
 	# Annotate with earthquake location.
@@ -250,9 +265,9 @@ def map_plot(params, inputs, out_object, stress_component):
 		for i in range(len(lon)):
 			fig.plot(lon,lat,style='c0.1c',G='black',pen="thin,black");	
 
-	fig.savefig(params.outdir+label+'_map.eps');
+	fig.savefig(params.outdir+label+'_map.png');
 	plt.close();
-	return
+	return;
 
 
 def write_output_files(params, inputs, disp_points, out_object):
