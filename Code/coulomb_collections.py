@@ -30,7 +30,7 @@ Faults_object = collections.namedtuple('Faults_object',[
 	'xstart','xfinish',
 	'ystart','yfinish',
 	'Kode',
-	'rtlat','reverse',
+	'rtlat','reverse','potency',
 	'strike','dipangle','rake',
 	'top','bottom','comment']);
 

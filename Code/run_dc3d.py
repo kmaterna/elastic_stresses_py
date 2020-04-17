@@ -4,7 +4,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 import sys
-from okada_wrapper import dc3dwrapper
+from okada_wrapper import dc3dwrapper, dc3d0wrapper
 import coulomb_collections
 import conversion_math
 
@@ -17,11 +17,12 @@ def do_stress_computation(params, inputs, disp_points):
 	print("Beginning stress calcultaion.");
 	print("Number of sources: %d " % len(inputs.source_object.xstart));
 	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
-	subfaulted_inputs = split_subfaults(params, inputs);
+	subfaulted_inputs = split_subfault_receivers(params, inputs);
 	
-	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_surface_disp_grid(params, subfaulted_inputs);
-	[u_ll, v_ll, w_ll] = compute_surface_disp_ll(params, subfaulted_inputs, disp_points);
-	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
+	# Refactoring here. 
+	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_grid_def(params, subfaulted_inputs);
+	[u_ll, v_ll, w_ll] = compute_ll_def(params, subfaulted_inputs, disp_points);
+	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);	
 
 	MyOutObject = coulomb_collections.Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
 		u_ll=u_ll, v_ll=v_ll, w_ll=w_ll, 
@@ -32,7 +33,7 @@ def do_stress_computation(params, inputs, disp_points):
 
 
 
-def split_subfaults(params,inputs):
+def split_subfault_receivers(params,inputs):
 	receiver_object = inputs.receiver_object;
 	strike_split = params.strike_num_receivers;
 	dip_split = params.dip_num_receivers;
@@ -96,15 +97,15 @@ def split_subfaults(params,inputs):
 					new_comment.append(receiver_object.comment[i]);
 
 		subfaulted_receivers = coulomb_collections.Faults_object(xstart=new_xstart, xfinish=new_xfinish, ystart=new_ystart, yfinish=new_yfinish, Kode=new_Kode, rtlat=new_rtlat, 
-			reverse=new_reverse, strike=new_strike, dipangle=new_dipangle, rake=new_rake, top=new_top, bottom=new_bottom, comment=new_comment);
+			reverse=new_reverse, potency=[], strike=new_strike, dipangle=new_dipangle, rake=new_rake, top=new_top, bottom=new_bottom, comment=new_comment);
 	
-	subfaulted_inputs = coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx, 
+	subfaulted_objects = coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx, 
 		start_gridy=inputs.start_gridy, finish_gridy=inputs.finish_gridy, xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon,maxlon=inputs.maxlon,
 		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,eqlon=inputs.eqlon, eqlat=inputs.eqlat,
 		source_object=inputs.source_object,
 		receiver_object=subfaulted_receivers);
 
-	return subfaulted_inputs;
+	return subfaulted_objects;
 
 
 
@@ -135,8 +136,8 @@ def get_split_z_array(top,bottom,dip_split):
 	return zsplit_array;
 
 
-def compute_surface_disp_grid(params, inputs):
-
+def compute_grid_def(params, inputs):
+	# Loop through a grid and compute the displacements at each point from all sources put together. 
 	x=np.linspace(inputs.start_gridx,inputs.finish_gridx,int((inputs.finish_gridx-inputs.start_gridx)/inputs.xinc));
 	y=np.linspace(inputs.start_gridy,inputs.finish_gridy,int((inputs.finish_gridy-inputs.start_gridy)/inputs.yinc));
 	[x2d,y2d] = np.meshgrid(x,y);
@@ -145,52 +146,18 @@ def compute_surface_disp_grid(params, inputs):
 	w_displacements = np.zeros((len(y), len(x)));
 	numrows=np.shape(u_displacements)[0]
 	numcols=np.shape(u_displacements)[1]
-
-	# A major compute loop for each source object. 
-	for i in range(len(inputs.source_object.xstart)):
-
-		# Fault parameters
-		L = conversion_math.get_strike_length(inputs.source_object.xstart[i],inputs.source_object.xfinish[i],inputs.source_object.ystart[i],inputs.source_object.yfinish[i]);
-		W = conversion_math.get_downdip_width(inputs.source_object.top[i],inputs.source_object.bottom[i],inputs.source_object.dipangle[i]);
-		depth       = inputs.source_object.top[i];
-		strike      = inputs.source_object.strike[i];
-		dip         = inputs.source_object.dipangle[i];
-		strike_slip = inputs.source_object.rtlat[i]*-1;  # The dc3d coordinate system has left-lateral positive. 
-		dip_slip    = inputs.source_object.reverse[i];		
-
-		# Preparing to rotate to a fault-oriented coordinate system.
-		theta=inputs.source_object.strike[i]-90;
-		theta=np.deg2rad(theta);
-		R=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
-		R2=np.array([[np.cos(-theta),-np.sin(-theta)],[np.sin(-theta),np.cos(-theta)]])
- 
-		for ky in range(numrows):
-			for kx in range(numcols):
-
-				# Compute the position relative to the translated, rotated fault. 
-				# print("%d %d " %(kx, ky));
-				translated_pos = np.array([[x2d[ky][kx]-inputs.source_object.xstart[i]],[y2d[ky][kx]-inputs.source_object.ystart[i]]]);
-				xy=R.dot(translated_pos);
-				success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  # solve for displacements at the surface
-				urot=R2.dot(np.array([[u[0]], [u[1]]]));
-
-				# Update the displacements from all sources 
-				u_displacements[ky][kx]=u_displacements[ky][kx] + urot[0];
-				v_displacements[ky][kx]=v_displacements[ky][kx] + urot[1];
-				w_displacements[ky][kx]=w_displacements[ky][kx] + u[2];  # vertical
-
-
-	# OUTPUT GRIDS AND DISPLACEMENTS
+	for ky in range(numrows):
+		for kx in range(numcols):
+			u_disp, v_disp, w_disp = compute_surface_disp_point(params, inputs, x2d[ky][kx], y2d[ky][kx]);
+			u_displacements[ky][kx]= u_disp;
+			v_displacements[ky][kx]= v_disp;
+			w_displacements[ky][kx]= w_disp;
 	return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
-	
 
 
-def compute_surface_disp_ll(params, inputs, disp_points):
+def compute_ll_def(params, inputs, disp_points):
+	# Loop through a list of lon/lat and compute their displacements due to all sources put together. 
 	x=[]; y=[];
-	if disp_points==[]:
-		return [ [], [], [] ];
-
-	# convert here
 	for i in range(len(disp_points[0])):
 		[xi,yi]=conversion_math.latlon2xy(disp_points[0][i],disp_points[1][i],inputs.zerolon,inputs.zerolat);
 		x.append(xi);
@@ -200,7 +167,20 @@ def compute_surface_disp_ll(params, inputs, disp_points):
 	v_ll = np.zeros(len(x));
 	w_ll = np.zeros(len(x));
 
-	# A major compute loop for each source object. 
+	# For each coordinate requested. 
+	for k in range(len(x)):
+		u_disp, v_disp, w_disp = compute_surface_disp_point(params, inputs, x[k], y[k]);
+		u_ll[k] = u_disp;
+		v_ll[k] = v_disp;
+		w_ll[k] = w_disp;
+
+	return [u_ll, v_ll, w_ll];
+
+
+def compute_surface_disp_point(params, inputs, x, y):
+	# A major compute loop for each source object at an x/y point. 
+	# x/y in the same coordinate system as the fault object. 
+	u_disp = 0; v_disp=0; w_disp=0;
 	for i in range(len(inputs.source_object.xstart)):
 
 		# Fault parameters
@@ -218,25 +198,24 @@ def compute_surface_disp_ll(params, inputs, disp_points):
 		R=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
 		R2=np.array([[np.cos(-theta),-np.sin(-theta)],[np.sin(-theta),np.cos(-theta)]])
  
-		for k in range(len(x)):
+		# Compute the position relative to the translated, rotated fault. 
+		translated_pos = np.array([[x-inputs.source_object.xstart[i]],[y-inputs.source_object.ystart[i]]]);
+		xy=R.dot(translated_pos);
+		# Solve for displacements at the surface
+		if inputs.source_object.potency != []:
+			success, u, grad_u = dc3d0wrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, 
+				[inputs.source_object.potency[i][0], inputs.source_object.potency[i][1], inputs.source_object.potency[i][2], inputs.source_object.potency[i][3]]);  
+			u=u*1e-6;  # Unit correction: potency from N-m results in displacements in microns. 
+		else:
+			success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]); 
+		urot=R2.dot(np.array([[u[0]], [u[1]]]));
 
-			# Compute the position relative to the translated, rotated fault. 
-			# print("%d %d " %(kx, ky));
-			translated_pos = np.array([[x[k]-inputs.source_object.xstart[i]],[y[k]-inputs.source_object.ystart[i]]]);
-			xy=R.dot(translated_pos);
-			success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  # solve for displacements at the surface
-			urot=R2.dot(np.array([[u[0]], [u[1]]]));
+		# Update the displacements from all sources 
+		u_disp=u_disp + urot[0];
+		v_disp=v_disp + urot[1];
+		w_disp=w_disp + u[2];  # vertical
 
-			# Update the displacements from all sources 
-			u_ll[k]=u_ll[k] + urot[0];
-			v_ll[k]=v_ll[k] + urot[1];
-			w_ll[k]=w_ll[k] + u[2];  # vertical
-
-
-	# OUTPUT GRIDS AND DISPLACEMENTS
-	return [u_ll, v_ll, w_ll];
-
-
+	return u_disp, v_disp, w_disp;
 
 
 
@@ -288,12 +267,17 @@ def compute_strains_stresses(params, inputs):
 			# Compute the position relative to the translated, rotated fault. 
 			translated_pos = np.array([[centercoords[0]-inputs.source_object.xstart[i]],[centercoords[1]-inputs.source_object.ystart[i]],[-centercoords[2]] ]);
 			xyz=R.dot(translated_pos);
-			success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  
+			if inputs.source_object.potency != []:
+				success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, 
+					[inputs.source_object.potency[i][0], inputs.source_object.potency[i][1], inputs.source_object.potency[i][2], inputs.source_object.potency[i][3]]); 
+				grad_u = grad_u * 1e-9; # DC3D0 Unit correction: potency from N-m results in displacements in nanostrain
+			else:
+				success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  
+				grad_u = grad_u * 1e-3;  # DC3D Unit correction. 
 			# Solve for displacement gradients at center of receiver fault
 
 			# Rotate grad_u back into the unprimed coordinates.  Divide by 1000 because coordinate units (km) and slip units (m) are different by 1000. 
 			desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
-			desired_coords_grad_u = [k/1000.0 for k in desired_coords_grad_u];
 			
 			# Then rotate again into receiver coordinates. 
 			strain_tensor=conversion_math.get_strain_tensor(desired_coords_grad_u);

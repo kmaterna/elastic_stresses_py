@@ -24,13 +24,13 @@ def produce_outputs(params, inputs, disp_points, out_object):
 		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,eqlon=inputs.eqlon, eqlat=inputs.eqlat,
 		source_object=out_object.source_object,receiver_object=out_object.receiver_object); # make a new object of the subfaulted configuration.
 	io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
-	# surface_def_plot(params,out_object);
-	# stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
-	# stress_plot(params,out_object,'normal');
-	# stress_plot(params,out_object,'coulomb');
+	surface_def_plot(params,out_object);
+	stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
+	stress_plot(params,out_object,'normal');
+	stress_plot(params,out_object,'coulomb');
 	map_plot(params, inputs, out_object, 'coulomb');
-	# map_plot(params, inputs, out_object, 'normal');
-	# map_plot(params, inputs, out_object, 'shear');
+	map_plot(params, inputs, out_object, 'normal');
+	map_plot(params, inputs, out_object, 'shear');
 	write_output_files(params,inputs, disp_points, out_object);
 	return;
 

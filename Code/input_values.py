@@ -7,6 +7,7 @@
 import io_inp
 import io_inr
 import io_intxt
+import io_inzero
 import io_additionals
 
 
@@ -17,6 +18,8 @@ def read_inputs(params):
 		input_object = io_inr.read_inr(params.input_file);  # variable rake format (will write later);
 	elif '.intxt' in params.input_file:
 		input_object = io_intxt.read_intxt(params.input_file);  # convenient input format (fixed rake)
+	elif '.inzero' in params.input_file:
+		input_object = io_inzero.read_intxt(params.input_file);  # a point source in convenient format
 	else:
 		print("Error! Unrecognized type of input file!");
 		input_object = [];
