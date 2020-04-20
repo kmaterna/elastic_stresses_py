@@ -174,7 +174,7 @@ def side_on_plot(params):
 	plotting_data="Normal";
 	# plotting_data="Coulomb";
 	# plotting_data="Shear";
-	vmin=-1; vmax=1;
+	vmin=-10; vmax=10;  # kpa
 	if plotting_data=="Coulomb":
 		plt.scatter(x,z,c=coulomb,s=1450,marker='s',cmap='jet',edgecolor='black', vmin=vmin, vmax=vmax);
 	elif plotting_data=="Normal":
@@ -228,7 +228,7 @@ def map_plot(params, inputs, out_object, stress_component):
 	title="+t\""+stress_component+" stress\"";  # must put escaped quotations around the title. 
 	fig.basemap(region=region,projection=proj,B=title);
 	fig.coast(shorelines="1.0p,black",region=region,projection=proj,B="1.0");  # the boundary. 
-	fig.coast(region=region,projection=proj,N='1',W='0.5p,black',S='white',L="g-125.5/39.6+c1.5+w50");
+	fig.coast(region=region,projection=proj,N='2',W='0.5p,black',S='white',L="g-125.5/39.6+c1.5+w50");
 
 	# Draw each source
 	for i in range(len(out_object.source_object.xstart)):
@@ -238,7 +238,10 @@ def map_plot(params, inputs, out_object, stress_component):
 			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
 			lons.append(mylon);
 			lats.append(mylat);
-		fig.plot(x=lons, y=lats, pen="thick,black");
+		if out_object.source_object.potency[i]==[]:
+			fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, just outline them. 
+		else:
+			fig.plot(x=lons, y=lats, style='s0.3c',G="purple",pen="thin,black");  # in case of point sources
 
 	# Draw each receiver, with associated data
 	for i in range(len(out_object.receiver_object.xstart)):

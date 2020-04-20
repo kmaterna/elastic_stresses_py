@@ -18,7 +18,9 @@ This code uses Okada's (1992) DC3D function to compute elastic displacements, st
 * Read user-defined input files (based on EQ lat/lon, source parameters, etc.)
 
 ### Specs: ###
-This code uses Python, numpy, matplotlib, and Pygmt - Basemap is being deprecated, so I have switched to Pygmt (https://www.pygmt.org/dev/). This code also requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). The original Okada documentation can be found at http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html. The elastic parameters mu and lamda, as well as your input/output options, are set in your config file. By convention, right lateral strike slip is positive, and reverse dip slip is positive. Strike is defined from 0 to 360 degrees, clockwise from north; dip is defined from 0 to 90 degrees by the right hand rule. As in Coulomb, positive shear stress is towards failure, and positive normal stress is unclamping. 
+This code uses Python, numpy, matplotlib, and Pygmt - Basemap is being deprecated, so I have switched to Pygmt (https://www.pygmt.org/dev/). This code also requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). It requires a few utility functions (haversine, wells_and_coppersmith) in a separate utilities repository (https://github.com/kmaterna/Utility_Code). The original Okada documentation can be found at http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html. 
+
+The elastic parameters mu and lamda, as well as your input/output options, are set in your config file. By convention, right lateral strike slip is positive, and reverse dip slip is positive. Strike is defined from 0 to 360 degrees, clockwise from north; dip is defined from 0 to 90 degrees by the right hand rule. As in Coulomb, positive shear stress is towards failure, and positive normal stress is unclamping. 
 
 Example with two vertical strike-slip faults, one source (green) and one receiver (blue):
 ![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/Example/Python_Displacement_model.png)
