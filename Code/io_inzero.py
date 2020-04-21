@@ -11,6 +11,7 @@ def read_intxt(input_file):
 	print("Reading source and receiver fault information from file %s " % input_file);
 	strike_src=[]; dipangle_src=[]; rake_src=[]; magnitude_src=[]; lon_src=[]; lat_src=[]; depth_src=[];
 	strike_rec=[]; dipangle_rec=[]; rake_rec=[]; length_rec=[]; width_rec=[]; updip_corner_lon_rec=[]; updip_corner_lat_rec=[]; updip_corner_dep_rec=[];
+	eq_lon=[]; eq_lat=[];
 
 	ifile=open(input_file,'r');
 	for line in ifile:
@@ -41,6 +42,9 @@ def read_intxt(input_file):
 		else:
 			continue;
 	ifile.close();
+	if len(lon_src)>0:
+		eq_lon=lon_src[0];
+		eq_lat=lon_src[0];
 
 
 	# The main computing functions. 
@@ -54,7 +58,7 @@ def read_intxt(input_file):
 	# Packaging
 	receivers=coulomb_collections.Faults_object(xstart=xstart_rec, xfinish=xfinish_rec, ystart=ystart_rec, yfinish=yfinish_rec, Kode=Kode_rec, rtlat=rtlat_rec, reverse=reverse_rec, potency=[], strike=strike_rec, dipangle=dipangle_rec, rake=rake_rec, top=top_rec, bottom=bottom_rec, comment=comment_rec);	
 	input_obj=coulomb_collections.Input_object(PR1=PR1,FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
-		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, eqlon=lon_src[0], eqlat=lat_src[0], 
+		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, eqlon=eq_lon, eqlat=eq_lat, 
 		receiver_object=receivers, source_object=sources);
 
 	return input_obj;

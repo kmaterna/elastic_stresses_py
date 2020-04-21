@@ -16,24 +16,47 @@ import sys
 def read_intxt(input_file):
 	print("Reading source and receiver fault information from file %s " % input_file);
 	
-	strike_src=[]; dipangle_src=[]; rake_src=[]; magnitude_src=[]; faulting_type_src=[]; fault_center_lon_src=[]; fault_center_lat_src=[]; fault_dep_src=[];
-	strike_rec=[]; dipangle_rec=[]; rake_rec=[]; length_rec=[]; width_rec=[]; updip_corner_lon_rec=[]; updip_corner_lat_rec=[]; updip_corner_dep_rec=[];
-	
+	# Soruce parameters common to all source formats
+	strike_src=[]; dipangle_src=[]; rake_src=[]; fault_dep_src=[]; source_type=[];
+	# Source parameters different between source formats
+	geometry1, geometry2, geometry3, geometry4, geometry5 = [],[],[],[],[];
+	# Receiver parameters	
+	strike_rec=[]; dipangle_rec=[]; rake_rec=[]; length_rec=[]; width_rec=[]; 
+	updip_corner_lon_rec=[]; updip_corner_lat_rec=[]; updip_corner_dep_rec=[];
+	eq_lon=[]; eq_lat=[];
+
 	ifile=open(input_file,'r');
 	for line in ifile:
 		temp=line.split();
 		if len(temp)==0:
 			continue;
 		if temp[0]=='S:':
-			[strike,rake,dip,magnitude,faulting_type,fault_center_lon,fault_center_lat,fault_center_depth]=read_source_line(line);
-			strike_src.append(strike);
-			rake_src.append(rake);
-			dipangle_src.append(dip);
-			magnitude_src.append(magnitude);
-			faulting_type_src.append(faulting_type);
-			fault_center_lon_src.append(fault_center_lon);
-			fault_center_lat_src.append(fault_center_lat);
-			fault_dep_src.append(fault_center_depth);
+			if " SS " in temp or " N " in temp or " R " in temp:  # reading wells and coppersmith convenient format
+				[strike,rake,dip,magnitude,faulting_type,fault_center_lon,fault_center_lat,fault_center_depth]=read_source_line_WCconvention(line);
+				strike_src.append(strike);
+				rake_src.append(rake);
+				dipangle_src.append(dip);
+				fault_dep_src.append(fault_center_depth);
+				source_type.append("WC");
+				geometry1.append(magnitude);  # magnitude
+				geometry2.append(faulting_type);  # faulting type
+				geometry3.append(fault_center_lon);  # fault_center_lon
+				geometry4.append(fault_center_lat);  # fault_center_lat
+				geometry5.append("");  # needed for other format only. 
+				
+			else:  # reading the source-slip convenient format
+				[strike,rake,dip,length,width,slip,updip_corner_lon,updip_corner_lat,updip_corner_dep]=read_source_line_slip_convention(line);
+				strike_src.append(strike);
+				rake_src.append(rake);
+				dipangle_src.append(dip);
+				fault_dep_src.append(updip_corner_dep);
+				source_type.append("slip");
+				geometry1.append(length);  # L
+				geometry2.append(width);  # W
+				geometry3.append(updip_corner_lon);  # corner_lon
+				geometry4.append(updip_corner_lat);  # corner_lat
+				geometry5.append(slip);  # slip
+
 		elif temp[0]=='R:':
 			[strike,rake,dip,length,width,updip_corner_lon,updip_corner_lat,updip_corner_dep]=read_receiver_line(line);
 			strike_rec.append(strike);
@@ -49,17 +72,20 @@ def read_intxt(input_file):
 		else:
 			continue;
 	ifile.close();
+	if len(geometry3)>0:
+		eq_lon=geometry3[0];
+		eq_lat=geometry4[0];	
 
 	# The main computing functions. 
 	[start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc] = compute_grid_parameters(minlon, maxlon, zerolon, minlat, maxlat, zerolat);
-	[xstart_src, xfinish_src, ystart_src, yfinish_src, Kode_src, rtlat_src, reverse_src, top_src, bottom_src, comment_src] = compute_params_for_source(strike_src, dipangle_src, rake_src, magnitude_src, faulting_type_src, fault_center_lon_src, fault_center_lat_src, fault_dep_src, zerolon, zerolat);
+	[xstart_src, xfinish_src, ystart_src, yfinish_src, Kode_src, rtlat_src, reverse_src, top_src, bottom_src, comment_src] = compute_params_for_source(strike_src, dipangle_src, rake_src, fault_dep_src, source_type, geometry1, geometry2, geometry3, geometry4, geometry5, zerolon, zerolat);
 	[xstart_rec, xfinish_rec, ystart_rec, yfinish_rec, Kode_rec, rtlat_rec, reverse_rec, top_rec, bottom_rec, comment_rec] = compute_params_for_receiver(strike_rec, dipangle_rec, rake_rec, length_rec, width_rec, updip_corner_lon_rec, updip_corner_lat_rec, updip_corner_dep_rec, zerolon, zerolat);
 
 	receivers=coulomb_collections.Faults_object(xstart=xstart_rec, xfinish=xfinish_rec, ystart=ystart_rec, yfinish=yfinish_rec, Kode=Kode_rec, rtlat=rtlat_rec, reverse=reverse_rec, potency=[], strike=strike_rec, dipangle=dipangle_rec, rake=rake_rec, top=top_rec, bottom=bottom_rec, comment=comment_rec);
 	sources=coulomb_collections.Faults_object(xstart=xstart_src, xfinish=xfinish_src, ystart=ystart_src, yfinish=yfinish_src, Kode=Kode_src, rtlat=rtlat_src, reverse=reverse_src, potency=[], strike=strike_src, dipangle=dipangle_src, rake=rake_src, top=top_src, bottom=bottom_src, comment=comment_src);
 
 	input_obj=coulomb_collections.Input_object(PR1=PR1,FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
-		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, eqlon=fault_center_lon_src[0], eqlat=fault_center_lat_src[0], 
+		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, eqlon=eq_lon, eqlat=eq_lat, 
 		receiver_object=receivers, source_object=sources);
 
 	return input_obj;
@@ -68,7 +94,7 @@ def read_intxt(input_file):
 
 
 
-def read_source_line(line):
+def read_source_line_WCconvention(line):
 	strike=float(line.split()[1]);
 	rake=float(line.split()[2]);
 	dip=float(line.split()[3]);
@@ -78,6 +104,17 @@ def read_source_line(line):
 	fault_center_lat=float(line.split()[7]);
 	fault_center_dep=float(line.split()[8]);
 	return [strike,rake,dip,magnitude,faulting_type,fault_center_lon,fault_center_lat,fault_center_dep];
+def read_source_line_slip_convention(line):
+	strike=float(line.split()[1]);
+	rake=float(line.split()[2]);
+	dip=float(line.split()[3]);
+	length=float(line.split()[4]);
+	width=float(line.split()[5]);
+	updip_corner_lon=float(line.split()[6]);
+	updip_corner_lat=float(line.split()[7]);
+	updip_corner_dep=float(line.split()[8]);	
+	slip=float(line.split()[9]);
+	return [strike,rake,dip,length,width,slip,updip_corner_lon,updip_corner_lat,updip_corner_dep];
 def read_receiver_line(line):
 	strike=float(line.split()[1]);
 	rake=float(line.split()[2]);
@@ -126,28 +163,35 @@ def compute_grid_parameters(minlon, maxlon, zerolon, minlat, maxlat, zerolat):
 	return [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc];
 
 
-def compute_params_for_source(strike, dip, rake, mag, eq_type, eqlon, eqlat, eqdep, zerolon, zerolat):
+def compute_params_for_source(strike, dipangle, rake, depth, source_type, geometry1, geometry2, geometry3, geometry4, geometry5, zerolon, zerolat):
 	xstart=[]; xfinish=[]; ystart=[]; yfinish=[]; Kode=[]; rtlat=[]; reverse=[]; top=[]; bottom=[]; comment=[];
 	# Useful when you have earthquake catalog information, and you want the source information. 
 	# The depth/eqlon/eqlat parameters refer to the center of the fault plane by assumption. 
 	# Takes lists of parameters. 
 	for i in range(len(strike)):
-		[xcenter,ycenter]=conversion_math.latlon2xy(eqlon[i],eqlat[i],zerolon,zerolat);
-		# print("EQ location: %f %f " % (eqlon[i],eqlat[i]) );
-		# print("Ref location: %f %f " % (zerolon, zerolat) );
-		# print("Coordinates: %f %f " % (x,y) );
-		L=wells_and_coppersmith.RLD_from_M(mag[i],eq_type[i]);  # rupture length
-		W=wells_and_coppersmith.RW_from_M(mag[i],eq_type[i]);   # rupture width
-		slip = wells_and_coppersmith.rectangular_slip(L*1000,W*1000,mag[i]);  # must input in meters
-		print("Fault slip: %f" % slip);
-		
-		# xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);  # if the hypocenter is really the center of the rupture
-		xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,0,strike[i]); # if the hypocenter is on one side of the rupture
-		xifinish,yifinish=conversion_math.add_vector_to_point(xcenter,ycenter,L,strike[i]);
-		rtlati,reversei=conversion_math.get_rtlat_dip_slip(slip, rake[i]);
-		topi, bottomi=conversion_math.get_top_bottom(eqdep[i],W,dip[i]);
+		if source_type[i]=="WC":
+			[xcenter,ycenter]=conversion_math.latlon2xy(geometry3[i],geometry4[i],zerolon,zerolat);
+			L=wells_and_coppersmith.RLD_from_M(geometry1[i],geometry2[i]);  # rupture length
+			W=wells_and_coppersmith.RW_from_M(geometry1[i],geometry2[i]);   # rupture width
+			slip = wells_and_coppersmith.rectangular_slip(L*1000,W*1000,geometry1[i]);  # must input in meters
+			# xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);  # if the hypocenter is really the center of the rupture
+			xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,0,strike[i]); # if the hypocenter is on one side of the rupture
+			xifinish,yifinish=conversion_math.add_vector_to_point(xcenter,ycenter,L,strike[i]);
+			rtlati,reversei=conversion_math.get_rtlat_dip_slip(slip, rake[i]);
+			topi, bottomi=conversion_math.get_top_bottom(depth[i],W,dipangle[i]);
+			
+		if source_type[i]=="slip":
+			L=geometry1[i];
+			W=geometry2[i];
+			slip=geometry5[i];
+			[xcorner,ycorner]=conversion_math.latlon2xy(geometry3[i],geometry4[i],zerolon,zerolat);
+			xistart,yistart=conversion_math.add_vector_to_point(xcorner,ycorner,0,strike[i]); 
+			xifinish,yifinish=conversion_math.add_vector_to_point(xcorner,ycorner,L,strike[i]);
+			rtlati,reversei=conversion_math.get_rtlat_dip_slip(slip, rake[i]);
+			topi, bottomi=conversion_math.get_top_bottom_from_top(depth[i],W,dipangle[i]);
 
 
+		print("Fault slip: %f m" % slip);
 		xstart.append(xistart);
 		ystart.append(yistart);
 		xfinish.append(xifinish);
