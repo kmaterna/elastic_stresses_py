@@ -31,7 +31,7 @@ def read_intxt(input_file):
 		if len(temp)==0:
 			continue;
 		if temp[0]=='S:':
-			if " SS " in temp or " N " in temp or " R " in temp:  # reading wells and coppersmith convenient format
+			if " SS " in line or " N " in line or " R " in line:  # reading wells and coppersmith convenient format
 				[strike,rake,dip,magnitude,faulting_type,fault_center_lon,fault_center_lat,fault_center_depth]=read_source_line_WCconvention(line);
 				strike_src.append(strike);
 				rake_src.append(rake);

@@ -200,6 +200,7 @@ def side_on_plot(params):
 
 def map_plot(params, inputs, out_object, stress_component):
 	# Using PyGMT
+	# Filling in fault patches with colors corresponding to their stress changes
 	# Some options: 
 	if stress_component=='shear':
 		plotting_stress = out_object.receiver_shear;
@@ -329,6 +330,7 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 			patch_color=vertical_cmap.to_rgba(1000*out_object.w_ll[i]);
 			plt.plot(disp_points[0][i], disp_points[1][i], marker='o',markersize=15, markeredgecolor='black',color=patch_color);
 			plt.quiver(disp_points[0][i], disp_points[1][i], 1000*out_object.u_ll[i], 1000*out_object.v_ll[i],scale=scale, color='black',zorder=10);
+			# plt.text(disp_points[0][i],disp_points[1][i],disp_points[2][i]);  # If you want to label the GPS stations
 		plt.quiver(lonW+0.02, latS+0.03, 20.0, 0.0, scale=scale,color='black');
 		plt.text(lonW+0.02, latS+0.05, "20mm model",color="black",fontsize=20);
 

@@ -23,7 +23,7 @@ def read_aftershock_table(infile):
 
 def read_disp_points(infile):
 	print("Reading displacement points from file %s " % infile);
-	lon=[]; lat=[]; 
+	lon=[]; lat=[]; names=[];
 	ifile=open(infile,'r');
 	for line in ifile:
 		temp=line.split();
@@ -32,4 +32,8 @@ def read_disp_points(infile):
 		else:
 			lon.append(float(temp[0]));
 			lat.append(float(temp[1]));
-	return [lon, lat]; 
+			if len(temp)>2:
+				names.append(temp[2]);
+			else:
+				names.append("");
+	return [lon, lat, names]; 
