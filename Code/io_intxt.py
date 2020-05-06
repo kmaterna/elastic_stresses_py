@@ -1,7 +1,6 @@
 # The purpose of these functions is to read/write a convenient input file
 # Since we're using an input format that involves lon/lat/depth/mag, we have to convert
 # We will use Wells and Coppersmith 1994, in the same way that Coulomb does. 
-# We have to do a few other conversions too. 
 # This input file assumes a fixed rake specified initially in the configure file, same as the .inp file format
 
 import numpy as np
@@ -31,7 +30,7 @@ def read_intxt(input_file):
 		if len(temp)==0:
 			continue;
 		if temp[0]=='S:':
-			if " SS " in line or " N " in line or " R " in line:  # reading wells and coppersmith convenient format
+			if " SS " in line or " N " in line or " R " in line or " ALL " in line:  # reading wells and coppersmith convenient format
 				[strike,rake,dip,magnitude,faulting_type,fault_center_lon,fault_center_lat,fault_center_depth]=read_source_line_WCconvention(line);
 				strike_src.append(strike);
 				rake_src.append(rake);
@@ -175,6 +174,7 @@ def compute_params_for_source(strike, dipangle, rake, depth, source_type, geomet
 			W=wells_and_coppersmith.RW_from_M(geometry1[i],geometry2[i]);   # rupture width
 			slip = wells_and_coppersmith.rectangular_slip(L*1000,W*1000,geometry1[i]);  # must input in meters
 			# xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);  # if the hypocenter is really the center of the rupture
+			# xifinish,yifinish=conversion_math.add_vector_to_point(xcenter,ycenter,L/2,strike[i]);
 			xistart,yistart=conversion_math.add_vector_to_point(xcenter,ycenter,0,strike[i]); # if the hypocenter is on one side of the rupture
 			xifinish,yifinish=conversion_math.add_vector_to_point(xcenter,ycenter,L,strike[i]);
 			rtlati,reversei=conversion_math.get_rtlat_dip_slip(slip, rake[i]);
