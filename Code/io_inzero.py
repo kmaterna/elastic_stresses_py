@@ -9,58 +9,32 @@ import io_intxt
 
 def read_intxt(input_file):
 	print("Reading source and receiver fault information from file %s " % input_file);
-	strike_src=[]; dipangle_src=[]; rake_src=[]; magnitude_src=[]; lon_src=[]; lat_src=[]; depth_src=[];
-	strike_rec=[]; dipangle_rec=[]; rake_rec=[]; length_rec=[]; width_rec=[]; updip_corner_lon_rec=[]; updip_corner_lat_rec=[]; updip_corner_dep_rec=[];
-	eq_lon=[]; eq_lat=[];
-
+	sources=[]; receivers=[];
 	ifile=open(input_file,'r');
 	for line in ifile:
 		temp=line.split();
 		if len(temp)==0:
 			continue;
 		if temp[0]=='S:':
-			[strike,rake,dip,lon,lat,depth,magnitude, mu, lame1]=read_point_source_line(line);
-			strike_src.append(strike);
-			rake_src.append(rake);
-			dipangle_src.append(dip);
-			magnitude_src.append(magnitude);
-			lon_src.append(lon);
-			lat_src.append(lat);
-			depth_src.append(depth);
+			[strike,rake,dip,lon,lat,depth,magnitude,mu,lame1]=read_point_source_line(line);
+			[x, y, Kode, rtlat, reverse, potency, comment] = compute_params_for_point_source(strike, dip, rake, magnitude, lon, lat, zerolon, zerolat, mu, lame1);
+			one_source_object=coulomb_collections.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=Kode, rtlat=rtlat, reverse=reverse, potency=potency, strike=strike, dipangle=dip, rake=rake, top=depth, bottom=depth, comment=comment);
+			sources.append(one_source_object);
 		elif temp[0]=='R:':
-			[strike,rake,dip,length,width,updip_corner_lon,updip_corner_lat,updip_corner_dep]=io_intxt.read_receiver_line(line);
-			strike_rec.append(strike);
-			rake_rec.append(rake);
-			dipangle_rec.append(dip);
-			length_rec.append(length);
-			width_rec.append(width);
-			updip_corner_lon_rec.append(updip_corner_lon);
-			updip_corner_lat_rec.append(updip_corner_lat);
-			updip_corner_dep_rec.append(updip_corner_dep);
+			[strike,rake,dip,L,W,fault_lon,fault_lat,fault_depth]=io_intxt.read_receiver_line(line);
+			[xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom, comment] = io_intxt.compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, 0, zerolon, zerolat);
+			one_receiver_object = coulomb_collections.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[], strike=strike, dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
+			receivers.append(one_receiver_object);
 		elif temp[0]=='G:':
 			[PR1,FRIC,minlon,maxlon,zerolon,minlat,maxlat,zerolat]=io_intxt.read_general_line(line);
 		else:
 			continue;
 	ifile.close();
-	if len(lon_src)>0:
-		eq_lon=lon_src[0];
-		eq_lat=lon_src[0];
 
-
-	# The main computing functions. 
+	# Wrapping up the inputs
 	[start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc] = io_intxt.compute_grid_parameters(minlon, maxlon, zerolon, minlat, maxlat, zerolat);	
-	[xstart_rec, xfinish_rec, ystart_rec, yfinish_rec, Kode_rec, rtlat_rec, reverse_rec, top_rec, bottom_rec, comment_rec] = io_intxt.compute_params_for_receiver(strike_rec, dipangle_rec, rake_rec, length_rec, width_rec, updip_corner_lon_rec, updip_corner_lat_rec, updip_corner_dep_rec, zerolon, zerolat);
-
-	# The point source formatting
-	[x_src, y_src, Kode_src, rtlat_src, reverse_src, potency_src, comment_src] = compute_params_for_point_source(strike_src, dipangle_src, rake_src, magnitude_src, lon_src, lat_src, zerolon, zerolat, mu, lame1);
-	sources=coulomb_collections.Faults_object(xstart=x_src, xfinish=x_src, ystart=y_src, yfinish=y_src, Kode=Kode_src, rtlat=rtlat_src, reverse=reverse_src, potency=potency_src, strike=strike_src, dipangle=dipangle_src, rake=rake_src, top=depth_src, bottom=depth_src, comment=comment_src);
-
-	# Packaging
-	receivers=coulomb_collections.Faults_object(xstart=xstart_rec, xfinish=xfinish_rec, ystart=ystart_rec, yfinish=yfinish_rec, Kode=Kode_rec, rtlat=rtlat_rec, reverse=reverse_rec, potency=[], strike=strike_rec, dipangle=dipangle_rec, rake=rake_rec, top=top_rec, bottom=bottom_rec, comment=comment_rec);	
 	input_obj=coulomb_collections.Input_object(PR1=PR1,FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
-		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, eqlon=eq_lon, eqlat=eq_lat, 
-		receiver_object=receivers, source_object=sources);
-
+		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, receiver_object=receivers, source_object=sources);
 	return input_obj;
 
 
@@ -78,26 +52,15 @@ def read_point_source_line(line):
 	return [strike,rake,dip,lon,lat,depth,magnitude,mu,lame1];
 
 
-def compute_params_for_point_source(strike_src, dipangle_src, rake_src, magnitude_src, lon_src, lat_src, zerolon, zerolat, mu, lame1):
+def compute_params_for_point_source(strike, dipangle, rake, magnitude, lon, lat, zerolon, zerolat, mu, lame1):
 	# Given information about point sources from focal mechanisms,
 	# Return the right components that get packaged into input_obj. 
-	x_src=[]; y_src=[]; Kode_src=[]; rtlat_src=[]; reverse_src=[]; potency_src=[]; comment=[];
-	for i in range(len(strike_src)):
-		[xcenter,ycenter]=conversion_math.latlon2xy(lon_src[i],lat_src[i],zerolon,zerolat);
-	
-		potency = get_DC_potency(rake_src[i], magnitude_src[i], mu, lame1);
-		# The point source
-		x_src.append(xcenter);
-		y_src.append(ycenter);
-		potency_src.append(potency); 
-
-		# Filler variables for the point source case
-		Kode_src.append(100);
-		rtlat_src.append(0);
-		reverse_src.append(0); 
-		comment.append('');
-
-	return [x_src, y_src, Kode_src, rtlat_src, reverse_src, potency_src, comment];
+	[xcenter,ycenter]=conversion_math.latlon2xy(lon,lat,zerolon,zerolat);
+	potency = get_DC_potency(rake, magnitude, mu, lame1);
+	# Filler variables for the point source case
+	Kode=100;
+	comment='';
+	return [xcenter, ycenter, Kode, 0, 0, potency, comment];
 
 
 def get_DC_potency(rake, momentmagnitude, mu, lame1):

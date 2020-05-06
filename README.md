@@ -28,6 +28,8 @@ python elastic_stresses_driver.py config.txt
 
 ### New Input Formats (Not Coulomb Format): 
 Source Faults (or faults have slip on them) and Receiver Faults (or faults receive stress from slip on source faults) can be specified in several types of more convenient input files beyond the .inp file that Coulomb uses. Each fault is specified by a row in the input file. 
+* **General Format:** "G: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"
+	* For all files, describes coordinate system and domain setup. This line must come first. 
 * **Slip Format:** "S: strike rake dip length width lon lat depth slip"
 	* For sources in .intxt files, best for slip distributions and fault patches
 * **WC Format:** "S: strike rake dip magnitude faulting_type lon lat depth"
@@ -36,8 +38,6 @@ Source Faults (or faults have slip on them) and Receiver Faults (or faults recei
 	* For sources in .inzero files, best for focal mechanisms
 * **Receiver Format:** "R: strike rake dip length width lon lat depth"
 	* For all files, describes general receiver faults
-* **General Format:** "G: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"
-	* For all files, describes coordinate system and domain setup
 
 For all finite sources, lon/lat/depth refer to the back updip corner of the fault plane, the corner where one looks along the strike direction to see the fault's upper edge (start_x and start_y in the Aki and Richards (1980) diagram in Coulomb's documentation). 
 

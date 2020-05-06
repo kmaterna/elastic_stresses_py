@@ -18,48 +18,30 @@ def produce_outputs(params, inputs, disp_points, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
 	call(['cp','config.txt',params.outdir],shell=False);
 	call(['cp',params.input_file,params.outdir],shell=False);	
+
 	subfaulted_inputs=coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,
 		start_gridx=inputs.start_gridx,start_gridy=inputs.start_gridy,finish_gridx=inputs.finish_gridx,
 		finish_gridy=inputs.finish_gridy,xinc=inputs.xinc,yinc=inputs.yinc,minlon=inputs.minlon,maxlon=inputs.maxlon,
-		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,eqlon=inputs.eqlon, eqlat=inputs.eqlat,
+		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,
 		source_object=out_object.source_object,receiver_object=out_object.receiver_object); # make a new object of the subfaulted configuration.
-	io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);
-	surface_def_plot(params,out_object);
-	# stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
-	# stress_plot(params,out_object,'normal');
-	# stress_plot(params,out_object,'coulomb');
-	# map_plot(params, inputs, out_object, 'coulomb');
-	# map_plot(params, inputs, out_object, 'normal');
-	# map_plot(params, inputs, out_object, 'shear');
+	# io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);  # WILL FIX THIS FUNCITON LATER
+	surface_def_plot(params,out_object);  # THIS WORKS
+	stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
+	stress_plot(params,out_object,'normal');
+	stress_plot(params,out_object,'coulomb');
+	map_plot(params, inputs, out_object, 'coulomb');
+	map_plot(params, inputs, out_object, 'normal');
+	map_plot(params, inputs, out_object, 'shear');
 	write_output_files(params,inputs, disp_points, out_object);
 	slip_vector_map(params, inputs, disp_points, out_object);
-	# side_on_plot(params);
+	side_on_plot(params);
 	return;
-
-
-def get_plotting_traces(fault_object):
-	# Get the updip and total traces of the input file faults, for plotting on map view. 
-	# Each element of total_x and total_y contain 4 coordinates. 
-	total_x = []; total_y = []; updip_x = []; updip_y = [];
-	for i in range(len(fault_object.xstart)):
-		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(fault_object, i);
-		total_x.append(x_total);  # a 1x4 list
-		total_y.append(y_total);
-		updip_x.append(x_updip);  # a 1x2 list
-		updip_y.append(y_updip);
-	return [total_x, total_y, updip_x, updip_y];
-
 
 
 def surface_def_plot(params, out_object):
 
-	# Get the updip and downdip traces of the faults for plotting purposes. 
-	[src_total_x, src_total_y, src_updip_x, src_updip_y] = get_plotting_traces(out_object.source_object);
-	[rec_total_x, rec_total_y, rec_updip_x, rec_updip_y] = get_plotting_traces(out_object.receiver_object);
-
 	print("Making plot of predicted displacement throughout model domain.")
-	print("Max vertical displacement is %f m" % (out_object.w_disp.max()) );	
-
+	print("Max vertical displacement is %f m" % (out_object.w_disp.max()) );
 	#Plot of elastic surface deformation from the given input model. 
 	plt.figure(figsize=(16,16))
 	plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp,cmap='jet');
@@ -70,24 +52,21 @@ def surface_def_plot(params, out_object):
 	for i in np.arange(0,len(out_object.y),5):
 		for j in np.arange(0,len(out_object.x),5):
 			plt.quiver(out_object.x2d[i][j],out_object.y2d[i][j],out_object.u_disp[i][j],out_object.v_disp[i][j],units='width',scale=0.2)
-	for i in range(len(src_total_x)):
-		plt.plot(src_total_x[i], src_total_y[i],'k',linewidth=1);
-		plt.plot(src_updip_x[i], src_updip_y[i],'g',linewidth=3);
-	for i in range(len(rec_total_x)):
-		plt.plot(rec_total_x[i], rec_total_y[i],'b',linewidth=1);
-		plt.plot(rec_updip_x[i], rec_updip_y[i],'b',linewidth=3);
-	for i in range(len(out_object.receiver_object.xstart)):
-		center=conversion_math.get_fault_center(out_object.receiver_object,i);
-		plt.plot(center[0],center[1],'.b',markersize=8);
-	for i in range(len(out_object.source_object.xstart)):
-		center=conversion_math.get_fault_center(out_object.source_object,i);
+	for source in out_object.source_object:
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+		plt.plot(x_total, y_total,'k',linewidth=1);
+		plt.plot(x_updip, y_updip,'g',linewidth=3);
+		center=conversion_math.get_fault_center(source);
 		plt.plot(center[0],center[1],'.g',markersize=8);
+	for rec in out_object.receiver_object:
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
+		plt.plot(x_total, y_total,'b',linewidth=1);
+		plt.plot(x_updip, y_updip,'b',linewidth=3);
+		center=conversion_math.get_fault_center(rec);
+		plt.plot(center[0],center[1],'.b',markersize=8);
 	plt.xlim([out_object.x.min(),out_object.x.max()])
 	plt.ylim([out_object.y.min(),out_object.y.max()])
-	for l in plt.gca().yaxis.get_ticklabels():
-		l.set_size(18);
-	for l in plt.gca().xaxis.get_ticklabels():
-		l.set_size(18);	
+	plt.gca().tick_params(axis='both', which='major', labelsize=18)
 	plt.grid();
 	plt.axis('equal');
 	plt.title('Surface Dipslacement',fontsize=28)
@@ -96,15 +75,11 @@ def surface_def_plot(params, out_object):
 	return;
 
 
-
 def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
 	# default vmin,vmax are in KPa
 	# Here we will put plots of fault patches, colored by the magnitude of the stress component. 
 
 	print("Making plot of %s stress on receiver fault patches. " % stress_type);
-	# Get the updip and downdip traces of the faults for plotting purposes. 
-	[src_total_x, src_total_y, src_updip_x, src_updip_y] = get_plotting_traces(out_object.source_object);
-	[rec_total_x, rec_total_y, rec_updip_x, rec_updip_y] = get_plotting_traces(out_object.receiver_object);
 
 	if stress_type=='shear':
 		stress_component=out_object.receiver_shear;
@@ -129,8 +104,9 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
 	patches=[];
 	colors=[];
 	for i in range(len(stress_component)):
-		xcoords=rec_total_x[i][0:4];
-		ycoords=rec_total_y[i][0:4];
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object[i]);
+		xcoords=x_total[0:4];
+		ycoords=y_total[0:4];
 		fault_vertices=np.column_stack((xcoords, ycoords));
 		patch_color=custom_cmap.to_rgba(stress_component[i]);
 		
@@ -143,25 +119,23 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
 	for l in cb.ax.yaxis.get_ticklabels():
 		l.set_size(18)
 
-	for i in range(len(src_total_x)):
-		plt.plot(src_total_x[i], src_total_y[i],'k',linewidth=1);
-		plt.plot(src_updip_x[i], src_updip_y[i],'g',linewidth=3);
-	for i in range(len(rec_total_x)):
-		plt.plot(rec_total_x[i], rec_total_y[i],'b',linewidth=1);
-		plt.plot(rec_updip_x[i], rec_updip_y[i],'b',linewidth=3);
-	for i in range(len(out_object.receiver_object.xstart)):
-		center=conversion_math.get_fault_center(out_object.receiver_object,i);
-		plt.plot(center[0],center[1],'.b',markersize=8);
-	for i in range(len(out_object.source_object.xstart)):
-		center=conversion_math.get_fault_center(out_object.source_object,i);
-		plt.plot(center[0],center[1],'.g',markersize=8);			
+	# Adding source and receiver faults
+	for source in out_object.source_object:
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+		plt.plot(x_total, y_total,'k',linewidth=1);
+		plt.plot(x_updip, y_updip,'g',linewidth=3);
+		center=conversion_math.get_fault_center(source);
+		plt.plot(center[0],center[1],'.g',markersize=8);
+	for rec in out_object.receiver_object:
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
+		plt.plot(x_total, y_total,'b',linewidth=1);
+		plt.plot(x_updip, y_updip,'b',linewidth=3);
+		center=conversion_math.get_fault_center(rec);
+		plt.plot(center[0],center[1],'.b',markersize=8);				
 
 	plt.grid();
 	plt.axis('equal');
-	for l in plt.gca().yaxis.get_ticklabels():
-		l.set_size(18);
-	for l in plt.gca().xaxis.get_ticklabels():
-		l.set_size(18);	
+	plt.gca().tick_params(axis='both', which='major', labelsize=18)
 	plt.title(stress_type+' stress from source faults',fontsize=22)
 	plt.xlim([out_object.x.min(),out_object.x.max()])
 	plt.ylim([out_object.y.min(),out_object.y.max()])		
@@ -175,7 +149,7 @@ def side_on_plot(params):
 	plotting_data="Normal";
 	# plotting_data="Coulomb";
 	# plotting_data="Shear";
-	vmin=-10; vmax=10;  # kpa
+	vmin=-1; vmax=1;  # kpa
 	if plotting_data=="Coulomb":
 		plt.scatter(x,z,c=coulomb,s=1450,marker='s',cmap='jet',edgecolor='black', vmin=vmin, vmax=vmax);
 	elif plotting_data=="Normal":
@@ -233,22 +207,27 @@ def map_plot(params, inputs, out_object, stress_component):
 	fig.coast(region=region,projection=proj,N='2',W='0.5p,black',S='white',L="g-125.5/39.6+c1.5+w50");
 
 	# Draw each source
-	for i in range(len(out_object.source_object.xstart)):
-		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.source_object,i);
+	eq_lon=[]; eq_lat=[];
+	for source in out_object.source_object:
+		source_lon, source_lat = conversion_math.xy2lonlat(source.xstart,source.ystart,inputs.zerolon,inputs.zerolat);
+		eq_lon.append(source_lon);
+		eq_lat.append(source_lat);
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
 		lons=[]; lats=[];
 		for j in range(len(x_total)):
 			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
 			lons.append(mylon);
 			lats.append(mylat);
-		if out_object.source_object.potency==[]:
+		if source.potency==[]:
 			fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, just outline them. 
 		else:
 			fig.plot(x=lons, y=lats, style='s0.3c',G="purple",pen="thin,black");  # in case of point sources
 
 	# Draw each receiver, with associated data
-	for i in range(len(out_object.receiver_object.xstart)):
+	for i in range(len(out_object.receiver_object)):
+		rec=out_object.receiver_object[i];
 		lons=[]; lats=[];		
-		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object,i);
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
 		mylon_top, mylat_top = conversion_math.xy2lonlat(x_total[0],y_total[0],inputs.zerolon,inputs.zerolat);
 		mylon_bot, mylat_bot = conversion_math.xy2lonlat(x_total[2],y_total[2],inputs.zerolon,inputs.zerolat);
 		for j in range(len(x_total)):
@@ -262,7 +241,7 @@ def map_plot(params, inputs, out_object, stress_component):
 	fig.colorbar(D="jBr+w3.5i/0.2i+o2.5c/1.5c+h",C="mycpt.cpt",I="0.8",G=str(smallest_stress)+"/"+str(largest_stress-0.1),B=["x"+str(0.2),"y+L\"KPa\""]); 
 
 	# Annotate with earthquake location.
-	fig.plot(inputs.eqlon, inputs.eqlat, style='s0.3c',G="purple",pen="thin,black");
+	fig.plot(eq_lon, eq_lat, style='s0.3c',G="purple",pen="thin,black");
 
 	# Annotate with aftershock locations
 	if len(params.aftershocks)>0:
@@ -290,9 +269,8 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 
 	# slip cmap
 	slip_total = [];
-	for i in range(len(input_object.source_object.rtlat)):
-		slip = np.sqrt(input_object.source_object.rtlat[i]**2 + input_object.source_object.reverse[i]**2);
-		slip_total.append(slip)
+	for source in input_object.source_object:
+		slip_total.append(np.sqrt(source.rtlat**2 + source.reverse**2));
 	slipmin=0
 	slipmax=np.max(slip_total)+0.1;
 	color_boundary_object_slip=matplotlib.colors.Normalize(vmin=slipmin,vmax=slipmax, clip=True);
@@ -305,12 +283,11 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 	latS=input_object.minlat;
 	latN=input_object.maxlat;
 
-
 	# Drawing Sources
-	for i in range(len(input_object.source_object.xstart)):
-		slip = np.sqrt(input_object.source_object.rtlat[i]**2 + input_object.source_object.reverse[i]**2);
+	for source in input_object.source_object:
+		slip = np.sqrt(source.rtlat**2 + source.reverse**2);
 		lons=[]; lats=[];		
-		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(input_object.source_object,i);
+		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
 		for j in range(len(x_total)):
 			temp_lon, temp_lat = conversion_math.xy2lonlat(x_total[j],y_total[j],input_object.zerolon,input_object.zerolat);
 			lons.append(temp_lon); 
@@ -321,7 +298,6 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 		plt.gca().add_patch(mypolygon);		
 		plt.plot(lons, lats, linewidth=1,color='purple');
 		plt.plot(lons[0:2], lats[0:2], linewidth=3,color='purple');
-
 
 	# Displacement vectors at GPS stations
 	scale=250;
@@ -367,10 +343,11 @@ def write_output_files(params, inputs, disp_points, out_object):
 	# Write output file for stresses. 
 	ofile=open(params.outdir+'stresses.txt','w');
 	ofile.write("# Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
-	for i in range(len(out_object.receiver_object.xstart)):
-		# [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(fault_object, i);
-		center=conversion_math.get_fault_center(out_object.receiver_object,i);
-		ofile.write("%f %f %f %f %f %f %f \n" % (center[0], center[1], center[2], out_object.receiver_object.rake[i], out_object.receiver_normal[i], out_object.receiver_shear[i], out_object.receiver_coulomb[i]) );
+	for i in range(len(out_object.receiver_object)):
+		rec = out_object.receiver_object[i];
+		# [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
+		center=conversion_math.get_fault_center(rec);
+		ofile.write("%f %f %f %f %f %f %f \n" % (center[0], center[1], center[2], rec.rake, out_object.receiver_normal[i], out_object.receiver_shear[i], out_object.receiver_coulomb[i]) );
 	ofile.close();
 	print("Outputs written to file.")
 

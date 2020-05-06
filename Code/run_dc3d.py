@@ -15,26 +15,24 @@ def do_stress_computation(params, inputs, disp_points):
 	# Step 2. Resolve stresses on receiver faults
 
 	print("Beginning stress calcultaion.");
-	print("Number of sources: %d " % len(inputs.source_object.xstart));
-	print("Number of receivers: %d " % len(inputs.receiver_object.xstart));
+	print("Number of sources: %d " % len(inputs.source_object));
+	print("Number of receivers: %d " % len(inputs.receiver_object));
 	subfaulted_inputs = split_subfault_receivers(params, inputs);
 	
 	# Refactoring here. 
 	[x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_grid_def(params, subfaulted_inputs);
 	[u_ll, v_ll, w_ll] = compute_ll_def(params, subfaulted_inputs, disp_points);
-	[source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);	
+	[receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 
 	MyOutObject = coulomb_collections.Out_object(x=x,y=y,x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements, w_disp=w_displacements, 
 		u_ll=u_ll, v_ll=v_ll, w_ll=w_ll, 
-		source_object=source_object, receiver_object=receiver_object, receiver_normal=receiver_normal, receiver_shear=receiver_shear, 
+		source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object, receiver_normal=receiver_normal, receiver_shear=receiver_shear, 
 		receiver_coulomb=receiver_coulomb); 
 	return MyOutObject;
 
 
 
-
 def split_subfault_receivers(params,inputs):
-	receiver_object = inputs.receiver_object;
 	strike_split = params.strike_num_receivers;
 	dip_split = params.dip_num_receivers;
 
@@ -43,67 +41,36 @@ def split_subfault_receivers(params,inputs):
 		subfaulted_receivers=inputs.receiver_object;
 		print("Not subdividing receiver faults further.");
 	else:
-		print("Splitting %d receiver faults into %d subfaults each." % (len(receiver_object.xstart), strike_split*dip_split) );
-		new_xstart=[];
-		new_xfinish=[];
-		new_ystart=[];
-		new_yfinish=[];
-		new_Kode=[];
-		new_rtlat=[];
-		new_reverse=[];
-		new_strike=[];
-		new_dipangle=[];
-		new_rake=[];
-		new_top=[];
-		new_bottom=[];
-		new_comment=[];
+		subfaulted_receivers=[];
+		print("Splitting %d receiver faults into %d subfaults each." % (len(inputs.receiver_object), strike_split*dip_split) );
 
-		for i in range(len(receiver_object.xstart)):
-			# For each receiver... 
-
+		for fault in inputs.receiver_object:  # for each receiver... 
 			# We find the depths corresponding to the tops and bottoms of our new sub-faults
-			zsplit_array = get_split_z_array(inputs.receiver_object.top[i],inputs.receiver_object.bottom[i],dip_split);
-			x0=inputs.receiver_object.xstart[i];
-			y0=inputs.receiver_object.ystart[i];
-			x1=inputs.receiver_object.xfinish[i];
-			y1=inputs.receiver_object.yfinish[i];			
+			zsplit_array = get_split_z_array(fault.top,fault.bottom,dip_split);
 
-			for j in range(dip_split):
-				# First we split it up by dip. 
-
+			for j in range(dip_split):  # First we split it up by dip. 
 				# Get the new coordinates of the top of the fault plane. 
-				W = conversion_math.get_downdip_width(inputs.receiver_object.top[i],zsplit_array[j],inputs.receiver_object.dipangle[i]);
-				vector_mag = W*np.cos(np.deg2rad(inputs.receiver_object.dipangle[i]));  # how far the bottom edge is displaced downdip from map-view
+				W = conversion_math.get_downdip_width(fault.top,zsplit_array[j],fault.dipangle);
+				vector_mag = W*np.cos(np.deg2rad(fault.dipangle));  # how far the bottom edge is displaced downdip from map-view
 
 				# Get the starting points for the next row of fault subpatches. 
-				[start_x_top, start_y_top] = conversion_math.add_vector_to_point(x0,y0,vector_mag,inputs.receiver_object.strike[i]+90);
-				[finish_x_top, finish_y_top] = conversion_math.add_vector_to_point(x1,y1,vector_mag,inputs.receiver_object.strike[i]+90);
+				[start_x_top, start_y_top] = conversion_math.add_vector_to_point(fault.xstart,fault.ystart,vector_mag,fault.strike+90);
+				[finish_x_top, finish_y_top] = conversion_math.add_vector_to_point(fault.xfinish,fault.yfinish,vector_mag,fault.strike+90);
 
 				[xsplit_array, ysplit_array] = get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, strike_split);
 
 				for k in range(strike_split):
-					new_xstart.append(xsplit_array[k]);
-					new_xfinish.append(xsplit_array[k+1]);
-					new_ystart.append(ysplit_array[k]);
-					new_yfinish.append(ysplit_array[k+1]);
-					new_Kode.append(receiver_object.Kode[i]);
-					new_rtlat.append(receiver_object.rtlat[i]);
-					new_reverse.append(receiver_object.reverse[i]);
-					new_strike.append(receiver_object.strike[i]);
-					new_dipangle.append(receiver_object.dipangle[i]);
-					new_rake.append(receiver_object.rake[i]);
-					new_top.append(zsplit_array[j]);
-					new_bottom.append(zsplit_array[j+1]);
-					new_comment.append(receiver_object.comment[i]);
-
-		subfaulted_receivers = coulomb_collections.Faults_object(xstart=new_xstart, xfinish=new_xfinish, ystart=new_ystart, yfinish=new_yfinish, Kode=new_Kode, rtlat=new_rtlat, 
-			reverse=new_reverse, potency=[], strike=new_strike, dipangle=new_dipangle, rake=new_rake, top=new_top, bottom=new_bottom, comment=new_comment);
+					single_subfaulted_receiver = coulomb_collections.Faults_object(xstart=xsplit_array[k], 
+						xfinish=xsplit_array[k+1], ystart=ysplit_array[k], yfinish=ysplit_array[k+1], 
+						Kode=fault.Kode, rtlat=0, reverse=0, potency=[], 
+						strike=fault.strike, dipangle=fault.dipangle, rake=fault.rake, 
+						top=zsplit_array[j], bottom=zsplit_array[j+1], comment=fault.comment);
+					subfaulted_receivers.append(single_subfaulted_receiver);
 	
 	subfaulted_objects = coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx, 
 		start_gridy=inputs.start_gridy, finish_gridy=inputs.finish_gridy, xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon,maxlon=inputs.maxlon,
-		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,eqlon=inputs.eqlon, eqlat=inputs.eqlat,
-		source_object=inputs.source_object,
-		receiver_object=subfaulted_receivers);
+		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,
+		source_object=inputs.source_object, receiver_object=subfaulted_receivers);
 
 	return subfaulted_objects;
 
@@ -181,30 +148,29 @@ def compute_surface_disp_point(params, inputs, x, y):
 	# A major compute loop for each source object at an x/y point. 
 	# x/y in the same coordinate system as the fault object. 
 	u_disp = 0; v_disp=0; w_disp=0;
-	for i in range(len(inputs.source_object.xstart)):
+	for fault in inputs.source_object:
 
 		# Fault parameters
-		L = conversion_math.get_strike_length(inputs.source_object.xstart[i],inputs.source_object.xfinish[i],inputs.source_object.ystart[i],inputs.source_object.yfinish[i]);
-		W = conversion_math.get_downdip_width(inputs.source_object.top[i],inputs.source_object.bottom[i],inputs.source_object.dipangle[i]);
-		depth       = inputs.source_object.top[i];
-		strike      = inputs.source_object.strike[i];
-		dip         = inputs.source_object.dipangle[i];
-		strike_slip = inputs.source_object.rtlat[i]*-1;  # The dc3d coordinate system has left-lateral positive. 
-		dip_slip    = inputs.source_object.reverse[i];		
+		L = conversion_math.get_strike_length(fault.xstart,fault.xfinish,fault.ystart,fault.yfinish);
+		W = conversion_math.get_downdip_width(fault.top,fault.bottom,fault.dipangle);
+		depth       = fault.top;
+		dip         = fault.dipangle;
+		strike_slip = fault.rtlat*-1;  # The dc3d coordinate system has left-lateral positive. 
+		dip_slip    = fault.reverse;
 
 		# Preparing to rotate to a fault-oriented coordinate system.
-		theta=inputs.source_object.strike[i]-90;
+		theta=fault.strike-90;
 		theta=np.deg2rad(theta);
 		R=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
 		R2=np.array([[np.cos(-theta),-np.sin(-theta)],[np.sin(-theta),np.cos(-theta)]])
  
 		# Compute the position relative to the translated, rotated fault. 
-		translated_pos = np.array([[x-inputs.source_object.xstart[i]],[y-inputs.source_object.ystart[i]]]);
+		translated_pos = np.array([[x-fault.xstart],[y-fault.ystart]]);
 		xy=R.dot(translated_pos);
 		# Solve for displacements at the surface
-		if inputs.source_object.potency != []:
+		if fault.potency != []:
 			success, u, grad_u = dc3d0wrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, 
-				[inputs.source_object.potency[i][0], inputs.source_object.potency[i][1], inputs.source_object.potency[i][2], inputs.source_object.potency[i][3]]);  
+				[fault.potency[0], fault.potency[1], fault.potency[2], fault.potency[3]]);  
 			u=u*1e-6;  # Unit correction: potency from N-m results in displacements in microns. 
 		else:
 			success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]); 
@@ -224,52 +190,40 @@ def compute_strains_stresses(params, inputs):
 	# Pseudocode: 
 	# For each receiver, at the center point, sum up the strain and stress for each source.
 	# Return : source object, receiver object, shear stress, normal stress, and coulomb stress on each receiver. 
-
-	number_of_receivers=len(inputs.receiver_object.xstart);
 	
-	# Where do we calculate the stress tensor? 
-	receiver_center_x=[]; receiver_center_y=[]; receiver_center_z=[];
-
 	# The values we're actually going to output. 
 	receiver_shear=[];
 	receiver_normal=[];
 	receiver_coulomb=[];
 
-	for m in range(number_of_receivers):
-		centercoords = conversion_math.get_fault_center(inputs.receiver_object,m);
-		receiver_center_x.append(centercoords[0]);
-		receiver_center_y.append(centercoords[1]);
-		receiver_center_z.append(centercoords[2]);
-		receiver_strike = inputs.receiver_object.strike[m];
-		receiver_dip    = inputs.receiver_object.dipangle[m];
-		receiver_rake   = inputs.receiver_object.rake[m];
+	for receiver in inputs.receiver_object:
+		centercoords = conversion_math.get_fault_center(receiver);
 		normal_sum=0;
 		shear_sum=0;
 		coulomb_sum=0;
 
-		for i in range(len(inputs.source_object.xstart)):
+		for source in inputs.source_object:
 		# A major compute loop for each source object. 
 
-			L = conversion_math.get_strike_length(inputs.source_object.xstart[i],inputs.source_object.xfinish[i],inputs.source_object.ystart[i],inputs.source_object.yfinish[i]);
-			W = conversion_math.get_downdip_width(inputs.source_object.top[i],inputs.source_object.bottom[i],inputs.source_object.dipangle[i]);
-			depth       = inputs.source_object.top[i];
-			strike      = inputs.source_object.strike[i];
-			dip         = inputs.source_object.dipangle[i];
-			strike_slip = inputs.source_object.rtlat[i]*-1; # The dc3d coordinate system has left-lateral positive. 
-			dip_slip    = inputs.source_object.reverse[i];
+			L = conversion_math.get_strike_length(source.xstart,source.xfinish,source.ystart,source.yfinish);
+			W = conversion_math.get_downdip_width(source.top,source.bottom,source.dipangle);
+			depth       = source.top;
+			dip         = source.dipangle;
+			strike_slip = source.rtlat*-1; # The dc3d coordinate system has left-lateral positive. 
+			dip_slip    = source.reverse;
 
 			# Preparing to rotate to a fault-oriented coordinate system.
-			theta=inputs.source_object.strike[i]-90;
+			theta=source.strike-90;
 			theta=np.deg2rad(theta);
 			R=np.array([[np.cos(theta),-np.sin(theta), 0],[np.sin(theta),np.cos(theta), 0],[0,0,1]]);  # horizontal rotation into strike-aligned coordinates.
 			R2=np.array([[np.cos(-theta),-np.sin(-theta),0],[np.sin(-theta),np.cos(-theta),0],[0,0,1]]); 
 			
 			# Compute the position relative to the translated, rotated fault. 
-			translated_pos = np.array([[centercoords[0]-inputs.source_object.xstart[i]],[centercoords[1]-inputs.source_object.ystart[i]],[-centercoords[2]] ]);
+			translated_pos = np.array([[centercoords[0]-source.xstart],[centercoords[1]-source.ystart],[-centercoords[2]] ]);
 			xyz=R.dot(translated_pos);
-			if inputs.source_object.potency != []:
+			if source.potency != []:
 				success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, 
-					[inputs.source_object.potency[i][0], inputs.source_object.potency[i][1], inputs.source_object.potency[i][2], inputs.source_object.potency[i][3]]); 
+					[source.potency[0], source.potency[1], source.potency[2], source.potency[3]]); 
 				grad_u = grad_u * 1e-9; # DC3D0 Unit correction: potency from N-m results in displacements in nanostrain
 			else:
 				success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0], [strike_slip, dip_slip, 0.0]);  
@@ -284,7 +238,7 @@ def compute_strains_stresses(params, inputs):
 			stress_tensor=conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu);
 
 			# Then compute shear, normal, and coulomb stresses. 
-			[normal, shear, coulomb]=conversion_math.get_coulomb_stresses(stress_tensor,receiver_strike,receiver_rake,receiver_dip,inputs.FRIC);
+			[normal, shear, coulomb]=conversion_math.get_coulomb_stresses(stress_tensor,receiver.strike,receiver.rake,receiver.dipangle,inputs.FRIC);
 			normal_sum=normal_sum+normal;
 			shear_sum=shear_sum+shear;
 			coulomb_sum=coulomb_sum+coulomb;
@@ -293,9 +247,8 @@ def compute_strains_stresses(params, inputs):
 		receiver_shear.append(shear_sum);
 		receiver_coulomb.append(coulomb_sum);
 
-		# Maybe return a source_object, receiver_object, and lists of normal, shear, coulomb values. 
-	return [inputs.source_object, inputs.receiver_object, receiver_normal, receiver_shear, receiver_coulomb]; 
-	
+		# return lists of normal, shear, coulomb values for each receiver. 
+	return [receiver_normal, receiver_shear, receiver_coulomb]; 	
 
 
 """

@@ -7,7 +7,8 @@
 # Source retrieved from USGS moment tensor http://www.ncedc.org/mt/nc73355700_MT.html
 # Receiver is a guess to the Cascadia megathrust
 
+G: 0.250 0.40 -125.80 -122.60 -124.50 39.30 41.70 40.30
 S: 37 5 87 -124.4425 40.3473 28.6 5.2 30e9 30e9  # testing moving the source westward
 # R: 355 90 12 140 120 -124.56 40.3 10.8  # cascadia
 R: 90 180 89 100 35 -125.0 40.3 5.8  # MFZ
-G: 0.250 0.40 -125.80 -122.60 -124.50 39.30 41.70 40.30
+

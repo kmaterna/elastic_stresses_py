@@ -149,30 +149,30 @@ def get_rake(strike_slip, dip_slip):
 	rake = np.rad2deg(math.atan2(dip_slip,strike_slip));
 	return rake;
 
-def get_fault_center(fault_object, index):
+def get_fault_center(fault_object):
 	# Compute the x-y-z coordinates of the center of a fault patch. 
 	# Index is the i'th fault patch in this fault_object
-	W = get_downdip_width(fault_object.top[index],fault_object.bottom[index],fault_object.dipangle[index]);
-	center_z = (fault_object.top[index]+fault_object.bottom[index])/2.0;
-	updip_center_x=(fault_object.xstart[index]+fault_object.xfinish[index])/2.0;
-	updip_center_y=(fault_object.ystart[index]+fault_object.yfinish[index])/2.0;
-	vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle[index]))/2.0;  # how far the middle is displaced downdip from map-view
-	center_point = add_vector_to_point(updip_center_x,updip_center_y,vector_mag, fault_object.strike[index]+90);  # strike+90 = downdip direction. 
+	W = get_downdip_width(fault_object.top,fault_object.bottom,fault_object.dipangle);
+	center_z = (fault_object.top+fault_object.bottom)/2.0;
+	updip_center_x=(fault_object.xstart+fault_object.xfinish)/2.0;
+	updip_center_y=(fault_object.ystart+fault_object.yfinish)/2.0;
+	vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle))/2.0;  # how far the middle is displaced downdip from map-view
+	center_point = add_vector_to_point(updip_center_x,updip_center_y,vector_mag, fault_object.strike+90);  # strike+90 = downdip direction. 
 	center = [center_point[0],center_point[1],center_z]; 
 	return center; 
 
-def get_fault_four_corners(fault_object, i):
+def get_fault_four_corners(fault_object):
 	# Get the four corners of the object, including updip and downdip. 
-	W = get_downdip_width(fault_object.top[i],fault_object.bottom[i],fault_object.dipangle[i]);
-	depth       = fault_object.top[i];
-	strike      = fault_object.strike[i];
-	dip         = fault_object.dipangle[i];
+	W = get_downdip_width(fault_object.top,fault_object.bottom,fault_object.dipangle);
+	depth       = fault_object.top;
+	strike      = fault_object.strike;
+	dip         = fault_object.dipangle;
 
-	updip_point0 = [fault_object.xstart[i],fault_object.ystart[i]];
-	updip_point1 = [fault_object.xfinish[i],fault_object.yfinish[i]];
-	vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle[i]));  # how far the bottom edge is displaced downdip from map-view
-	downdip_point0 = add_vector_to_point(fault_object.xstart[i],fault_object.ystart[i],vector_mag, strike+90);  # strike+90 = downdip direction. 
-	downdip_point1 = add_vector_to_point(fault_object.xfinish[i],fault_object.yfinish[i], vector_mag, strike+90);
+	updip_point0 = [fault_object.xstart,fault_object.ystart];
+	updip_point1 = [fault_object.xfinish,fault_object.yfinish];
+	vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle));  # how far the bottom edge is displaced downdip from map-view
+	downdip_point0 = add_vector_to_point(fault_object.xstart,fault_object.ystart,vector_mag, strike+90);  # strike+90 = downdip direction. 
+	downdip_point1 = add_vector_to_point(fault_object.xfinish,fault_object.yfinish, vector_mag, strike+90);
 
 	x_total = [updip_point0[0], updip_point1[0], downdip_point1[0], downdip_point0[0],updip_point0[0]];
 	y_total = [updip_point0[1], updip_point1[1], downdip_point1[1], downdip_point0[1],updip_point0[1]];

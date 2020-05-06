@@ -28,5 +28,4 @@ def do_calculation():
 
 
 
-
 do_calculation();

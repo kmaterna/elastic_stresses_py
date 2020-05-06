@@ -13,15 +13,15 @@ import conversion_math
 
 
 def read_inp(input_file,fixed_rake):
+
 	print("Reading source and receiver information from file %s with fixed_rake = %f " % (input_file, fixed_rake) );
 	# inp files require a fixed rake for the receiver faults, since they don't provide a fault-specific one inside the input file. 
+	
+	[minlon, maxlon, zerolon, minlat, maxlat, zerolat] = get_map_info(input_file);
+	
 	read_faults=0;
-	read_maps=0;
 	read_grid=0;
-	minlon=[]; maxlon=[]; zerolon=[]; minlat=[]; maxlat=[]; zerolat=[]; start_grix=[]; start_gridy=[]; finish_gridx=[]; finish_gridy=[]; xinc=[]; yinc=[];
-	xstart_rec=[]; xfinish_rec=[]; ystart_rec=[]; yfinish_rec=[]; Kode_rec=[]; rtlat_rec=[]; reverse_rec=[]; strike_rec=[]; dipangle_rec=[]; rake_rec=[]; top_rec=[]; bottom_rec=[]; comment_rec=[];
-	xstart_src=[]; xfinish_src=[]; ystart_src=[]; yfinish_src=[]; Kode_src=[]; rtlat_src=[]; reverse_src=[]; strike_src=[]; dipangle_src=[]; rake_src=[]; top_src=[]; bottom_src=[]; comment_src=[];
-
+	sources=[]; receivers=[];
 
 	ifile=open(input_file);
 	for line in ifile:
@@ -44,41 +44,18 @@ def read_inp(input_file,fixed_rake):
 			else:
 				slip = abs(float(temp[6]))+abs(float(temp[7]));
 				if slip>0.0000001:  # Here we have a source fault
-					xstart_src.append(float(temp[1]));
-					ystart_src.append(float(temp[2]));
-					xfinish_src.append(float(temp[3]));
-					yfinish_src.append(float(temp[4]));
-					Kode_src.append(int(temp[5]));
-					rtlat_src.append(float(temp[6]));
-					reverse_src.append(float(temp[7]));
-					dipangle_src.append(float(temp[8]));
-					top_src.append(float(temp[9]));
-					bottom_src.append(float(temp[10]));
-					comment_src.append(" ".join(temp[11:-1]));
-					deltax=xfinish_src[-1]-xstart_src[-1];
-					deltay=yfinish_src[-1]-ystart_src[-1];
-					strike = conversion_math.get_strike(deltax, deltay);
-					strike_src.append(strike);
-					rake = conversion_math.get_rake(rtlat_src[-1],reverse_src[-1]);
-					rake_src.append(rake);
+					[xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom, comment] = read_fault_line(line);
+					rake = conversion_math.get_rake(rtlat,reverse);
+					one_source_object=coulomb_collections.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, 
+						Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[], strike=strike, dipangle=dipangle, rake=rake, 
+						top=top, bottom=bottom, comment=comment);
+					sources.append(one_source_object)
 				else:  # here we have a receiver fault
-					xstart_rec.append(float(temp[1]));
-					ystart_rec.append(float(temp[2]));
-					xfinish_rec.append(float(temp[3]));
-					yfinish_rec.append(float(temp[4]));
-					Kode_rec.append(int(temp[5]));
-					rtlat_rec.append(float(temp[6]));
-					reverse_rec.append(float(temp[7]));
-					dipangle_rec.append(float(temp[8]));
-					top_rec.append(float(temp[9]));
-					bottom_rec.append(float(temp[10]));
-					comment_rec.append(" ".join(temp[11:-1]));
-					deltax=xfinish_rec[-1]-xstart_rec[-1];
-					deltay=yfinish_rec[-1]-ystart_rec[-1];
-					strike = conversion_math.get_strike(deltax, deltay);
-					strike_rec.append(strike);
+					[xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom, comment] = read_fault_line(line);
 					rake = fixed_rake;
-					rake_rec.append(rake);
+					one_receiver_object = coulomb_collections.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+					 Kode=Kode, rtlat=0, reverse=0, potency=[], strike=strike, dipangle=dipangle, rake=rake, top=top, bottom=bottom, comment=comment);
+					receivers.append(one_receiver_object);
 		# Moving into Grid Parameters and Map Information
 		if 'Grid Parameters' in line:
 			read_grid=1;
@@ -99,7 +76,37 @@ def read_inp(input_file,fixed_rake):
 			else:
 				read_grid=0;
 				continue;
+	ifile.close();
 
+	input_obj=coulomb_collections.Input_object(PR1=PR1,FRIC=FRIC, depth=depth, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
+		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, 
+		receiver_object=receivers, source_object=sources);
+
+	return input_obj;
+
+
+def read_fault_line(line):
+	temp=line.split();
+	xstart=float(temp[1]);
+	ystart=float(temp[2]);
+	xfinish=float(temp[3]);
+	yfinish=float(temp[4]);
+	Kode=int(temp[5]);
+	rtlat=float(temp[6]);
+	reverse=float(temp[7]);
+	dipangle=float(temp[8]);
+	top=float(temp[9]);
+	bottom=float(temp[10]);
+	comment=" ".join(temp[11:-1]);	
+	strike = conversion_math.get_strike(xfinish-xstart, yfinish-ystart);	
+	return [xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom, comment];
+
+def get_map_info(input_file):
+	# Open a Coulomb file and get the map information
+	read_maps=0;
+	ifile=open(input_file);
+	for line in ifile:
+		temp=line.split();
 		# Reading Map Information
 		if 'Map info' in line:
 			read_maps=1;
@@ -120,21 +127,13 @@ def read_inp(input_file,fixed_rake):
 			else:
 				read_maps=0;
 				continue;
-
 	ifile.close();
-
-	receivers=coulomb_collections.Faults_object(xstart=xstart_rec, xfinish=xfinish_rec, ystart=ystart_rec, yfinish=yfinish_rec, Kode=Kode_rec, rtlat=rtlat_rec, reverse=reverse_rec, potency=[], strike=strike_rec, dipangle=dipangle_rec, rake=rake_rec, top=top_rec, bottom=bottom_rec, comment=comment_rec);
-	sources=coulomb_collections.Faults_object(xstart=xstart_src, xfinish=xfinish_src, ystart=ystart_src, yfinish=yfinish_src, Kode=Kode_src, rtlat=rtlat_src, reverse=reverse_src, potency=[], strike=strike_src, dipangle=dipangle_src, rake=rake_src, top=top_src, bottom=bottom_src, comment=comment_src);
-
-	input_obj=coulomb_collections.Input_object(PR1=PR1,FRIC=FRIC, depth=depth, start_gridx=start_gridx, finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy, 
-		xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat, eqlon=[], eqlat=[], 
-		receiver_object=receivers, source_object=sources);
-
-	return input_obj;
+	return [minlon, maxlon, zerolon, minlat, maxlat, zerolat];
 
 
 
 def write_inp(outfile, data_obj):
+	# THIS HAS NOT BEEN TESTED WITH THE NEW LIST OF OBJECTS CONVENTION
 	sources=data_obj.source_object;
 	receivers=data_obj.receiver_object;
 	num_faults=len(sources.xstart)+len(receivers.xstart);

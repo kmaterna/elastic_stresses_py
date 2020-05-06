@@ -21,7 +21,6 @@ Input_object = collections.namedtuple('Input_object',[
 	'zerolon',
 	'minlat','maxlat',
 	'zerolat',
-	'eqlon','eqlat',
 	'source_object',
 	'receiver_object'])
 
