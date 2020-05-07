@@ -24,7 +24,7 @@ def produce_outputs(params, inputs, disp_points, out_object):
 		finish_gridy=inputs.finish_gridy,xinc=inputs.xinc,yinc=inputs.yinc,minlon=inputs.minlon,maxlon=inputs.maxlon,
 		zerolon=inputs.zerolon,minlat=inputs.minlat,maxlat=inputs.maxlat,zerolat=inputs.zerolat,
 		source_object=out_object.source_object,receiver_object=out_object.receiver_object); # make a new object of the subfaulted configuration.
-	# io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs);  # WILL FIX THIS FUNCITON LATER
+	io_inp.write_inp(params.outdir+'subfaulted.inp',subfaulted_inputs); 
 	surface_def_plot(params,out_object);  # THIS WORKS
 	stress_plot(params,out_object,'shear');  # can give vmin, vmax here if desired. 
 	stress_plot(params,out_object,'normal');
@@ -213,11 +213,7 @@ def map_plot(params, inputs, out_object, stress_component):
 		eq_lon.append(source_lon);
 		eq_lat.append(source_lat);
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
-		lons=[]; lats=[];
-		for j in range(len(x_total)):
-			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
-			lons.append(mylon);
-			lats.append(mylat);
+		lons, lats = conversion_math.xy2lonlat(x_total,y_total,inputs.zerolon,inputs.zerolat);
 		if source.potency==[]:
 			fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, just outline them. 
 		else:
@@ -226,14 +222,10 @@ def map_plot(params, inputs, out_object, stress_component):
 	# Draw each receiver, with associated data
 	for i in range(len(out_object.receiver_object)):
 		rec=out_object.receiver_object[i];
-		lons=[]; lats=[];		
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
 		mylon_top, mylat_top = conversion_math.xy2lonlat(x_total[0],y_total[0],inputs.zerolon,inputs.zerolat);
 		mylon_bot, mylat_bot = conversion_math.xy2lonlat(x_total[2],y_total[2],inputs.zerolon,inputs.zerolat);
-		for j in range(len(x_total)):
-			mylon, mylat = conversion_math.xy2lonlat(x_total[j],y_total[j],inputs.zerolon,inputs.zerolat);
-			lons.append(mylon);
-			lats.append(mylat);	
+		lons, lats = conversion_math.xy2lonlat(x_total,y_total,inputs.zerolon,inputs.zerolat);
 		fig.plot(x=lons, y=lats, Z="f"+str(plotting_stress[i]), pen="thick,black", C="mycpt.cpt");   # coloring by stress value
 
 	# Colorbar annotation
@@ -246,8 +238,7 @@ def map_plot(params, inputs, out_object, stress_component):
 	# Annotate with aftershock locations
 	if len(params.aftershocks)>0:
 		[lon, lat, depth, magnitude, time]=io_additionals.read_aftershock_table(params.aftershocks);
-		for i in range(len(lon)):
-			fig.plot(lon,lat,style='c0.1c',G='black',pen="thin,black");	
+		fig.plot(lon,lat,style='c0.1c',G='black',pen="thin,black");	
 
 	fig.savefig(params.outdir+label+'_map.png');
 	plt.close();
@@ -268,9 +259,7 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 	vertical_cmap = cm.ScalarMappable(norm=color_boundary_object_vert,cmap='RdYlBu_r');
 
 	# slip cmap
-	slip_total = [];
-	for source in input_object.source_object:
-		slip_total.append(np.sqrt(source.rtlat**2 + source.reverse**2));
+	slip_total = [np.sqrt(source.rtlat**2 + source.reverse**2) for source in input_object.source_object];
 	slipmin=0
 	slipmax=np.max(slip_total)+0.1;
 	color_boundary_object_slip=matplotlib.colors.Normalize(vmin=slipmin,vmax=slipmax, clip=True);
@@ -286,12 +275,8 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 	# Drawing Sources
 	for source in input_object.source_object:
 		slip = np.sqrt(source.rtlat**2 + source.reverse**2);
-		lons=[]; lats=[];		
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
-		for j in range(len(x_total)):
-			temp_lon, temp_lat = conversion_math.xy2lonlat(x_total[j],y_total[j],input_object.zerolon,input_object.zerolat);
-			lons.append(temp_lon); 
-			lats.append(temp_lat);
+		lons, lats = conversion_math.xy2lonlat(x_total,y_total,input_object.zerolon,input_object.zerolat);
 		fault_vertices=np.column_stack((lons[0:4], lats[0:4]));
 		patch_color=slip_cmap.to_rgba(slip);
 		mypolygon = Polygon(fault_vertices,color=patch_color,alpha=1.0);

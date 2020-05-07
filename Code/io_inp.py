@@ -133,10 +133,9 @@ def get_map_info(input_file):
 
 
 def write_inp(outfile, data_obj):
-	# THIS HAS NOT BEEN TESTED WITH THE NEW LIST OF OBJECTS CONVENTION
 	sources=data_obj.source_object;
 	receivers=data_obj.receiver_object;
-	num_faults=len(sources.xstart)+len(receivers.xstart);
+	num_faults=len(sources)+len(receivers);
 	ofile=open(outfile,'w');
 	ofile.write('This is a test file for Coulomb 3.0\n');
 	ofile.write('This file is prepared by Python\n');
@@ -150,12 +149,12 @@ def write_inp(outfile, data_obj):
 	ofile.write('S2DR=   109.0001     S2DP=     -0.0001    S2IN=      0.000     S2GD=   .000000\n\n');
 	ofile.write('  #   X-start    Y-start     X-fin      Y-fin   Kode  rt.lat    reverse   dip angle     top      bot\n');
 	ofile.write('xxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx\n');
-	for i in range(len(sources.xstart)):
-		ofile.write('  1 % 10.4f % 10.4f % 10.4f % 10.4f %3d % 10.4f % 10.4f % 10.4f % 10.2f % 10.2f %s\n' % (sources.xstart[i], sources.ystart[i], sources.xfinish[i], sources.yfinish[i], 
-			sources.Kode[i], sources.rtlat[i], sources.reverse[i], sources.dipangle[i], sources.top[i], sources.bottom[i], sources.comment[i]) );
-	for i in range(len(receivers.xstart)):
-		ofile.write('  1 % 10.4f % 10.4f % 10.4f % 10.4f %3d % 10.4f % 10.4f % 10.4f % 10.2f % 10.2f %s\n' % (receivers.xstart[i], receivers.ystart[i], receivers.xfinish[i], receivers.yfinish[i], 
-			receivers.Kode[i], receivers.rtlat[i], receivers.reverse[i], receivers.dipangle[i], receivers.top[i], receivers.bottom[i], receivers.comment[i]) );
+	for fault in sources:
+		ofile.write('  1 % 10.4f % 10.4f % 10.4f % 10.4f %3d % 10.4f % 10.4f % 10.4f % 10.2f % 10.2f %s\n' % (fault.xstart, fault.ystart, fault.xfinish, fault.yfinish, 
+			fault.Kode, fault.rtlat, fault.reverse, fault.dipangle, fault.top, fault.bottom, fault.comment) );
+	for fault in receivers:
+		ofile.write('  1 % 10.4f % 10.4f % 10.4f % 10.4f %3d % 10.4f % 10.4f % 10.4f % 10.2f % 10.2f %s\n' % (fault.xstart, fault.ystart, fault.xfinish, fault.yfinish, 
+			fault.Kode, fault.rtlat, fault.reverse, fault.dipangle, fault.top, fault.bottom, fault.comment) );
 	ofile.write('\n');
 	ofile.write('    Grid Parameters\n');
 	ofile.write('  1  ----------------------------  Start-x =    % 10.5f\n' % data_obj.start_gridx);

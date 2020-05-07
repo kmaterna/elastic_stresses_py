@@ -180,20 +180,44 @@ def get_fault_four_corners(fault_object):
 	y_updip = [updip_point0[1], updip_point1[1]];
 	return [x_total, y_total, x_updip, y_updip];
 
-def xy2lonlat(xi,yi,reflon,reflat):
-	lat=reflat+( yi*1/111.000 );
-	lon=reflon+( xi*1/(111.000*abs(np.cos(np.deg2rad(reflat)))) );
+
+def xy2lonlat(xi,yi,reflon,reflat):  # can take a list or a single value
+	if type(xi)==float or type(xi)==np.float64 or type(xi)==int:   # if we are getting a single value, we return a single value. 
+		lon, lat = xy2lonlat_single(xi, yi, reflon, reflat);
+	else:   # if we are getting a list of values, we return a list of the same dimensions
+		lat, lon=[],[]; 
+		for i in range(len(xi)):
+			loni, lati = xy2lonlat_single(xi[i], yi[i], reflon, reflat);
+			lon.append(loni);
+			lat.append(lati);
 	return lon, lat;
 
+def latlon2xy(loni,lati,lon0,lat0):  # can take a list or a single value
+	if type(loni)==float or type(loni)==np.float64 or type(loni)==int:   # if we are getting a single value, we return a single value.
+		x, y = latlon2xy_single(loni,lati,lon0,lat0);
+	else:  # If we are getting a list, return a list of the same dimensions
+		x,y=[],[];
+		for i in range(len(loni)):
+			xi, yi = latlon2xy_single(loni[i],lati[i],lon0,lat0);
+			x.append(xi);
+			y.append(yi);
+	return [x,y];
 
-def latlon2xy(loni,lati,lon0,lat0):
+
+# THE MATH FUNCTIONS
+def xy2lonlat_single(xi,yi,reflon,reflat):
+	lat=reflat+( yi*1/111.000 );
+	lon=reflon+( xi*1/(111.000*abs(np.cos(np.deg2rad(reflat)))) );	
+	return lon, lat;
+
+def latlon2xy_single(loni,lati,lon0,lat0):
 	# returns the distance between a point and a reference in km. 
 	radius = haversine.distance([lat0,lon0], [lati,loni]);
 	bearing = haversine.calculate_initial_compass_bearing((lat0, lon0),(lati, loni))
 	azimuth = 90 - bearing;
 	x = radius * np.cos(np.deg2rad(azimuth));
 	y = radius * np.sin(np.deg2rad(azimuth));
-	return [x, y];
+	return x, y;
 
 
 
