@@ -125,8 +125,8 @@ def compute_grid_def(params, inputs):
 def compute_ll_def(params, inputs, disp_points):
 	# Loop through a list of lon/lat and compute their displacements due to all sources put together. 
 	x=[]; y=[];
-	for i in range(len(disp_points[0])):
-		[xi,yi]=conversion_math.latlon2xy(disp_points[0][i],disp_points[1][i],inputs.zerolon,inputs.zerolat);
+	for i in range(len(disp_points.lon)):
+		[xi,yi]=conversion_math.latlon2xy(disp_points.lon[i],disp_points.lat[i],inputs.zerolon,inputs.zerolat);
 		x.append(xi);
 		y.append(yi);
 

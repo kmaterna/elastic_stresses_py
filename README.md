@@ -31,7 +31,7 @@ Source Faults (or faults have slip on them) and Receiver Faults (or faults recei
 * **General Format:** "G: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"
 	* For all files, describes coordinate system and domain setup. This line must come first. 
 * **Slip Format:** "S: strike rake dip length width lon lat depth slip"
-	* For sources in .intxt files, best for slip distributions and fault patches
+	* For sources in .intxt files, best for slip distributions and fault patches. Slip in m. 
 * **WC Format:** "S: strike rake dip magnitude faulting_type lon lat depth"
 	* For sources in .intxt files, best for catalogs using Wells and Coppersmith (1994)
 * **FM Format:** "S: strike rake dip lon lat depth magnitude mu lambda"

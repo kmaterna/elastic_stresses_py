@@ -42,3 +42,8 @@ Out_object = collections.namedtuple('Out_object',[
 	'source_object','receiver_object',
 	'receiver_normal','receiver_shear','receiver_coulomb']);
 
+Displacement_points = collections.namedtuple('Disp_Points',[
+	'lon','lat',
+	'dE_obs','dN_obs','dU_obs',
+	'Se_obs','Sn_obs','Su_obs',
+	'name']);

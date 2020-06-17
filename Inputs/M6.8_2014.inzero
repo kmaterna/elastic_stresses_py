@@ -1,6 +1,6 @@
 # convenient point source (FM) input format
 # Source: strike rake dip lon lat depth magnitude mu lambda
-# Receivers: strike rake dip lon lat depth moment_magnitude
+# Receivers: strike rake dip length width lon lat depth
 # General: PR1 FRIC lon_min lon_max lon_zero lat_min lat_max lat_zero
 # 
 # Example: M6.8 off Mendocino, 

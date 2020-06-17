@@ -101,8 +101,6 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
 	# Figure of stresses. 
 	plt.figure(figsize=(12,10));
 
-	patches=[];
-	colors=[];
 	for i in range(len(stress_component)):
 		[x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object[i]);
 		xcoords=x_total[0:4];
@@ -282,15 +280,21 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 		mypolygon = Polygon(fault_vertices,color=patch_color,alpha=1.0);
 		plt.gca().add_patch(mypolygon);		
 		plt.plot(lons, lats, linewidth=1,color='purple');
-		plt.plot(lons[0:2], lats[0:2], linewidth=3,color='purple');
+		plt.plot(lons[0:2], lats[0:2], linewidth=3,color='purple');  # the top edge of the fault patch
+		if source.potency != []:
+			plt.plot(lons[0],lats[0], marker='s',markersize=10,color='purple');  # the location of focal mechanism
 
 	# Displacement vectors at GPS stations
-	scale=250;
+	# Smaller scale here means zooming in on the vectors (appropriate for small events)
+	max_vector = np.nanmax(np.sqrt(np.multiply(out_object.u_ll, out_object.u_ll) + np.multiply(out_object.v_ll, out_object.v_ll) ));
+	scale=max_vector * 1000;  # gives a reasonable sized vector for 1m of slip
 	if disp_points != []:
-		for i in range(len(disp_points[0])):
+		for i in range(len(disp_points.lon)):
 			patch_color=vertical_cmap.to_rgba(1000*out_object.w_ll[i]);
-			plt.plot(disp_points[0][i], disp_points[1][i], marker='o',markersize=15, markeredgecolor='black',color=patch_color);
-			plt.quiver(disp_points[0][i], disp_points[1][i], 1000*out_object.u_ll[i], 1000*out_object.v_ll[i],scale=scale, color='black',zorder=10);
+			plt.plot(disp_points.lon[i], disp_points.lat[i], marker='o',markersize=15, markeredgecolor='black',color=patch_color);
+			plt.quiver(disp_points.lon[i], disp_points.lat[i], 1000*out_object.u_ll[i], 1000*out_object.v_ll[i],scale=scale, color='black',zorder=10);
+			if len(disp_points.lon)==len(disp_points.dE_obs):
+				plt.quiver(disp_points.lon[i], disp_points.lat[i], 1000*disp_points.dE_obs[i], 1000*disp_points.dN_obs[i],scale=scale, color='red',zorder=10);
 			# plt.text(disp_points[0][i],disp_points[1][i],disp_points[2][i]);  # If you want to label the GPS stations
 		plt.quiver(lonW+0.02, latS+0.03, 20.0, 0.0, scale=scale,color='black');
 		plt.text(lonW+0.02, latS+0.05, "20mm model",color="black",fontsize=20);
@@ -340,7 +344,7 @@ def write_output_files(params, inputs, disp_points, out_object):
 		ofile = open(params.outdir+'ll_disps.txt','w');
 		ofile.write("# Format: lon lat u v w (m)\n");
 		for i in range(len(out_object.u_ll)):
-			ofile.write("%f %f %f %f %f\n" % (disp_points[0][i], disp_points[1][i], out_object.u_ll[i], out_object.v_ll[i], out_object.w_ll[i]) );
+			ofile.write("%f %f %f %f %f\n" % (disp_points.lon[i], disp_points.lat[i], out_object.u_ll[i], out_object.v_ll[i], out_object.w_ll[i]) );
 		ofile.close();
 	return;
 
