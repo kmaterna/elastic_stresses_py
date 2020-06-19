@@ -201,7 +201,7 @@ def map_plot(params, inputs, out_object, stress_component):
 	fig = pygmt.Figure()
 	title="+t\""+stress_component+" stress\"";  # must put escaped quotations around the title. 
 	fig.basemap(region=region,projection=proj,B=title);
-	fig.coast(shorelines="1.0p,black",region=region,projection=proj,B="1.0");  # the boundary. 
+	fig.coast(shorelines="1.0p,black",region=region,N="1",projection=proj,B="1.0");  # the boundary. 
 	fig.coast(region=region,projection=proj,N='2',W='0.5p,black',S='white',L="g-125.5/39.6+c1.5+w50");
 
 	# Draw each source
@@ -279,15 +279,15 @@ def slip_vector_map(params, input_object, disp_points, out_object):
 		patch_color=slip_cmap.to_rgba(slip);
 		mypolygon = Polygon(fault_vertices,color=patch_color,alpha=1.0);
 		plt.gca().add_patch(mypolygon);		
-		plt.plot(lons, lats, linewidth=1,color='purple');
-		plt.plot(lons[0:2], lats[0:2], linewidth=3,color='purple');  # the top edge of the fault patch
+		# plt.plot(lons, lats, linewidth=1,color='purple');
+		# plt.plot(lons[0:2], lats[0:2], linewidth=3,color='purple');  # the top edge of the fault patch
 		if source.potency != []:
 			plt.plot(lons[0],lats[0], marker='s',markersize=10,color='purple');  # the location of focal mechanism
 
 	# Displacement vectors at GPS stations
 	# Smaller scale here means zooming in on the vectors (appropriate for small events)
 	max_vector = np.nanmax(np.sqrt(np.multiply(out_object.u_ll, out_object.u_ll) + np.multiply(out_object.v_ll, out_object.v_ll) ));
-	scale=max_vector * 1000;  # gives a reasonable sized vector for 1m of slip
+	scale=max_vector * 3000;  # 2000 gives a reasonable sized vector for 1m of slip
 	if disp_points != []:
 		for i in range(len(disp_points.lon)):
 			patch_color=vertical_cmap.to_rgba(1000*out_object.w_ll[i]);
