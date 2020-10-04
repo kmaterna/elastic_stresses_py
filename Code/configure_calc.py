@@ -1,18 +1,16 @@
 # Configures a stress calculation 
 
-import argparse, configparser
+import os, sys
+import configparser
 import coulomb_collections
 
 
-def welcome_and_parse():
-	print("\n\nWelcome to a simple forward modeling tool for calculating elastic displacements and coulomb stresses. ");
-	parser = argparse.ArgumentParser(description='Run elastic stress models in Python', epilog='\U0001f600 \U0001f600 \U0001f600 ');
-	parser.add_argument('config',type=str,help='name of config file for calculation. Required.')
-	args = parser.parse_args()
-	print("Config file:",args.config);
-	return args;
-
 def configure_stress_calculation(config_file):
+
+	if not os.path.isfile(config_file):
+		print("Error! user-supplied config file %s does not exist or cannot be found. Please try again." % config_file);
+		sys.exit(0)
+
 	configobj=configparser.ConfigParser();
 	configobj.optionxform = str # make the config file case-sensitive
 	configobj.read(config_file);

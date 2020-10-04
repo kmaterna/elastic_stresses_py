@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Driver to run Coulomb Stress Calculations in Python
 # This code uses Ben Thompson's Python wrapper for Okada's fortran codes (in particular DC3D.f).
 # It computes the displacements and strains inside the half-space
@@ -11,21 +12,29 @@
 # Convention: positive strike slip is right-lateral. 
 # Convention: positive dip slip is reverse. 
 
+import argparse
 import configure_calc
 import input_values
 import run_dc3d
 import output_manager
-import sys
 
-def do_calculation():
-	args = configure_calc.welcome_and_parse();
-	params = configure_calc.configure_stress_calculation(args.config);
+def welcome_and_parse():
+	print("\n\nWelcome to a simple forward modeling tool for calculating elastic displacements and coulomb stresses. ");
+	parser = argparse.ArgumentParser(description='Run elastic stress models in Python', epilog='\U0001f600 \U0001f600 \U0001f600 ');
+	parser.add_argument('config',type=str,help='name of config file for calculation. Required.')
+	args = parser.parse_args()
+	print("Config file:",args.config);
+	return args;
+
+
+def drive_calculation(config_file):
+	params = configure_calc.configure_stress_calculation(config_file);
 	[inputs, disp_points] = input_values.read_inputs(params);
 	out_object = run_dc3d.do_stress_computation(params, inputs, disp_points);
 	output_manager.produce_outputs(params, inputs, disp_points, out_object);
 	return;
 
 
-
-
-do_calculation();
+if __name__=="__main__":
+	args = welcome_and_parse();
+	drive_calculation(args.config);
