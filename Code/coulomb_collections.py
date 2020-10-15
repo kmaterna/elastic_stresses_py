@@ -3,7 +3,7 @@
 import collections
 
 Params = collections.namedtuple('Params',[
-	'input_file','aftershocks','disp_points_file',
+	'config_file','input_file','aftershocks','disp_points_file',
 	'strike_num_receivers',
 	'dip_num_receivers',
 	'fixed_rake',
@@ -41,6 +41,7 @@ Out_object = collections.namedtuple('Out_object',[
 	'u_ll','v_ll','w_ll',
 	'source_object','receiver_object',
 	'receiver_normal','receiver_shear','receiver_coulomb']);
+
 
 Displacement_points = collections.namedtuple('Disp_Points',[
 	'lon','lat',

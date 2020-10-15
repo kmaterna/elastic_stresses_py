@@ -16,12 +16,12 @@ def configure_stress_calculation(config_file):
 	configobj.read(config_file);
 
 	# Basic parameters
-	exp_name=configobj.get('io-config','exp_name');
-	title=configobj.get('io-config','title');
-	aftershocks=configobj.get('io-config','aftershocks');
-	input_file=configobj.get('io-config','input_file');
-	gps_disp_points=configobj.get('io-config','gps_disp_points');
-	output_dir=configobj.get('io-config','output_dir');
+	exp_name = configobj.get('io-config','exp_name');
+	title = configobj.get('io-config','title');
+	aftershocks = configobj.get('io-config','aftershocks');
+	input_file = configobj.get('io-config','input_file');
+	gps_disp_points = configobj.get('io-config','gps_disp_points');
+	output_dir = configobj.get('io-config','output_dir');
 	output_dir = output_dir+exp_name+'/';
 
 	# Computation parameters
@@ -34,7 +34,8 @@ def configure_stress_calculation(config_file):
 	# on receiver faults, we need to specify the rake globally if we're using .inp format. 90=reverse. 
 	# No effect if you're using .inr or .intxt format. 
 
-	MyParams = coulomb_collections.Params(input_file=input_file, aftershocks=aftershocks, disp_points_file=gps_disp_points,
+	MyParams = coulomb_collections.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks, 
+		disp_points_file=gps_disp_points,
 		strike_num_receivers=strike_num_receivers, dip_num_receivers=dip_num_receivers, fixed_rake=fixed_rake, 
 		mu=mu, lame1=lame1, alpha=alpha, outdir=output_dir, title=title);
 	print(MyParams)

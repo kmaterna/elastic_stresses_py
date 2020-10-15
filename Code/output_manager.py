@@ -16,7 +16,7 @@ import io_additionals
 
 def produce_outputs(params, inputs, disp_points, out_object):
 	call(['mkdir','-p',params.outdir],shell=False);
-	call(['cp','config.txt',params.outdir],shell=False);
+	call(['cp',params.config_file,params.outdir],shell=False);
 	call(['cp',params.input_file,params.outdir],shell=False);	
 
 	subfaulted_inputs=coulomb_collections.Input_object(PR1=inputs.PR1,FRIC=inputs.FRIC,depth=inputs.depth,
@@ -34,7 +34,7 @@ def produce_outputs(params, inputs, disp_points, out_object):
 	map_plot(params, inputs, out_object, 'shear');
 	write_output_files(params,inputs, disp_points, out_object);
 	slip_vector_map(params, inputs, disp_points, out_object);
-	side_on_plot(params);
+	# side_on_plot(params);
 	return;
 
 
