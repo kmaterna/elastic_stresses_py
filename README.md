@@ -19,6 +19,7 @@ This code uses Okada's (1992) DC3D function to compute elastic displacements, st
 ### Future work: 
 * Read .inr files (like Coulomb)
 * Reshape input arrays 
+* Compute moment of slip on source faults
 
 ### Usage: 
 Most of the flow of the program is controlled from config.txt. The elastic parameters mu and lamda, as well as your input/output options, are set in config file. You call the program by 
