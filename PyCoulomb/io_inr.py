@@ -9,7 +9,7 @@
 
 # In this case, we will have to convert slip/rake into strike slip / dip slip. 
 
-import coulomb_collections
+from PyCoulomb import coulomb_collections
 
 def read_inr(input_file):
     return [];

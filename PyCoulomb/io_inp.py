@@ -8,8 +8,8 @@
 # 6. Map info (min lon, max lon, zero lon, min lat, max lat, zero lat)
 
 
-import coulomb_collections
-import conversion_math
+from PyCoulomb import coulomb_collections
+from PyCoulomb import conversion_math
 
 
 def read_inp(input_file, fixed_rake):

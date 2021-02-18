@@ -13,10 +13,10 @@
 # Convention: positive dip slip is reverse. 
 
 import argparse
-import configure_calc
-import input_values
-import run_dc3d
-import output_manager
+from PyCoulomb import configure_calc
+from PyCoulomb import input_values
+from PyCoulomb import run_dc3d
+from PyCoulomb import output_manager
 
 
 def welcome_and_parse():

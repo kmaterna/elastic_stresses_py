@@ -1,7 +1,7 @@
 # Reading aftershock tables
 # Reading GPS or other lon/lat pairs that will be read in
 
-import coulomb_collections
+from PyCoulomb import coulomb_collections
 
 
 def read_aftershock_table(infile):

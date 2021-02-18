@@ -1,8 +1,4 @@
 *.pyc
-Inputs/Example*
-Inputs/test*
-Inputs/*.txt
-Inputs/*aftershocks*
 Outputs/*
-Code/__pycache__/
+PyCoulomb/__pycache__/*
 .idea*

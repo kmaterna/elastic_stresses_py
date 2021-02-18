@@ -1,7 +1,7 @@
 import numpy as np
-import coulomb_collections
-import conversion_math
-import io_intxt
+from PyCoulomb import coulomb_collections
+from PyCoulomb import conversion_math
+from PyCoulomb import io_intxt
 
 
 def read_intxt(input_file):

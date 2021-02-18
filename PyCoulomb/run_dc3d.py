@@ -3,8 +3,8 @@
 
 import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
-import coulomb_collections
-import conversion_math
+from PyCoulomb import coulomb_collections
+from PyCoulomb import conversion_math
 
 
 def do_stress_computation(params, inputs, disp_points):
