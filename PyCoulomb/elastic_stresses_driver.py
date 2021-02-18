@@ -13,10 +13,7 @@
 # Convention: positive dip slip is reverse. 
 
 import argparse
-from PyCoulomb import configure_calc
-from PyCoulomb import input_values
-from PyCoulomb import run_dc3d
-from PyCoulomb import output_manager
+from Elastic_stresses_py import PyCoulomb
 
 
 def welcome_and_parse():
@@ -30,10 +27,10 @@ def welcome_and_parse():
 
 
 def drive_calculation(config_file):
-    params = configure_calc.configure_stress_calculation(config_file);
-    [inputs, disp_points] = input_values.read_inputs(params);
-    out_object = run_dc3d.do_stress_computation(params, inputs, disp_points);
-    output_manager.produce_outputs(params, inputs, disp_points, out_object);
+    params = PyCoulomb.configure_calc.configure_stress_calculation(config_file);
+    [inputs, disp_points] = PyCoulomb.input_values.read_inputs(params);
+    out_object = PyCoulomb.run_dc3d.do_stress_computation(params, inputs, disp_points);
+    PyCoulomb.output_manager.produce_outputs(params, inputs, disp_points, out_object);
     return;
 
 

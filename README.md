@@ -24,7 +24,7 @@ This code uses Okada's (1992) DC3D function to compute elastic displacements, st
 ### Usage: 
 Most of the flow of the program is controlled from config.txt. The elastic parameters mu and lamda, as well as your input/output options, are set in config file. You call the program by 
 ```bash
-python elastic_stresses_driver.py config.txt
+elastic_stresses_driver.py config.txt
 ```
 
 ### New Input Formats (Not Coulomb Format): 
@@ -50,20 +50,20 @@ For Source Format 2, faulting_type = ["SS","R","N","ALL"] from the Wells and Cop
 By convention, right lateral strike slip is positive, and reverse dip slip is positive. Strike is defined from 0 to 360 degrees, clockwise from north; dip is defined from 0 to 90 degrees by the right hand rule. As in Coulomb, positive shear stress is towards failure, and positive normal stress is unclamping. The original Okada documentation can be found at http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html. 
 
 ### Requirements: 
-This code uses Python, numpy, matplotlib, and Pygmt (Basemap is being deprecated, so I have switched to Pygmt: https://www.pygmt.org/dev/). This code also requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). It requires a few utility functions (haversine, wells_and_coppersmith) in a separate utilities repository (https://github.com/kmaterna/Utility_Code). 
+This code uses Python3, numpy, matplotlib, and Pygmt (Basemap is being deprecated, so I have switched to Pygmt: https://www.pygmt.org/dev/). This code also requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). It requires a few utility functions in a separate utilities repository (https://github.com/kmaterna/Tectonic_Utils).  To get this library, please ```pip install Tectonic-Utils```. 
 
 
 ## Results: 
 
 Elastic_stresses_py reproduces the Coulomb outputs in the simple case of two vertical strike-slip faults, one source (green) and one receiver (blue):
-![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/Example/Python_Displacement_model.png)
+![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Python_Displacement_model.png)
 
 Python-produced Coulomb Stress Changes:
-![Python_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/Example/Python_test_case.png)
+![Python_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Python_test_case.png)
 
 Coulomb-produced Coulomb Stress Changes:
-![Coulomb_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/Example/Coulomb_test_case.png)
+![Coulomb_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Coulomb_test_case.png)
 
 
 In a real research application, a computation would look more like this: 
-![Ex_Coulomb_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/Example/Coulomb_map.png)
+![Ex_Coulomb_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Coulomb_map.png)

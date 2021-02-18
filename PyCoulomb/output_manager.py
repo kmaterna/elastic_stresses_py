@@ -7,10 +7,10 @@ import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 import pygmt
 from subprocess import call
-from PyCoulomb import coulomb_collections
-from PyCoulomb import conversion_math
-from PyCoulomb import io_inp
-from PyCoulomb import io_additionals
+from . import coulomb_collections
+from . import conversion_math
+from . import io_inp
+from . import io_additionals
 
 
 def produce_outputs(params, inputs, disp_points, out_object):

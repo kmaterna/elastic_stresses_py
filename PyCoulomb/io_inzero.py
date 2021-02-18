@@ -1,7 +1,7 @@
 import numpy as np
-from PyCoulomb import coulomb_collections
-from PyCoulomb import conversion_math
-from PyCoulomb import io_intxt
+from . import coulomb_collections
+from . import conversion_math
+from . import io_intxt
 
 
 def read_intxt(input_file):
@@ -15,8 +15,7 @@ def read_intxt(input_file):
             continue;
         if temp[0] == 'S:':
             [strike, rake, dip, lon, lat, depth, magnitude, mu, lame1] = read_point_source_line(line);
-            [x, y, Kode, rtlat, reverse, potency, comment] = compute_params_for_point_source(strike, dip, rake,
-                                                                                             magnitude, lon, lat,
+            [x, y, Kode, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat,
                                                                                              zerolon, zerolat, mu,
                                                                                              lame1);
             one_source_object = coulomb_collections.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=Kode,
@@ -44,7 +43,6 @@ def read_intxt(input_file):
     # Wrapping up the inputs
     [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc] = io_intxt.compute_grid_parameters(minlon,
                                                                                                           maxlon,
-                                                                                                          zerolon,
                                                                                                           minlat,
                                                                                                           maxlat,
                                                                                                           zerolat);
@@ -71,7 +69,7 @@ def read_point_source_line(line):
     return [strike, rake, dip, lon, lat, depth, magnitude, mu, lame1];
 
 
-def compute_params_for_point_source(strike, dipangle, rake, magnitude, lon, lat, zerolon, zerolat, mu, lame1):
+def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu, lame1):
     # Given information about point sources from focal mechanisms,
     # Return the right components that get packaged into input_obj.
     [xcenter, ycenter] = conversion_math.latlon2xy(lon, lat, zerolon, zerolat);

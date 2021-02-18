@@ -4,11 +4,11 @@
 # .inr (Coulomb)
 # .intxt (My own definition, convenient for an experiment I'm running)
 
-from PyCoulomb import io_inp
-from PyCoulomb import io_inr
-from PyCoulomb import io_intxt
-from PyCoulomb import io_inzero
-from PyCoulomb import io_additionals
+from . import io_inp
+from . import io_inr
+from . import io_intxt
+from . import io_inzero
+from . import io_additionals
 
 
 def read_inputs(params):

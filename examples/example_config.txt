@@ -3,9 +3,9 @@
 [io-config]
 exp_name = M6.8_TEST
 title = Stresses for 2014 M6.8
-aftershocks = Examples/Inputs/20140310_aftershocks_ncsn.txt
-input_file = Examples/Inputs/M6.8_2014.intxt
-gps_disp_points = Examples/Inputs/GPS_ll.txt
+aftershocks = example_inputs/20140310_aftershocks_ncsn.txt
+input_file = example_inputs/M6.8_2014.intxt
+gps_disp_points = example_inputs/GPS_ll.txt
 output_dir = Outputs/
 
 ####################

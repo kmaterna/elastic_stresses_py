@@ -2,7 +2,7 @@
 
 import os, sys
 import configparser
-from PyCoulomb import coulomb_collections
+from . import coulomb_collections
 
 
 def configure_stress_calculation(config_file):

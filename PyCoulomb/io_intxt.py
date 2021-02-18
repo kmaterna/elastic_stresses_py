@@ -4,8 +4,8 @@
 # This input file assumes a fixed rake indicated for sources and receivers
 
 import numpy as np
-from PyCoulomb import conversion_math
-from PyCoulomb import coulomb_collections
+from . import conversion_math
+from . import coulomb_collections
 from Tectonic_Utils.seismo import wells_and_coppersmith
 
 
