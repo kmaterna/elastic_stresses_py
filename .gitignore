@@ -5,5 +5,4 @@ Inputs/*.txt
 Inputs/*aftershocks*
 Outputs/*
 Code/__pycache__/
-mycpt.cpt
-default.profraw
+.idea*

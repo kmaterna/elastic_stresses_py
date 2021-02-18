@@ -12,6 +12,4 @@
 import coulomb_collections
 
 def read_inr(input_file):
-
-	return [];
-
+    return [];

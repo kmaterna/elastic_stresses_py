@@ -18,23 +18,25 @@ import input_values
 import run_dc3d
 import output_manager
 
+
 def welcome_and_parse():
-	print("\n\nWelcome to a simple forward modeling tool for calculating elastic displacements and coulomb stresses. ");
-	parser = argparse.ArgumentParser(description='Run elastic stress models in Python', epilog='\U0001f600 \U0001f600 \U0001f600 ');
-	parser.add_argument('config',type=str,help='name of config file for calculation. Required.')
-	args = parser.parse_args()
-	print("Config file:",args.config);
-	return args;
+    print("\n\nWelcome to a simple forward modeling tool for calculating elastic displacements and coulomb stresses. ");
+    parser = argparse.ArgumentParser(description='Run elastic stress models in Python',
+                                     epilog='\U0001f600 \U0001f600 \U0001f600 ');
+    parser.add_argument('config', type=str, help='name of config file for calculation. Required.')
+    args = parser.parse_args()
+    print("Config file:", args.config);
+    return args;
 
 
 def drive_calculation(config_file):
-	params = configure_calc.configure_stress_calculation(config_file);
-	[inputs, disp_points] = input_values.read_inputs(params);
-	out_object = run_dc3d.do_stress_computation(params, inputs, disp_points);
-	output_manager.produce_outputs(params, inputs, disp_points, out_object);
-	return;
+    params = configure_calc.configure_stress_calculation(config_file);
+    [inputs, disp_points] = input_values.read_inputs(params);
+    out_object = run_dc3d.do_stress_computation(params, inputs, disp_points);
+    output_manager.produce_outputs(params, inputs, disp_points, out_object);
+    return;
 
 
-if __name__=="__main__":
-	args = welcome_and_parse();
-	drive_calculation(args.config);
+if __name__ == "__main__":
+    args = welcome_and_parse();
+    drive_calculation(args.config);
