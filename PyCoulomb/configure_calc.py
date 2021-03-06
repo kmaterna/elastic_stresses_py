@@ -7,7 +7,7 @@ from . import coulomb_collections as cc
 
 def configure_stress_calculation(config_file):
     print("Config file: ", config_file);
-    assert(os.path.isfile(config_file)), FileNotFoundError("config file "+config_file+"not found.");
+    assert(os.path.isfile(config_file)), FileNotFoundError("config file "+config_file+" not found.");
 
     configobj = configparser.ConfigParser();
     configobj.optionxform = str  # make the config file case-sensitive
@@ -28,9 +28,10 @@ def configure_stress_calculation(config_file):
     lame1 = configobj.getfloat('compute-config', 'lame1');  # this is lambda
     alpha = (lame1 + mu) / (lame1 + 2 * mu);
     # alpha = parameter for Okada functions. It is 2/3 for simplest case. See DC3D.f documentation.
-    fixed_rake = configobj.getfloat('compute-config', 'fixed_rake');
-    # on receiver faults, we need to specify rake globally if we're using .inp format. 90=reverse.
-    # No effect if using .inr, .inzero, or .intxt format.
+    fixed_rake = configobj.getfloat('compute-config', 'fixed_rake') if configobj.has_option('compute-config', 'fixed_rake') else None;
+    # on receiver faults, we need to specify rake globally if we're using .inp format. No effect for other file formats.
+    if '.inp' in input_file:
+        assert fixed_rake, ValueError("Must provide fixed_rake for receiver faults in .inp file. ex: 90 (reverse).");
 
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                          disp_points_file=gps_file, strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,

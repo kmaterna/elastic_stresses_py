@@ -135,7 +135,7 @@ def get_downdip_width(top, bottom, dip):
     W = abs(top-bottom)/np.sin(np.deg2rad(dip));  # guaranteed to be between 0 and 90
     return W;
 
-def get_top_bottom(center_depth, width, dip):
+def get_top_bottom_from_center(center_depth, width, dip):
     """Given a fault, where is the top and bottom?
     Width is total downdip width of the fault."""
     top = center_depth-(width/2.0*np.sin(np.deg2rad(dip)));

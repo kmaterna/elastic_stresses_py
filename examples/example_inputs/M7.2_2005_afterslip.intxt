@@ -7,8 +7,8 @@
 # Source retrieved from USGS moment tensor 
 # Receiver is a guess to the Cascadia megathrust
 
-G: 0.250 0.40 -126.50 -122.60 -124.50 39.30 41.70 40.30
-# S: 48 7 82.0 7.0 SS -125.953 41.292 16.0 # the catalog case. 
-S: 48 7 82.0 7.0 SS -126.2 41.1 26.0 # the case I use for afterslip (center of fault). 
-R: 355 90 12 140 120 -124.56 40.3 10.8
+General: 0.250 0.40 -126.50 -122.60 -124.50 39.30 41.70 40.30
+# Source_WC: 48 7 82.0 7.0 SS -125.953 41.292 16.0 # the catalog case.
+Source_WC: 48 7 82.0 7.0 SS -126.2 41.1 26.0 # the case I use for afterslip (center of fault).
+Receiver: 355 90 12 140 120 -124.56 40.3 10.8
 

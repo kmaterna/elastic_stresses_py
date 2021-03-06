@@ -28,32 +28,27 @@ elastic_stresses_driver.py config.txt
 * Produces output tables of stresses and displacements.
 
 ### Future work: 
-* Generate a valid but empty config file
+* Generate a valid but empty config file and/or input file
 * Read in full moment tensor (not just double couple focal mechanisms)
-* Contribute "write function" for .intxt format
-* Impose one definitional decision for center-point or edge-point of fault planes
 * Make output vector plots (gps obs vs. model etc.) to pygmt
 * Read .inr files (like Coulomb)
 
 ### Additional Input Formats beyond Coulomb Format: 
 Source Faults (or faults have slip on them) and Receiver Faults (or faults receive stress from slip on source faults) can be specified in several types of more convenient ways beyond the .inp file that Coulomb uses. Each fault is specified by a row in an input text file of extention .intxt, .inzero, or .inp. Valid rows of the input file include: 
-##### General: 
-* **General Format:** "G: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"
-	* For all files, describes coordinate system and domain setup. 
-##### Receivers:
-* **Receiver Format:** "R: strike rake dip length width lon lat depth"
-	* For all files, describes receiver faults
-##### Sources:
-* **Slip Format:** "S: strike rake dip length width lon lat depth slip"
-	* For sources in .intxt files, for slip distributions and fault patches. Slip in m. 
-* **WC Format:** "S: strike rake dip magnitude faulting_type lon lat depth"
-	* For sources in .intxt files, for catalogs using Wells and Coppersmith (1994)
-* **FM Format:** "S: strike rake dip lon lat depth magnitude mu lambda"
-	* For sources in .inzero files, for focal mechanisms
-* **MT Format:** "S: " will be implemented soon.
-    * For sources in .inzero files, for full moment tensors, not just double-couple
+* **General Format:** "General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"
+	* Describes coordinate system and domain setup. 
+* **Receiver Format:** "Receiver: strike rake dip length width lon lat depth"
+	* Describes receiver faults
+* **Slip Format:** "Source_Patch: strike rake dip length width lon lat depth slip"
+	* For slip distributions and fault patches. Slip in m. 
+* **WC Format:** "Source_WC: strike rake dip magnitude faulting_type lon lat depth"
+	* For catalogs using Wells and Coppersmith (1994)
+* **FM Format:** "Source_FM: strike rake dip lon lat depth magnitude mu lambda"
+	* For focal mechanisms
+* **MT Format:** "Source_MT: " will be implemented soon.
+    * For full moment tensors, not just double-couple
 
-For all finite sources, lon/lat/depth refer to the back updip corner of the fault plane, the corner where one looks along the strike direction to see the fault's upper edge (start_x and start_y in the Aki and Richards (1980) diagram in Coulomb's documentation). 
+For all finite sources (i.e., Patch, WC), lon/lat/depth refer to the back updip corner of the fault plane, the corner where one looks along the strike direction to see the fault's upper edge (start_x and start_y in the Aki and Richards (1980) diagram in Coulomb's documentation). 
 
 For WC Source Format, faulting_type = ["SS","R","N","ALL"] from the Wells and Coppersmith indications of Strike Slip, Reverse, Normal, and All. 
 

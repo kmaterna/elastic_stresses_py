@@ -27,7 +27,6 @@ def produce_outputs(params, inputs, disp_points, out_object):
     map_plot(params, inputs, out_object, 'shear');
     write_output_files(out_object, disp_points, params.outdir);
     slip_vector_map(params, inputs, disp_points, out_object);
-    # side_on_plot(params, "coulomb");
     return;
 
 
@@ -40,7 +39,7 @@ def write_subfaulted_inp(inputs, out_object, outfile):
                                         zerolat=inputs.zerolat, source_object=out_object.source_object,
                                         receiver_object=out_object.receiver_object);
     # write an inp for the subfaulted configuration.
-    io_inp.write_inp(outfile, subfaulted_inputs);
+    io_inp.write_inp(subfaulted_inputs, outfile);
     return;
 
 
@@ -147,39 +146,11 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     return;
 
 
-def side_on_plot(params, stress_component):
-    [x, y, z, rake, normal, shear, coulomb] = np.loadtxt(params.outdir + 'stresses.txt', skiprows=1, unpack=True)
-    plt.figure(figsize=(10, 6));
-    vmin = -1;
-    vmax = 1;  # kpa
-    if stress_component == "coulomb":
-        plt.scatter(x, z, c=coulomb, s=1450, marker='s', cmap='jet', edgecolor='black', vmin=vmin, vmax=vmax);
-    elif stress_component == "normal":
-        plt.scatter(x, z, c=normal, s=1450, marker='s', cmap='jet', edgecolor='black', vmin=vmin, vmax=vmax);
-    else:
-        plt.scatter(x, z, c=shear, s=1450, marker='s', cmap='jet', edgecolor='black', vmin=vmin, vmax=vmax);
-    plt.ylim(z.min() - 2, z.max() + 2);
-    plt.xlim(x.min() - 10, x.max() + 10);
-    plt.xlabel('X axis (km)');
-    plt.ylabel('Depth (km)')
-    plt.gca().invert_yaxis();
-    cb = plt.colorbar();
-    if len(set(rake)) == 1:
-        plt.title(stress_component + ' stress change on fault planes, rake = %.1f (KPa)' % rake[0], fontsize=20);
-    else:
-        plt.title(stress_component + ' stress change for variable rake (KPa)', fontsize=20);
-    cb.set_label('Kilopascals', fontsize=18);
-    plt.savefig(params.outdir + 'side_view.eps');
-    plt.close();
-    return;
-
-
 def map_plot(params, inputs, out_object, stress_component):
     """
     Using PyGMT
     Filling in fault patches with colors corresponding to their stress changes
     """
-    # Some options:
     if stress_component == 'shear':
         plotting_stress = out_object.receiver_shear;
         label = 'Shear';

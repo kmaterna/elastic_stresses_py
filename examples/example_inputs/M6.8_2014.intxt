@@ -7,7 +7,7 @@
 # Source retrieved from USGS moment tensor (https://earthquake.usgs.gov/earthquakes/eventpage/nc72182046/executive)
 # Receiver is a guess to the Cascadia megathrust
 
-G: 0.250 0.40 -125.80 -122.60 -124.50 39.30 41.70 40.30
-S: 228 -2 79.0 6.8 SS -125.134 40.829 16.4 # the catalog case. 
-R: 355 90 12 140 120 -124.56 40.3 10.8
+General: 0.250 0.40 -125.80 -122.60 -124.50 39.30 41.70 40.30
+Source_WC: 228 -2 79.0 6.8 SS -125.134 40.829 16.4 # the catalog case.
+Receiver: 355 90 12 140 120 -124.56 40.3 10.8
 

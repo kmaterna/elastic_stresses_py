@@ -150,7 +150,7 @@ def get_map_info(input_file):
     return [minlon, maxlon, zerolon, minlat, maxlat, zerolat];
 
 
-def write_inp(outfile, data_obj):
+def write_inp(data_obj, outfile):
     sources = data_obj.source_object;
     receivers = data_obj.receiver_object;
     num_faults = len(sources) + len(receivers);

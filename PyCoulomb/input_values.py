@@ -3,11 +3,11 @@
 # .inp (Coulomb)
 # .inr (Coulomb)
 # .intxt (My own definition, convenient for an experiment I'm running)
+# .inzero (My own definition, convenient for point sources)
 
 from . import io_inp
 from . import io_inr
 from . import io_intxt
-from . import io_inzero
 from . import io_additionals
 
 
@@ -17,9 +17,9 @@ def read_inputs(params):
     elif '.inr' in params.input_file:
         input_object = io_inr.read_inr(params.input_file);  # variable rake format (will write later);
     elif '.intxt' in params.input_file:
-        input_object = io_intxt.read_intxt(params.input_file);  # convenient input format (fixed rake)
+        input_object = io_intxt.read_intxt(params.input_file);  # convenient input format
     elif '.inzero' in params.input_file:
-        input_object = io_inzero.read_inzero(params.input_file);  # a point source in convenient format
+        input_object = io_intxt.read_intxt(params.input_file);  # a point source in convenient format
     else:
         print("Error! Unrecognized type of input file!");
         input_object = [];
