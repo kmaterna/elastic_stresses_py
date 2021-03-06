@@ -8,7 +8,7 @@
 # 6. Map info (min lon, max lon, zero lon, min lat, max lat, zero lat)
 
 
-from . import coulomb_collections
+from . import coulomb_collections as cc
 from . import conversion_math
 
 
@@ -47,31 +47,26 @@ def read_inp(input_file, fixed_rake):
                     [xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom,
                      comment] = read_fault_line(line);
                     rake = conversion_math.get_rake(rtlat, reverse);
-                    one_source_object = coulomb_collections.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
-                                                                          yfinish=yfinish,
-                                                                          Kode=Kode, rtlat=rtlat, reverse=reverse,
-                                                                          potency=[], strike=strike, dipangle=dipangle,
-                                                                          rake=rake,
-                                                                          top=top, bottom=bottom, comment=comment);
+                    one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                                         Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[],
+                                                         strike=strike, dipangle=dipangle, rake=rake, top=top,
+                                                         bottom=bottom, comment=comment);
                     sources.append(one_source_object)
                 else:  # here we have a receiver fault
                     [xstart, ystart, xfinish, yfinish, Kode, _, _, strike, dipangle, top, bottom,
                      comment] = read_fault_line(line);
                     rake = fixed_rake;
-                    one_receiver_object = coulomb_collections.Faults_object(xstart=xstart, xfinish=xfinish,
-                                                                            ystart=ystart, yfinish=yfinish,
-                                                                            Kode=Kode, rtlat=0, reverse=0, potency=[],
-                                                                            strike=strike, dipangle=dipangle, rake=rake,
-                                                                            top=top, bottom=bottom, comment=comment);
+                    one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
+                                                           yfinish=yfinish, Kode=Kode, rtlat=0, reverse=0, potency=[],
+                                                           strike=strike, dipangle=dipangle, rake=rake, top=top,
+                                                           bottom=bottom, comment=comment);
                     receivers.append(one_receiver_object);
     ifile.close();
 
-    input_obj = coulomb_collections.Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx,
-                                                 finish_gridx=finish_gridx, start_gridy=start_gridy,
-                                                 finish_gridy=finish_gridy,
-                                                 xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon,
-                                                 minlat=minlat, maxlat=maxlat, zerolat=zerolat,
-                                                 receiver_object=receivers, source_object=sources);
+    input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx, finish_gridx=finish_gridx,
+                                start_gridy=start_gridy, finish_gridy=finish_gridy, xinc=xinc, yinc=yinc, minlon=minlon,
+                                maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
+                                receiver_object=receivers, source_object=sources);
 
     return input_obj;
 
@@ -176,12 +171,12 @@ def write_inp(outfile, data_obj):
         'xxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx xxxxxxxxxx\n');
     for fault in sources:
         ofile.write('  1 % 10.4f % 10.4f % 10.4f % 10.4f %3d % 10.4f % 10.4f % 10.4f % 10.2f % 10.2f %s\n' % (
-        fault.xstart, fault.ystart, fault.xfinish, fault.yfinish,
-        fault.Kode, fault.rtlat, fault.reverse, fault.dipangle, fault.top, fault.bottom, fault.comment));
+            fault.xstart, fault.ystart, fault.xfinish, fault.yfinish,
+            fault.Kode, fault.rtlat, fault.reverse, fault.dipangle, fault.top, fault.bottom, fault.comment));
     for fault in receivers:
         ofile.write('  1 % 10.4f % 10.4f % 10.4f % 10.4f %3d % 10.4f % 10.4f % 10.4f % 10.2f % 10.2f %s\n' % (
-        fault.xstart, fault.ystart, fault.xfinish, fault.yfinish,
-        fault.Kode, fault.rtlat, fault.reverse, fault.dipangle, fault.top, fault.bottom, fault.comment));
+            fault.xstart, fault.ystart, fault.xfinish, fault.yfinish,
+            fault.Kode, fault.rtlat, fault.reverse, fault.dipangle, fault.top, fault.bottom, fault.comment));
     ofile.write('\n');
     ofile.write('    Grid Parameters\n');
     ofile.write('  1  ----------------------------  Start-x =    % 10.5f\n' % data_obj.start_gridx);
@@ -212,4 +207,5 @@ def write_inp(outfile, data_obj):
     ofile.write('  5  ---------------------------- max. lat =    % 9.4f \n' % data_obj.maxlat);
     ofile.write('  6  ---------------------------- zero lat =    % 9.4f \n' % data_obj.zerolat);
     ofile.close();
+    print("Writing outfile %s " % outfile);
     return;

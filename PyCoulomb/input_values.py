@@ -19,14 +19,14 @@ def read_inputs(params):
     elif '.intxt' in params.input_file:
         input_object = io_intxt.read_intxt(params.input_file);  # convenient input format (fixed rake)
     elif '.inzero' in params.input_file:
-        input_object = io_inzero.read_intxt(params.input_file);  # a point source in convenient format
+        input_object = io_inzero.read_inzero(params.input_file);  # a point source in convenient format
     else:
         print("Error! Unrecognized type of input file!");
         input_object = [];
-    if params.disp_points_file == '':
+    if params.disp_points_file:
+        disp_points = io_additionals.read_disp_points(params.disp_points_file);
+    else:
         print("Not reading any GPS points for displacements.");
         disp_points = [];
-    else:
-        disp_points = io_additionals.read_disp_points(params.disp_points_file);
 
     return [input_object, disp_points];

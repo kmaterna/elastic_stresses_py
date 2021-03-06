@@ -7,7 +7,7 @@ import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 import pygmt
 from subprocess import call
-from . import coulomb_collections
+from . import coulomb_collections as cc
 from . import conversion_math
 from . import io_inp
 from . import io_additionals
@@ -17,28 +17,30 @@ def produce_outputs(params, inputs, disp_points, out_object):
     call(['mkdir', '-p', params.outdir], shell=False);
     call(['cp', params.config_file, params.outdir], shell=False);
     call(['cp', params.input_file, params.outdir], shell=False);
-
-    subfaulted_inputs = coulomb_collections.Input_object(PR1=inputs.PR1, FRIC=inputs.FRIC, depth=inputs.depth,
-                                                         start_gridx=inputs.start_gridx, start_gridy=inputs.start_gridy,
-                                                         finish_gridx=inputs.finish_gridx,
-                                                         finish_gridy=inputs.finish_gridy, xinc=inputs.xinc,
-                                                         yinc=inputs.yinc, minlon=inputs.minlon, maxlon=inputs.maxlon,
-                                                         zerolon=inputs.zerolon, minlat=inputs.minlat,
-                                                         maxlat=inputs.maxlat, zerolat=inputs.zerolat,
-                                                         source_object=out_object.source_object,
-                                                         receiver_object=out_object.receiver_object);
-    # make a new object of the subfaulted configuration.
-    io_inp.write_inp(params.outdir + 'subfaulted.inp', subfaulted_inputs);
-    surface_def_plot(params, out_object);  # THIS WORKS
+    write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
+    surface_def_plot(params, out_object);  # a grid of synthetic points
     stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
     stress_plot(params, out_object, 'normal');
     stress_plot(params, out_object, 'coulomb');
     map_plot(params, inputs, out_object, 'coulomb');
     map_plot(params, inputs, out_object, 'normal');
     map_plot(params, inputs, out_object, 'shear');
-    write_output_files(params, inputs, disp_points, out_object);
+    write_output_files(out_object, disp_points, params.outdir);
     slip_vector_map(params, inputs, disp_points, out_object);
-    # side_on_plot(params);
+    # side_on_plot(params, "coulomb");
+    return;
+
+
+def write_subfaulted_inp(inputs, out_object, outfile):
+    subfaulted_inputs = cc.Input_object(PR1=inputs.PR1, FRIC=inputs.FRIC, depth=inputs.depth,
+                                        start_gridx=inputs.start_gridx, start_gridy=inputs.start_gridy,
+                                        finish_gridx=inputs.finish_gridx, finish_gridy=inputs.finish_gridy,
+                                        xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon, maxlon=inputs.maxlon,
+                                        zerolon=inputs.zerolon, minlat=inputs.minlat, maxlat=inputs.maxlat,
+                                        zerolat=inputs.zerolat, source_object=out_object.source_object,
+                                        receiver_object=out_object.receiver_object);
+    # write an inp for the subfaulted configuration.
+    io_inp.write_inp(outfile, subfaulted_inputs);
     return;
 
 
@@ -79,25 +81,24 @@ def surface_def_plot(params, out_object):
     return;
 
 
-def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
-    # default vmin,vmax are in KPa
-    # Here we will put plots of fault patches, colored by the magnitude of the stress component.
-
+def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
+    """
+    default vmin,vmax are in KPa
+    Plots of fault patches in cartesian space, colored by the magnitude of the stress component.
+    """
     print("Making plot of %s stress on receiver fault patches. " % stress_type);
 
     if stress_type == 'shear':
         stress_component = out_object.receiver_shear;
     elif stress_type == 'normal':
         stress_component = out_object.receiver_normal;
-    elif stress_type == 'coulomb':
-        stress_component = out_object.receiver_coulomb;
     else:
-        print("Error! Invalid stress type : %s " % stress_type);
+        stress_component = out_object.receiver_coulomb;
 
     # Select boundaries of color map.
-    if vmin == "":
+    if not vmin:
         vmin = np.min(stress_component);
-    if vmax == "":
+    if not vmax:
         vmax = np.max(stress_component);
     color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
     custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
@@ -106,7 +107,7 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
     plt.figure(figsize=(12, 10));
 
     for i in range(len(stress_component)):
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(out_object.receiver_object[i]);
+        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(out_object.receiver_object[i]);
         xcoords = x_total[0:4];
         ycoords = y_total[0:4];
         fault_vertices = np.column_stack((xcoords, ycoords));
@@ -146,17 +147,14 @@ def stress_plot(params, out_object, stress_type, vmin="", vmax=""):
     return;
 
 
-def side_on_plot(params):
+def side_on_plot(params, stress_component):
     [x, y, z, rake, normal, shear, coulomb] = np.loadtxt(params.outdir + 'stresses.txt', skiprows=1, unpack=True)
     plt.figure(figsize=(10, 6));
-    plotting_data = "Normal";
-    # plotting_data="Coulomb";
-    # plotting_data="Shear";
     vmin = -1;
     vmax = 1;  # kpa
-    if plotting_data == "Coulomb":
+    if stress_component == "coulomb":
         plt.scatter(x, z, c=coulomb, s=1450, marker='s', cmap='jet', edgecolor='black', vmin=vmin, vmax=vmax);
-    elif plotting_data == "Normal":
+    elif stress_component == "normal":
         plt.scatter(x, z, c=normal, s=1450, marker='s', cmap='jet', edgecolor='black', vmin=vmin, vmax=vmax);
     else:
         plt.scatter(x, z, c=shear, s=1450, marker='s', cmap='jet', edgecolor='black', vmin=vmin, vmax=vmax);
@@ -167,9 +165,9 @@ def side_on_plot(params):
     plt.gca().invert_yaxis();
     cb = plt.colorbar();
     if len(set(rake)) == 1:
-        plt.title(plotting_data + ' stress change on fault planes, rake = %.1f (KPa)' % rake[0], fontsize=20);
+        plt.title(stress_component + ' stress change on fault planes, rake = %.1f (KPa)' % rake[0], fontsize=20);
     else:
-        plt.title(plotting_data + ' stress change for variable rake (KPa)', fontsize=20);
+        plt.title(stress_component + ' stress change for variable rake (KPa)', fontsize=20);
     cb.set_label('Kilopascals', fontsize=18);
     plt.savefig(params.outdir + 'side_view.eps');
     plt.close();
@@ -177,8 +175,10 @@ def side_on_plot(params):
 
 
 def map_plot(params, inputs, out_object, stress_component):
-    # Using PyGMT
-    # Filling in fault patches with colors corresponding to their stress changes
+    """
+    Using PyGMT
+    Filling in fault patches with colors corresponding to their stress changes
+    """
     # Some options:
     if stress_component == 'shear':
         plotting_stress = out_object.receiver_shear;
@@ -212,16 +212,15 @@ def map_plot(params, inputs, out_object, stress_component):
     fig.coast(region=region, projection=proj, N='2', W='0.5p,black', S='white', L="g-125.5/39.6+c1.5+w50");
 
     # Draw each source
-    eq_lon = [];
-    eq_lat = [];
+    eq_lon, eq_lat = [], [];
     for source in out_object.source_object:
         source_lon, source_lat = conversion_math.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
                                                            inputs.zerolat);
         eq_lon.append(source_lon);
         eq_lat.append(source_lat);
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
         lons, lats = conversion_math.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        if source.potency == []:
+        if source.potency:
             fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, just outline them.
         else:
             fig.plot(x=lons, y=lats, style='s0.3c', G="purple", pen="thin,black");  # in case of point sources
@@ -229,12 +228,9 @@ def map_plot(params, inputs, out_object, stress_component):
     # Draw each receiver, with associated data
     for i in range(len(out_object.receiver_object)):
         rec = out_object.receiver_object[i];
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
-        mylon_top, mylat_top = conversion_math.xy2lonlat(x_total[0], y_total[0], inputs.zerolon, inputs.zerolat);
-        mylon_bot, mylat_bot = conversion_math.xy2lonlat(x_total[2], y_total[2], inputs.zerolon, inputs.zerolat);
+        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(rec);
         lons, lats = conversion_math.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        fig.plot(x=lons, y=lats, Z="f" + str(plotting_stress[i]), pen="thick,black",
-                 C="mycpt.cpt");  # coloring by stress value
+        fig.plot(x=lons, y=lats, Z=str(plotting_stress[i]), pen="thick,black", G="+z", C="mycpt.cpt");  # color = stress
 
     # Colorbar annotation
     fig.coast(shorelines="1.0p,black", region=region, projection=proj);  # the boundary.
@@ -245,7 +241,7 @@ def map_plot(params, inputs, out_object, stress_component):
     fig.plot(eq_lon, eq_lat, style='s0.3c', G="purple", pen="thin,black");
 
     # Annotate with aftershock locations
-    if len(params.aftershocks) > 0:
+    if params.aftershocks:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
         fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
 
@@ -254,16 +250,21 @@ def map_plot(params, inputs, out_object, stress_component):
     return;
 
 
-def slip_vector_map(params, input_object, disp_points, out_object):
-    # Here we will make a plot of vector displacement from the given GPS_LL file
-    # We will include vertical deformation too.
-    # The source faults will be colored by slip values.
-    # Sources colored by slip would probably be great here.
-    # Doing this in basic plotting until pygmt has good vector plotting utilities
+def slip_vector_map(params, input_object, disp_points, out_object, vmin=None, vmax=None):
+    """
+    Here we will make a plot of vector displacement from the given GPS_LL file
+    We will include vertical deformation too.
+    The source faults will be colored by slip values.
+    Sources colored by slip would probably be great here.
+    Doing this in basic plotting until pygmt has good vector plotting utilities
+    CAN I RE-WRITE THIS IN PYGMT NOW?
+    """
 
-    # Vertical cmap
-    vmin = -10;
-    vmax = 10;
+    # Vertical cmap (mm)
+    if not vmin:
+        vmin = -10;
+    if not vmax:
+        vmax = 10;
     color_boundary_object_vert = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
     vertical_cmap = cm.ScalarMappable(norm=color_boundary_object_vert, cmap='RdYlBu_r');
 
@@ -284,7 +285,7 @@ def slip_vector_map(params, input_object, disp_points, out_object):
     # Drawing Sources
     for source in input_object.source_object:
         slip = np.sqrt(source.rtlat ** 2 + source.reverse ** 2);
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
         lons, lats = conversion_math.xy2lonlat(x_total, y_total, input_object.zerolon, input_object.zerolat);
         fault_vertices = np.column_stack((lons[0:4], lats[0:4]));
         patch_color = slip_cmap.to_rgba(slip);
@@ -332,9 +333,9 @@ def slip_vector_map(params, input_object, disp_points, out_object):
     return;
 
 
-def write_output_files(params, inputs, disp_points, out_object):
+def write_output_files(out_object, disp_points, outdir):
     # Write displacement output file
-    ofile = open(params.outdir + 'disps_model_grid.txt', 'w');
+    ofile = open(outdir + 'disps_model_grid.txt', 'w');
     ofile.write("# Format: x y udisp vdisp wdisp (m) \n");
     for i in np.arange(0, len(out_object.y)):
         for j in np.arange(0, len(out_object.x)):
@@ -344,7 +345,7 @@ def write_output_files(params, inputs, disp_points, out_object):
     ofile.close();
 
     # Write output file for stresses.
-    ofile = open(params.outdir + 'stresses.txt', 'w');
+    ofile = open(outdir + 'stresses.txt', 'w');
     ofile.write("# Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
     for i in range(len(out_object.receiver_object)):
         rec = out_object.receiver_object[i];
@@ -354,10 +355,10 @@ def write_output_files(params, inputs, disp_points, out_object):
             center[0], center[1], center[2], rec.rake, out_object.receiver_normal[i], out_object.receiver_shear[i],
             out_object.receiver_coulomb[i]));
     ofile.close();
-    print("Outputs written to file.")
+    print("Write file %s " % outdir+"stresses.txt");
 
     if disp_points:
-        ofile = open(params.outdir + 'll_disps.txt', 'w');
+        ofile = open(outdir + 'll_disps.txt', 'w');
         ofile.write("# Format: lon lat u v w (m)\n");
         for i in range(len(out_object.u_ll)):
             ofile.write("%f %f %f %f %f\n" % (

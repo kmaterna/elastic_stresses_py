@@ -5,14 +5,23 @@
 
 import numpy as np
 from . import conversion_math
-from . import coulomb_collections
+from . import coulomb_collections as cc
 from Tectonic_Utils.seismo import wells_and_coppersmith
 
 
 def read_intxt(input_file):
     print("Reading source and receiver fault information from file %s " % input_file);
-    sources = [];
-    receivers = [];
+    sources, receivers = [], [];
+    PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat = None, None, None, None, None, None, None, None;
+
+    ifile = open(input_file, 'r');
+    for line in ifile:
+        if len(line.split()) == 0:
+            continue;
+        if line.split()[0] == 'G:':  # line of general parameters
+            [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = read_general_line(line);
+    ifile.close();
+    assert(FRIC is not None), RuntimeError("Line G: general parameters not successfully read from input file.");
 
     ifile = open(input_file, 'r');
     for line in ifile:
@@ -33,40 +42,29 @@ def read_intxt(input_file):
                 [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom,
                  comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat,
                                                            slip, zerolon, zerolat);
-            one_source_object = coulomb_collections.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
-                                                                  yfinish=yfinish, Kode=Kode, rtlat=rtlat,
-                                                                  reverse=reverse, potency=[], strike=strike,
-                                                                  dipangle=dip, rake=rake, top=top, bottom=bottom,
-                                                                  comment=comment);
+            one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                                 Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
+                                                 dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
             sources.append(one_source_object);
             print("RtLat slip: %f m, Reverse slip: %f m" % (rtlat, reverse));
-        elif temp[0] == 'R:':
+        if temp[0] == 'R:':
             [strike, rake, dip, L, W, fault_lon, fault_lat, fault_depth] = read_receiver_line(line);
             [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom,
              comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, 0,
                                                        zerolon, zerolat);
-            one_receiver_object = coulomb_collections.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
-                                                                    yfinish=yfinish, Kode=Kode, rtlat=rtlat,
-                                                                    reverse=reverse, potency=[], strike=strike,
-                                                                    dipangle=dip, rake=rake, top=top, bottom=bottom,
-                                                                    comment=comment);
+            one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                                   Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
+                                                   dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
             receivers.append(one_receiver_object);
-        elif temp[0] == 'G:':
-            [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = read_general_line(line);
-        else:
-            continue;
     ifile.close();
 
     # Wrapping up the inputs.
-    [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc] = compute_grid_parameters(minlon, maxlon,
-                                                                                                 minlat, maxlat,
-                                                                                                 zerolat);
-    input_obj = coulomb_collections.Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_gridx,
-                                                 finish_gridx=finish_gridx, start_gridy=start_gridy,
-                                                 finish_gridy=finish_gridy,
-                                                 xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon,
-                                                 minlat=minlat, maxlat=maxlat, zerolat=zerolat,
-                                                 receiver_object=receivers, source_object=sources);
+    [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc] = compute_grid_params(minlon, maxlon, minlat,
+                                                                                             maxlat, zerolat);
+    input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=finish_gridx,
+                                start_gridy=start_gridy, finish_gridy=finish_gridy, xinc=xinc, yinc=yinc, minlon=minlon,
+                                maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
+                                receiver_object=receivers, source_object=sources);
     return input_obj;
 
 
@@ -119,9 +117,11 @@ def read_general_line(line):
     return [PR1, FRIC, lon_min, lon_max, lon_zero, lat_min, lat_max, lat_zero];
 
 
-def compute_grid_parameters(minlon, maxlon, minlat, maxlat, zerolat):
-    # Compute the grid parameters that we'll be using, based on the size of the map.
-    # Assuming 100 increments in both directions.
+def compute_grid_params(minlon, maxlon, minlat, maxlat, zerolat):
+    """
+    Compute the grid parameters that we'll be using, based on the size of the map.
+    Assuming 100 increments in both directions.
+    """
     deltalon = (maxlon - minlon) * 111.00 * np.cos(np.deg2rad(zerolat));  # in km.
     deltalat = (maxlat - minlat) * 111.00;  # in km.
     start_gridx = -deltalon / 2.0;
@@ -139,10 +139,11 @@ def compute_params_for_WC_source(strike, dip, rake, depth, magnitude, faulting_t
     L = wells_and_coppersmith.RLD_from_M(magnitude, faulting_type);  # rupture length
     W = wells_and_coppersmith.RW_from_M(magnitude, faulting_type);  # rupture width
     slip = wells_and_coppersmith.rectangular_slip(L * 1000, W * 1000, magnitude);  # must input in meters
-    # xstart,ystart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);  # if the hypocenter is really the center of the rupture
+    # if the hypocenter is really the center of the rupture:
+    # xstart,ystart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);
     # xfinish,yfinish=conversion_math.add_vector_to_point(xcenter,ycenter,L/2,strike[i]);
-    xstart, ystart = conversion_math.add_vector_to_point(xcenter, ycenter, 0,
-                                                         strike);  # if the hypocenter is on one side of the rupture
+    # if hypocenter is on one side of rupture:
+    xstart, ystart = conversion_math.add_vector_to_point(xcenter, ycenter, 0, strike);
     xfinish, yfinish = conversion_math.add_vector_to_point(xcenter, ycenter, L, strike);
     rtlat, reverse = conversion_math.get_rtlat_dip_slip(slip, rake);
     top, bottom = conversion_math.get_top_bottom(depth, W, dip);

@@ -3,14 +3,16 @@
 
 import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
-from . import coulomb_collections
+from . import coulomb_collections as cc
 from . import conversion_math
 
 
 def do_stress_computation(params, inputs, disp_points):
-    # Step 0. Split receiver fault into many sub-faults if necessary
-    # Step 1. Compute strains and displacements
-    # Step 2. Resolve stresses on receiver faults
+    """
+    Step 0. Split receiver fault into many sub-faults if necessary
+    Step 1. Compute strains and displacements
+    Step 2. Resolve stresses on receiver faults
+    """
 
     print("Beginning stress calcultaion.");
     print("Number of sources: %d " % len(inputs.source_object));
@@ -22,13 +24,11 @@ def do_stress_computation(params, inputs, disp_points):
     [u_ll, v_ll, w_ll] = compute_ll_def(params, subfaulted_inputs, disp_points);
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 
-    MyOutObject = coulomb_collections.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements,
-                                                 v_disp=v_displacements, w_disp=w_displacements,
-                                                 u_ll=u_ll, v_ll=v_ll, w_ll=w_ll,
-                                                 source_object=inputs.source_object,
-                                                 receiver_object=subfaulted_inputs.receiver_object,
-                                                 receiver_normal=receiver_normal, receiver_shear=receiver_shear,
-                                                 receiver_coulomb=receiver_coulomb);
+    MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements,
+                                w_disp=w_displacements, u_ll=u_ll, v_ll=v_ll, w_ll=w_ll,
+                                source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object,
+                                receiver_normal=receiver_normal, receiver_shear=receiver_shear,
+                                receiver_coulomb=receiver_coulomb);
     return MyOutObject;
 
 
@@ -65,37 +65,31 @@ def split_subfault_receivers(params, inputs):
                                                                     finish_y_top, strike_split);
 
                 for k in range(strike_split):
-                    single_subfaulted_receiver = coulomb_collections.Faults_object(xstart=xsplit_array[k],
-                                                                                   xfinish=xsplit_array[k + 1],
-                                                                                   ystart=ysplit_array[k],
-                                                                                   yfinish=ysplit_array[k + 1],
-                                                                                   Kode=fault.Kode, rtlat=0, reverse=0,
-                                                                                   potency=[],
-                                                                                   strike=fault.strike,
-                                                                                   dipangle=fault.dipangle,
-                                                                                   rake=fault.rake,
-                                                                                   top=zsplit_array[j],
-                                                                                   bottom=zsplit_array[j + 1],
-                                                                                   comment=fault.comment);
+                    single_subfaulted_receiver = cc.Faults_object(xstart=xsplit_array[k], xfinish=xsplit_array[k + 1],
+                                                                  ystart=ysplit_array[k], yfinish=ysplit_array[k + 1],
+                                                                  Kode=fault.Kode, rtlat=0, reverse=0, potency=[],
+                                                                  strike=fault.strike, dipangle=fault.dipangle,
+                                                                  rake=fault.rake, top=zsplit_array[j],
+                                                                  bottom=zsplit_array[j + 1], comment=fault.comment);
                     subfaulted_receivers.append(single_subfaulted_receiver);
 
-    subfaulted_objects = coulomb_collections.Input_object(PR1=inputs.PR1, FRIC=inputs.FRIC, depth=inputs.depth,
-                                                          start_gridx=inputs.start_gridx,
-                                                          finish_gridx=inputs.finish_gridx,
-                                                          start_gridy=inputs.start_gridy,
-                                                          finish_gridy=inputs.finish_gridy, xinc=inputs.xinc,
-                                                          yinc=inputs.yinc, minlon=inputs.minlon, maxlon=inputs.maxlon,
-                                                          zerolon=inputs.zerolon, minlat=inputs.minlat,
-                                                          maxlat=inputs.maxlat, zerolat=inputs.zerolat,
-                                                          source_object=inputs.source_object,
-                                                          receiver_object=subfaulted_receivers);
+    subfaulted_objects = cc.Input_object(PR1=inputs.PR1, FRIC=inputs.FRIC, depth=inputs.depth,
+                                         start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx,
+                                         start_gridy=inputs.start_gridy, finish_gridy=inputs.finish_gridy,
+                                         xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon, maxlon=inputs.maxlon,
+                                         zerolon=inputs.zerolon, minlat=inputs.minlat, maxlat=inputs.maxlat,
+                                         zerolat=inputs.zerolat, source_object=inputs.source_object,
+                                         receiver_object=subfaulted_receivers);
 
     return subfaulted_objects;
 
 
 def get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, strike_split):
-    # Take the coordinates of the top of a receiver fault plane.
-    # Generate the list of coordinates that will help split it up along-strike
+    """
+    Take the coordinates of the top of a receiver fault plane.
+    Generate the list of coordinates that will help split it up along-strike
+    strike_slip : int
+    """
     if start_x_top == finish_x_top:
         xsplit_array = [start_x_top for j in range(strike_split + 1)];
     else:
@@ -121,7 +115,7 @@ def get_split_z_array(top, bottom, dip_split):
 
 
 def compute_grid_def(params, inputs):
-    # Loop through a grid and compute the displacements at each point from all sources put together.
+    """Loop through a grid and compute the displacements at each point from all sources put together."""
     x = np.linspace(inputs.start_gridx, inputs.finish_gridx,
                     int((inputs.finish_gridx - inputs.start_gridx) / inputs.xinc));
     y = np.linspace(inputs.start_gridy, inputs.finish_gridy,
@@ -142,17 +136,14 @@ def compute_grid_def(params, inputs):
 
 
 def compute_ll_def(params, inputs, disp_points):
-    # Loop through a list of lon/lat and compute their displacements due to all sources put together.
-    x = [];
-    y = [];
+    """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
+    x, y = [], [];
     for i in range(len(disp_points.lon)):
         [xi, yi] = conversion_math.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon, inputs.zerolat);
         x.append(xi);
         y.append(yi);
 
-    u_ll = np.zeros(len(x));
-    v_ll = np.zeros(len(x));
-    w_ll = np.zeros(len(x));
+    u_ll, v_ll, w_ll = np.zeros(len(x)), np.zeros(len(x)), np.zeros(len(x));
 
     # For each coordinate requested.
     for k in range(len(x)):
@@ -165,11 +156,12 @@ def compute_ll_def(params, inputs, disp_points):
 
 
 def compute_surface_disp_point(params, inputs, x, y):
-    # A major compute loop for each source object at an x/y point.
-    # x/y in the same coordinate system as the fault object.
-    u_disp = 0;
-    v_disp = 0;
-    w_disp = 0;
+    """
+    A major compute loop for each source object at an x/y point.
+    x/y in the same coordinate system as the fault object.
+    """
+    u_disp, v_disp, w_disp = 0, 0, 0;
+
     for fault in inputs.source_object:
 
         # Fault parameters
@@ -208,20 +200,18 @@ def compute_surface_disp_point(params, inputs, x, y):
 
 
 def compute_strains_stresses(params, inputs):
-    # Pseudocode:
-    # For each receiver, at the center point, sum up the strain and stress for each source.
-    # Return : source object, receiver object, shear stress, normal stress, and coulomb stress on each receiver.
+    """
+    Pseudocode:
+    For each receiver, at the center point, sum up the strain and stress for each source.
+    Return : source object, receiver object, shear stress, normal stress, and coulomb stress on each receiver.
+    """
 
     # The values we're actually going to output.
-    receiver_shear = [];
-    receiver_normal = [];
-    receiver_coulomb = [];
+    receiver_shear, receiver_normal, receiver_coulomb = [], [], [];
 
     for receiver in inputs.receiver_object:
         centercoords = conversion_math.get_fault_center(receiver);
-        normal_sum = 0;
-        shear_sum = 0;
-        coulomb_sum = 0;
+        normal_sum, shear_sum, coulomb_sum = 0, 0, 0;
 
         for source in inputs.source_object:
             # A major compute loop for each source object.

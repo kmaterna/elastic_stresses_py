@@ -8,8 +8,15 @@ Params = collections.namedtuple('Params', [
     'dip_num_receivers',
     'fixed_rake',
     'mu', 'lame1',
-    'alpha',
-    'outdir', 'title']);
+    'alpha', 'outdir']);
+
+Faults_object = collections.namedtuple('Faults_object', [
+    'xstart', 'xfinish',
+    'ystart', 'yfinish',
+    'Kode',
+    'rtlat', 'reverse', 'potency',
+    'strike', 'dipangle', 'rake',
+    'top', 'bottom', 'comment']);
 
 Input_object = collections.namedtuple('Input_object', [
     'PR1', 'FRIC', 'depth',
@@ -22,14 +29,6 @@ Input_object = collections.namedtuple('Input_object', [
     'zerolat',
     'source_object',
     'receiver_object'])
-
-Faults_object = collections.namedtuple('Faults_object', [
-    'xstart', 'xfinish',
-    'ystart', 'yfinish',
-    'Kode',
-    'rtlat', 'reverse', 'potency',
-    'strike', 'dipangle', 'rake',
-    'top', 'bottom', 'comment']);
 
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',

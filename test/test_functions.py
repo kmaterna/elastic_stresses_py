@@ -3,6 +3,7 @@
 import numpy as np
 import unittest
 from PyCoulomb import conversion_math
+from PyCoulomb import configure_calc
 
 class Tests(unittest.TestCase):
 
@@ -19,7 +20,7 @@ class Tests(unittest.TestCase):
         return;
 
     def test_rake(self):
-        rake = conversion_math.get_rake(strike_slip = 1.0, dip_slip = 0.5);
+        rake = conversion_math.get_rake(strike_slip=1.0, dip_slip=0.5);
         self.assertAlmostEqual(rake, 26.5650511770779);
         return;
 
@@ -40,6 +41,12 @@ class Tests(unittest.TestCase):
         self.assertAlmostEqual(plane_normal[0],  -0.0174524064372835);
         self.assertAlmostEqual(plane_normal[1], 0);
         self.assertAlmostEqual(plane_normal[2], 0.999847695156391);
+        return;
+
+    def test_read_config(self):
+        config_file = 'examples/example_config.txt'
+        myParams = configure_calc.configure_stress_calculation(config_file);
+        self.assertIsNotNone(myParams);
         return;
 
 
