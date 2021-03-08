@@ -5,6 +5,7 @@ import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 from . import coulomb_collections as cc
 from . import conversion_math
+from Tectonic_Utils.geodesy import fault_vector_functions
 
 
 def do_stress_computation(params, inputs, disp_points):
@@ -51,15 +52,16 @@ def split_subfault_receivers(params, inputs):
 
             for j in range(dip_split):  # First we split it up by dip.
                 # Get the new coordinates of the top of the fault plane.
-                W = conversion_math.get_downdip_width(fault.top, zsplit_array[j], fault.dipangle);
+                W = fault_vector_functions.get_downdip_width(fault.top, zsplit_array[j], fault.dipangle);
                 vector_mag = W * np.cos(
                     np.deg2rad(fault.dipangle));  # how far the bottom edge is displaced downdip from map-view
 
                 # Get the starting points for the next row of fault subpatches.
-                [start_x_top, start_y_top] = conversion_math.add_vector_to_point(fault.xstart, fault.ystart, vector_mag,
-                                                                                 fault.strike + 90);
-                [finish_x_top, finish_y_top] = conversion_math.add_vector_to_point(fault.xfinish, fault.yfinish,
-                                                                                   vector_mag, fault.strike + 90);
+                [start_x_top, start_y_top] = fault_vector_functions.add_vector_to_point(fault.xstart, fault.ystart,
+                                                                                        vector_mag, fault.strike + 90);
+                [finish_x_top, finish_y_top] = fault_vector_functions.add_vector_to_point(fault.xfinish, fault.yfinish,
+                                                                                          vector_mag, fault.strike +
+                                                                                          90);
 
                 [xsplit_array, ysplit_array] = get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top,
                                                                     finish_y_top, strike_split);
@@ -139,7 +141,7 @@ def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
     x, y = [], [];
     for i in range(len(disp_points.lon)):
-        [xi, yi] = conversion_math.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon, inputs.zerolat);
+        [xi, yi] = fault_vector_functions.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon, inputs.zerolat);
         x.append(xi);
         y.append(yi);
 
@@ -165,8 +167,8 @@ def compute_surface_disp_point(params, inputs, x, y):
     for fault in inputs.source_object:
 
         # Fault parameters
-        L = conversion_math.get_strike_length(fault.xstart, fault.xfinish, fault.ystart, fault.yfinish);
-        W = conversion_math.get_downdip_width(fault.top, fault.bottom, fault.dipangle);
+        L = fault_vector_functions.get_strike_length(fault.xstart, fault.xfinish, fault.ystart, fault.yfinish);
+        W = fault_vector_functions.get_downdip_width(fault.top, fault.bottom, fault.dipangle);
         depth = fault.top;
         dip = fault.dipangle;
         strike_slip = fault.rtlat * -1;  # The dc3d coordinate system has left-lateral positive.
@@ -216,8 +218,8 @@ def compute_strains_stresses(params, inputs):
         for source in inputs.source_object:
             # A major compute loop for each source object.
 
-            L = conversion_math.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
-            W = conversion_math.get_downdip_width(source.top, source.bottom, source.dipangle);
+            L = fault_vector_functions.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
+            W = fault_vector_functions.get_downdip_width(source.top, source.bottom, source.dipangle);
             depth = source.top;
             dip = source.dipangle;
             strike_slip = source.rtlat * -1;  # The dc3d coordinate system has left-lateral positive.

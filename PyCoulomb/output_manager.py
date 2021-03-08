@@ -11,6 +11,7 @@ from . import coulomb_collections as cc
 from . import conversion_math
 from . import io_inp
 from . import io_additionals
+from Tectonic_Utils.geodesy import fault_vector_functions
 
 
 def produce_outputs(params, inputs, disp_points, out_object):
@@ -185,14 +186,14 @@ def map_plot(params, inputs, out_object, stress_component):
     # Draw each source
     eq_lon, eq_lat = [], [];
     for source in out_object.source_object:
-        source_lon, source_lat = conversion_math.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
-                                                           inputs.zerolat);
+        source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
+                                                                  inputs.zerolat);
         eq_lon.append(source_lon);
         eq_lat.append(source_lat);
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
-        lons, lats = conversion_math.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        if source.potency:
-            fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, just outline them.
+        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
+        if not source.potency:
+            fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
         else:
             fig.plot(x=lons, y=lats, style='s0.3c', G="purple", pen="thin,black");  # in case of point sources
 
@@ -200,7 +201,7 @@ def map_plot(params, inputs, out_object, stress_component):
     for i in range(len(out_object.receiver_object)):
         rec = out_object.receiver_object[i];
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(rec);
-        lons, lats = conversion_math.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
+        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
         fig.plot(x=lons, y=lats, Z=str(plotting_stress[i]), pen="thick,black", G="+z", C="mycpt.cpt");  # color = stress
 
     # Colorbar annotation
@@ -257,7 +258,7 @@ def slip_vector_map(params, input_object, disp_points, out_object, vmin=None, vm
     for source in input_object.source_object:
         slip = np.sqrt(source.rtlat ** 2 + source.reverse ** 2);
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
-        lons, lats = conversion_math.xy2lonlat(x_total, y_total, input_object.zerolon, input_object.zerolat);
+        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, input_object.zerolon, input_object.zerolat);
         fault_vertices = np.column_stack((lons[0:4], lats[0:4]));
         patch_color = slip_cmap.to_rgba(slip);
         mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0);

@@ -9,7 +9,7 @@
 
 
 from . import coulomb_collections as cc
-from . import conversion_math
+from Tectonic_Utils.geodesy import fault_vector_functions
 
 
 def read_inp(input_file, fixed_rake):
@@ -46,7 +46,7 @@ def read_inp(input_file, fixed_rake):
                 if slip > 0.0000001:  # Here we have a source fault
                     [xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom,
                      comment] = read_fault_line(line);
-                    rake = conversion_math.get_rake(rtlat, reverse);
+                    rake = fault_vector_functions.get_rake(rtlat, reverse);
                     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
                                                          Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[],
                                                          strike=strike, dipangle=dipangle, rake=rake, top=top,
@@ -84,7 +84,7 @@ def read_fault_line(line):
     top = float(temp[9]);
     bottom = float(temp[10]);
     comment = " ".join(temp[11:-1]);
-    strike = conversion_math.get_strike(xfinish - xstart, yfinish - ystart);
+    strike = fault_vector_functions.get_strike(xfinish - xstart, yfinish - ystart);
     return [xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom, comment];
 
 
