@@ -1,5 +1,6 @@
-# Reading aftershock tables
-# Reading GPS or other lon/lat pairs that will be read in
+"""
+Reading aftershock tables and GPS lon/lat pairs
+"""
 
 from . import coulomb_collections as cc
 

@@ -45,14 +45,14 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
 	* For catalogs using Wells and Coppersmith (1994)
 * **FM Format:** "Source_FM: strike rake dip lon lat depth_km magnitude mu lambda"
 	* For focal mechanisms
-* **MT Format:** "Source_MT: " will be implemented soon.
+* **MT Format:** "Source_MT: Mrr Mtt Mpp Mrt Mrp Mtp strike rake dip lon lat depth_km mu lambda"
     * For full moment tensors, not just double-couple
 
 For all finite sources (i.e., Patch, WC), lon/lat/depth refer to the back updip corner of the fault plane, the corner where one looks along the strike direction to see the fault's upper edge (start_x and start_y in the Aki and Richards (1980) diagram in Coulomb's documentation). 
 
 For WC Source Format, faulting_type = ["SS","R","N","ALL"] from the Wells and Coppersmith indications of Strike Slip, Reverse, Normal, and All. 
 
-An example input .intxt file with WC source format might look like: 
+An example .intxt file with WC source format might look like: 
 ```
 # General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero
 # Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m

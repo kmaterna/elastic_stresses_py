@@ -1,6 +1,5 @@
 # Running dc3d, given an input namedtuple.
 
-
 import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 from . import coulomb_collections as cc
@@ -10,9 +9,9 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 
 def do_stress_computation(params, inputs, disp_points):
     """
-    Step 0. Split receiver fault into many sub-faults if necessary
-    Step 1. Compute strains and displacements
-    Step 2. Resolve stresses on receiver faults
+    * Step 0. Split receiver fault into many sub-faults if necessary
+    * Step 1. Compute strains and displacements
+    * Step 2. Resolve stresses on receiver faults
     """
 
     print("Beginning stress calcultaion.");
@@ -93,13 +92,13 @@ def get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, s
     strike_slip : int
     """
     if start_x_top == finish_x_top:
-        xsplit_array = [start_x_top for j in range(strike_split + 1)];
+        xsplit_array = [start_x_top for _j in range(strike_split + 1)];
     else:
         xincrement = (finish_x_top - start_x_top) / strike_split;
         xsplit_array = np.arange(start_x_top, finish_x_top + xincrement, xincrement);
     # length : xsplit+1. contains all the xlocations that could be used as start-stop points in the top row.
     if start_y_top == finish_y_top:
-        ysplit_array = [start_y_top for j in range(strike_split + 1)];
+        ysplit_array = [start_y_top for _j in range(strike_split + 1)];
     else:
         yincrement = (finish_y_top - start_y_top) / strike_split;
         ysplit_array = np.arange(start_y_top, finish_y_top + yincrement, yincrement);
@@ -109,7 +108,7 @@ def get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, s
 
 def get_split_z_array(top, bottom, dip_split):
     if top == bottom:
-        zsplit_array = [top for j in range(dip_split + 1)];
+        zsplit_array = [top for _j in range(dip_split + 1)];
     else:
         zincrement = abs(top - bottom) / dip_split;
         zsplit_array = np.arange(top, bottom + zincrement, zincrement);
@@ -141,7 +140,8 @@ def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
     x, y = [], [];
     for i in range(len(disp_points.lon)):
-        [xi, yi] = fault_vector_functions.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon, inputs.zerolat);
+        [xi, yi] = fault_vector_functions.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon,
+                                                    inputs.zerolat);
         x.append(xi);
         y.append(yi);
 

@@ -1,9 +1,11 @@
-# Read the Coulomb or user-defined input files
-# Valid formats: 
-# .inp (Coulomb)
-# .inr (Coulomb)
-# .intxt (My own definition, convenient for an experiment I'm running)
-# .inzero (My own definition, convenient for point sources)
+"""
+Read the Coulomb or user-defined input files:
+
+* .inp (Coulomb)
+* .inr (Coulomb)
+* .intxt (My own definition, convenient for slip or magnitude)
+* .inzero (My own definition, convenient for point sources)
+"""
 
 from . import io_inp
 from . import io_inr

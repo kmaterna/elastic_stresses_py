@@ -1,11 +1,12 @@
-# Read Coulomb input files in the .inp format
-# Important parameters: 
-# 1. Poisson's Ratio
-# 2. Coefficient of Friction
-# 3. Depth
-# 4. Fault params (x start, x finish, y start, y finish, Kode, rt. lat, reverse, dip angle, top, bottom, comment)
-# 5. Grid parameters (start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc)
-# 6. Map info (min lon, max lon, zero lon, min lat, max lat, zero lat)
+"""
+Read Coulomb input files in the .inp format. Important parameters are:
+* 1. Poisson's Ratio
+* 2. Coefficient of Friction
+* 3. Depth
+* 4. Fault params (x start, x finish, y start, y finish, Kode, rt. lat, reverse, dip angle, top, bottom, comment)
+* 5. Grid parameters (start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc)
+* 6. Map info (min lon, max lon, zero lon, min lat, max lat, zero lat)
+"""
 
 
 from . import coulomb_collections as cc

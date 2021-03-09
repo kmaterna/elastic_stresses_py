@@ -1,12 +1,15 @@
-# The purpose of these functions is to read/write a convenient input file
-# Since we're using an input format that involves lon/lat/depth/mag, we have to convert
-# We will use Wells and Coppersmith 1994, in the same way that Coulomb does.
+"""
+Read/write convenient input files (.intxt and .inzero).
+Since we're using an input format that involves lon/lat/depth/mag, we have to convert
+using Wells and Coppersmith 1994, in the same way that Coulomb does.
+"""
 
 import numpy as np
 from . import coulomb_collections as cc
 from Tectonic_Utils.seismo import wells_and_coppersmith
 from Tectonic_Utils.seismo import moment_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
+from Tectonic_Utils.seismo import MT_calculations
 
 
 def read_intxt(input_file):
@@ -130,23 +133,24 @@ def get_source_wc(line, zerolon, zerolat):
 
 def get_FocalMech_source(line, zerolon, zerolat):
     """Create a source object from a point source focal mechanism"""
-    [strike, rake, dip, lon, lat, depth, magnitude, mu, lame1] = read_point_source_line(line);
+    [strike, rake, dip, lon, lat, depth, magnitude, mu, _] = read_point_source_line(line);
     [x, y, Kode, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat,
-                                                                                     zerolon, zerolat, mu,
-                                                                                     lame1);
+                                                                                     zerolon, zerolat, mu);
     one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=Kode, rtlat=rtlat,
                                          reverse=reverse, potency=potency, strike=strike, dipangle=dip,
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     return one_source_object;
 
 def get_MT_source(line, zerolon, zerolat):
-    """Write this next. """
-    print(line, zerolon, zerolat);
-    _ = read_moment_tensor_source_line(line);
-    # step 1: read line
-    # step 2: compute necessary things
-    # step 3: package into a source
-    return 0;
+    """Create a source object from a six-component moment tensor solution"""
+    [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth, mu, lam1] = read_moment_tensor_source_line(line);
+    MT = MT_calculations.get_MT(Mrr, Mtt, Mpp, Mrt, Mrp, Mtp);
+    [x, y, Kode, rtlat, reverse, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat,
+                                                                                  mu, lam1);
+    one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=Kode, rtlat=rtlat,
+                                         reverse=reverse, potency=potency, strike=strike, dipangle=dip,
+                                         rake=rake, top=depth, bottom=depth, comment=comment);
+    return one_source_object;
 
 
 # ------------------------------------
@@ -154,67 +158,42 @@ def get_MT_source(line, zerolon, zerolat):
 # ------------------------------------
 
 def read_source_line_WCconvention(line):
-    strike = float(line.split()[1]);
-    rake = float(line.split()[2]);
-    dip = float(line.split()[3]);
-    magnitude = float(line.split()[4]);
+    """Format: strike rake dip magnitude faulting_type lon lat depth_km"""
+    [strike, rake, dip, magnitude] = [float(i) for i in line.split()[1:5]];
     faulting_type = line.split()[5];
-    fault_center_lon = float(line.split()[6]);
-    fault_center_lat = float(line.split()[7]);
-    fault_center_dep = float(line.split()[8]);
+    [fault_center_lon, fault_center_lat, fault_center_dep] = [float(i) for i in line.split()[6:9]];
     return [strike, rake, dip, magnitude, faulting_type, fault_center_lon, fault_center_lat, fault_center_dep];
 
 def read_source_line_slip_convention(line):
-    strike = float(line.split()[1]);
-    rake = float(line.split()[2]);
-    dip = float(line.split()[3]);
-    length = float(line.split()[4]);
-    width = float(line.split()[5]);
-    updip_corner_lon = float(line.split()[6]);
-    updip_corner_lat = float(line.split()[7]);
-    updip_corner_dep = float(line.split()[8]);
+    """Format: strike rake dip length_km width_km lon lat depth_km slip_m"""
+    [strike, rake, dip, length, width] = [float(i) for i in line.split()[1:6]];
+    [updip_corner_lon, updip_corner_lat, updip_corner_dep] = [float(i) for i in line.split()[6:9]];
     slip = float(line.split()[9]);
     return [strike, rake, dip, length, width, slip, updip_corner_lon, updip_corner_lat, updip_corner_dep];
 
 def read_receiver_line(line):
-    strike = float(line.split()[1]);
-    rake = float(line.split()[2]);
-    dip = float(line.split()[3]);
-    length = float(line.split()[4]);
-    width = float(line.split()[5]);
-    updip_corner_lon = float(line.split()[6]);
-    updip_corner_lat = float(line.split()[7]);
-    updip_corner_dep = float(line.split()[8]);
+    """Format: strike rake dip length_km width_km lon lat depth_km"""
+    [strike, rake, dip, length, width] = [float(i) for i in line.split()[1:6]];
+    [updip_corner_lon, updip_corner_lat, updip_corner_dep] = [float(i) for i in line.split()[6:9]];
     return [strike, rake, dip, length, width, updip_corner_lon, updip_corner_lat, updip_corner_dep]
 
 def read_general_line(line):
-    PR1 = float(line.split()[1]);
-    FRIC = float(line.split()[2]);
-    lon_min = float(line.split()[3]);
-    lon_max = float(line.split()[4]);
-    lon_zero = float(line.split()[5]);
-    lat_min = float(line.split()[6]);
-    lat_max = float(line.split()[7]);
-    lat_zero = float(line.split()[8]);
+    """Format: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"""
+    [PR1, FRIC, lon_min, lon_max, lon_zero] = [float(i) for i in line.split()[1:6]];
+    [lat_min, lat_max, lat_zero] = [float(i) for i in line.split()[6:9]];
     return [PR1, FRIC, lon_min, lon_max, lon_zero, lat_min, lat_max, lat_zero];
 
 def read_point_source_line(line):
     """Format: strike rake dip lon lat depth magnitude mu lamdba """
-    strike = float(line.split()[1]);
-    rake = float(line.split()[2]);
-    dip = float(line.split()[3]);
-    lon = float(line.split()[4]);
-    lat = float(line.split()[5]);
-    depth = float(line.split()[6]);
-    magnitude = float(line.split()[7]);
-    mu = float(line.split()[8]);
-    lame1 = float(line.split()[9]);
+    [strike, rake, dip, lon, lat, depth, magnitude, mu, lame1] = [float(i) for i in line.split()[1:10]];
     return [strike, rake, dip, lon, lat, depth, magnitude, mu, lame1];
 
 def read_moment_tensor_source_line(line):
-    """write this next"""
-    print(line);
-    return 0;
+    """Format: Mrr Mtt Mpp Mrt Mrp Mtp strike dip rake lon lat depth_km mu lambda"""
+    [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp] = [float(i) for i in line.split()[1:7]];
+    [strike, dip, rake] = [float(i) for i in line.split()[7:10]];
+    [lon, lat, depth, mu, lame1] = [float(i) for i in line.split()[10:15]];
+    return [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth, mu, lame1];
 
 
 # ------------------------------------
@@ -263,17 +242,17 @@ def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fa
     comment = '';
     return [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom, comment]
 
-def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu, lame1):
+def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu):
     """ Given information about point sources from focal mechanisms,
     Return the right components that get packaged into input_obj. """
     [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat);
-    potency = get_DC_potency(rake, magnitude, mu, lame1);
+    potency = get_DC_potency(rake, magnitude, mu);
     # Filler variables for the point source case
     Kode = 100;
     comment = '';
     return [xcenter, ycenter, Kode, 0, 0, potency, comment];
 
-def get_DC_potency(rake, momentmagnitude, mu, lame1):
+def get_DC_potency(rake, momentmagnitude, mu):
     """
     Given the basic double couple parameters,
     Return the four-vector used in Okada DC3D0.
@@ -295,4 +274,34 @@ def get_DC_potency(rake, momentmagnitude, mu, lame1):
     # In the double-couple case, this is zero.
     p3 = 0;
     p4 = 0;
+    return [p1, p2, p3, p4];
+
+def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1):
+    """ Given information about point sources from moment tensors,
+    Return the right components that get packaged into input_obj. """
+    [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat);
+    potency = get_MT_potency(MT, rake, mu, lame1);
+    # Filler variables for the point source case
+    Kode = 100;
+    comment = '';
+    return [xcenter, ycenter, Kode, 0, 0, potency, comment];
+
+def get_MT_potency(MT, rake, mu, lame1):
+    """
+    Return the four-vector used in Okada DC3D0 from the full six-component moment tensor.
+    Pot1 = strike-slip moment of DC / mu
+    Pot2 = dip-slip moment of DC / mu
+    Pot3 = inflation = M_ISO / lambda
+    Pot4 = tensile = M_lineardipole / mu
+    Moment in newton meters
+    """
+    # compute the DC moment, ISO moment, and tensile moment.
+    iso_moment, clvd_moment, dc_moment = MT_calculations.get_scalar_moments(MT);
+    strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
+    strike_slip_fraction = -1 * strike_slip_fraction;  # DC3D0 wants left lateral slip.
+
+    p1 = dc_moment * strike_slip_fraction / mu;
+    p2 = dc_moment * dip_slip_fraction / mu;
+    p3 = iso_moment / lame1;
+    p4 = clvd_moment / mu;
     return [p1, p2, p3, p4];

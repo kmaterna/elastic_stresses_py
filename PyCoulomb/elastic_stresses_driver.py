@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-# Driver to run Coulomb Stress Calculations in Python
-# This code uses a Python wrapper for Okada's fortran codes (in particular DC3D.f).
-# It computes the displacements and strains inside the elastic half-space
-# From these components, it resolves stresses on receiver faults.
-# This toolbox performs functions similar to Coulomb in matlab, although in command line.
-# I found myself running the same thing over and over in Coulomb, so I built a command-line analog. 
-# The inputs and outputs are not as fancy as Coulomb. 
-# It only calculates stress on faults, not cross sections.
+"""
+Driver to run Coulomb Stress Calculations in Python
+This code uses a Python wrapper for Okada's fortran codes (in particular DC3D.f).
+It computes the displacements and strains inside the elastic half-space
+From these components, it resolves stresses on receiver faults.
+This toolbox performs functions similar to Coulomb in matlab, although in command line.
+I found myself running the same thing over and over in Coulomb, so I built a command-line analog.
+The inputs and outputs are not as fancy as Coulomb.
+It only calculates stress on faults, not cross sections.
+"""
 
 import argparse
 from Elastic_stresses_py import PyCoulomb
