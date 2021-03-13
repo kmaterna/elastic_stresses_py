@@ -31,7 +31,7 @@ def read_intxt(input_file):
             if temp[0] == 'Source_FM:':  # point source from focal mechanism
                 one_source_object = get_FocalMech_source(line, zerolon, zerolat);
                 sources.append(one_source_object);
-            if temp[0] == "Source_MT":  # point source from moment tensor
+            if temp[0] == "Source_MT:":  # point source from moment tensor
                 one_source_object = get_MT_source(line, zerolon, zerolat);
                 sources.append(one_source_object);
             if temp[0] == 'Receiver:':
@@ -100,10 +100,10 @@ def input_general_compute_params(input_file):
 def get_receiver_fault(line, zerolon, zerolat):
     """Create a receiver object from line in text file"""
     [strike, rake, dip, L, W, fault_lon, fault_lat, fault_depth] = read_receiver_line(line);
-    [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom,
+    [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
      comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, 0,
                                                zerolon, zerolat);
-    one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, Kode=Kode,
+    one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, Kode=100,
                                            rtlat=rtlat, reverse=reverse, potency=[], strike=strike, dipangle=dip,
                                            rake=rake, top=top, bottom=bottom, comment=comment);
     return one_receiver_object;
@@ -111,11 +111,11 @@ def get_receiver_fault(line, zerolon, zerolat):
 def get_source_patch(line, zerolon, zerolat):
     """Create a source object from a patch in text file"""
     [strike, rake, dip, L, W, slip, fault_lon, fault_lat, fault_depth] = read_source_line_slip_convention(line);
-    [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom,
+    [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
      comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, slip,
                                                zerolon, zerolat);
     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                         Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
+                                         Kode=100, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
                                          dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
     return one_source_object;
 
@@ -123,20 +123,20 @@ def get_source_wc(line, zerolon, zerolat):
     """Create a source object from wells and coppersmith and text file"""
     [strike, rake, dip, magnitude, faulting_type, fault_lon, fault_lat,
      fault_depth] = read_source_line_WCconvention(line);
-    [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom,
+    [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
      comment] = compute_params_for_WC_source(strike, dip, rake, fault_depth, magnitude, faulting_type, fault_lon,
                                              fault_lat, zerolon, zerolat);
     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                         Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
+                                         Kode=100, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
                                          dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
     return one_source_object;
 
 def get_FocalMech_source(line, zerolon, zerolat):
     """Create a source object from a point source focal mechanism"""
     [strike, rake, dip, lon, lat, depth, magnitude, mu, _] = read_point_source_line(line);
-    [x, y, Kode, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat,
-                                                                                     zerolon, zerolat, mu);
-    one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=Kode, rtlat=rtlat,
+    [x, y, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat, zerolon,
+                                                                               zerolat, mu);
+    one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
                                          reverse=reverse, potency=potency, strike=strike, dipangle=dip,
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     return one_source_object;
@@ -145,9 +145,9 @@ def get_MT_source(line, zerolon, zerolat):
     """Create a source object from a six-component moment tensor solution"""
     [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth, mu, lam1] = read_moment_tensor_source_line(line);
     MT = MT_calculations.get_MT(Mrr, Mtt, Mpp, Mrt, Mrp, Mtp);
-    [x, y, Kode, rtlat, reverse, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat,
-                                                                                  mu, lam1);
-    one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=Kode, rtlat=rtlat,
+    [x, y, rtlat, reverse, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu,
+                                                                            lam1);
+    one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
                                          reverse=reverse, potency=potency, strike=strike, dipangle=dip,
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     return one_source_object;
@@ -221,16 +221,15 @@ def compute_params_for_WC_source(strike, dip, rake, depth, mag, faulting_type, f
     W = wells_and_coppersmith.RW_from_M(mag, faulting_type);  # rupture width
     slip = wells_and_coppersmith.rectangular_slip(L * 1000, W * 1000, mag);  # must input in meters
     # if the hypocenter is really the center of the rupture:
-    # xstart,ystart=conversion_math.add_vector_to_point(xcenter,ycenter,-L/2,strike[i]);
-    # xfinish,yfinish=conversion_math.add_vector_to_point(xcenter,ycenter,L/2,strike[i]);
+    # xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, -L/2, strike);
+    # xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L/2, strike);
     # assuming hypocenter is on one side of rupture:
     xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, 0, strike);
     xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L, strike);
     rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake);
-    top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
-    Kode = 100;
+    top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
     comment = '';
-    return [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom, comment];
+    return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment];
 
 def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fault_lat, slip, zerolon, zerolat):
     [xcorner, ycorner] = fault_vector_functions.latlon2xy(fault_lon, fault_lat, zerolon, zerolat);
@@ -238,19 +237,16 @@ def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fa
     xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L, strike);
     rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake);
     top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
-    Kode = 100;
     comment = '';
-    return [xstart, xfinish, ystart, yfinish, Kode, rtlat, reverse, top, bottom, comment]
+    return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment]
 
 def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu):
     """ Given information about point sources from focal mechanisms,
     Return the right components that get packaged into input_obj. """
     [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat);
     potency = get_DC_potency(rake, magnitude, mu);
-    # Filler variables for the point source case
-    Kode = 100;
     comment = '';
-    return [xcenter, ycenter, Kode, 0, 0, potency, comment];
+    return [xcenter, ycenter, 0, 0, potency, comment];
 
 def get_DC_potency(rake, momentmagnitude, mu):
     """
@@ -281,10 +277,8 @@ def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1
     Return the right components that get packaged into input_obj. """
     [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat);
     potency = get_MT_potency(MT, rake, mu, lame1);
-    # Filler variables for the point source case
-    Kode = 100;
     comment = '';
-    return [xcenter, ycenter, Kode, 0, 0, potency, comment];
+    return [xcenter, ycenter, 0, 0, potency, comment];
 
 def get_MT_potency(MT, rake, mu, lame1):
     """
@@ -296,12 +290,16 @@ def get_MT_potency(MT, rake, mu, lame1):
     Moment in newton meters
     """
     # compute the DC moment, ISO moment, and tensile moment.
-    iso_moment, clvd_moment, dc_moment = MT_calculations.get_scalar_moments(MT);
+    iso, clvd, dc = MT_calculations.decompose_iso_dc_clvd(MT);
+    dc_moment = dc[0][0];
+    tensile_moment = 0;  # THIS IS WHAT OKADA NEEDS.  WILL COMPUTE SEPARATELY WITH MINSON ET AL 2007
+    iso_moment = 0;  # SAME
+
     strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
     strike_slip_fraction = -1 * strike_slip_fraction;  # DC3D0 wants left lateral slip.
 
     p1 = dc_moment * strike_slip_fraction / mu;
     p2 = dc_moment * dip_slip_fraction / mu;
-    p3 = iso_moment / lame1;
-    p4 = clvd_moment / mu;
+    p3 = tensile_moment / lame1;
+    p4 = iso_moment / mu;
     return [p1, p2, p3, p4];

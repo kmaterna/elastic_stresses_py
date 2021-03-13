@@ -35,18 +35,19 @@ elastic_stresses_driver.py config.txt
 
 ### Additional Input Formats beyond Coulomb Format: 
 Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. Each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
-* **General Format:** "General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"
-	* Describes coordinate system and domain setup. Required. 
-* **Receiver Format:** "Receiver: strike rake dip length_km width_km lon lat depth_km"
-	* Describes receiver faults
-* **Slip Format:** "Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m"
-	* For slip distributions and fault patches.  
-* **WC Format:** "Source_WC: strike rake dip magnitude faulting_type lon lat depth_km"
-	* For catalogs using Wells and Coppersmith (1994)
-* **FM Format:** "Source_FM: strike rake dip lon lat depth_km magnitude mu lambda"
-	* For focal mechanisms
-* **MT Format:** "Source_MT: Mrr Mtt Mpp Mrt Mrp Mtp strike rake dip lon lat depth_km mu lambda"
-    * For full moment tensors, not just double-couple
+* **General Format:** Describes coordinate system and domain setup. Required.  
+    * "General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero" 
+* **Receiver Format:** Describes receiver faults 
+    * "Receiver: strike rake dip length_km width_km lon lat depth_km
+* **Slip Format:** For slip distributions and fault patches. 
+    * "Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m"
+* **WC Format:** For catalogs using Wells and Coppersmith (1994) 
+    * "Source_WC: strike rake dip magnitude faulting_type lon lat depth_km" 
+* **FM Format:** For focal mechanisms 
+    * "Source_FM: strike rake dip lon lat depth_km magnitude mu lambda" 
+* **MT Format:** * For full moment tensors, although only double-couple part works right now 
+    * "Source_MT: Mrr Mtt Mpp Mrt Mrp Mtp strike rake dip lon lat depth_km mu lambda"
+    
 
 For all finite sources (i.e., Patch, WC), lon/lat/depth refer to the back updip corner of the fault plane, the corner where one looks along the strike direction to see the fault's upper edge (start_x and start_y in the Aki and Richards (1980) diagram in Coulomb's documentation). 
 

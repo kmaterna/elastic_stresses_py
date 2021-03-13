@@ -34,6 +34,7 @@ Out_object = collections.namedtuple('Out_object', [
     'x', 'y',
     'x2d', 'y2d',
     'u_disp', 'v_disp', 'w_disp',
+    'zerolon', 'zerolat',
     'u_ll', 'v_ll', 'w_ll',
     'source_object', 'receiver_object',
     'receiver_normal', 'receiver_shear', 'receiver_coulomb']);

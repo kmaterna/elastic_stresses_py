@@ -29,6 +29,7 @@ def read_inputs(params):
         disp_points = io_additionals.read_disp_points(params.disp_points_file);
     else:
         print("Not reading any GPS points for displacements.");
-        disp_points = [];
+        disp_points = None;
 
+    assert input_object.source_object, ValueError("You have not specified any sources.");
     return [input_object, disp_points];

@@ -25,7 +25,8 @@ def do_stress_computation(params, inputs, disp_points):
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements,
-                                w_disp=w_displacements, u_ll=u_ll, v_ll=v_ll, w_ll=w_ll,
+                                w_disp=w_displacements, u_ll=u_ll, v_ll=v_ll, w_ll=w_ll, zerolon=inputs.zerolon,
+                                zerolat=inputs.zerolat,
                                 source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object,
                                 receiver_normal=receiver_normal, receiver_shear=receiver_shear,
                                 receiver_coulomb=receiver_coulomb);
@@ -138,6 +139,8 @@ def compute_grid_def(params, inputs):
 
 def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
+    if not disp_points:
+        return None, None, None;
     x, y = [], [];
     for i in range(len(disp_points.lon)):
         [xi, yi] = fault_vector_functions.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon,

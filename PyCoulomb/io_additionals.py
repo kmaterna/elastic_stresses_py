@@ -5,7 +5,8 @@ Reading aftershock tables and GPS lon/lat pairs
 from . import coulomb_collections as cc
 
 
-def read_aftershock_table(infile):
+def read_aftershock_table_ncsn(infile):
+    """Reading a catalog format that comes from Northern California Seismic Network"""
     print("Reading aftershocks from file %s " % infile);
     lon, lat, time, depth, magnitude = [], [], [], [], [];
 
@@ -23,6 +24,25 @@ def read_aftershock_table(infile):
     ifile.close();
     return [lon, lat, depth, magnitude, time];
 
+
+def read_aftershock_table(infile):
+    """Simple catalog format: time, lon, lat, depth, magnitude"""
+    print("Reading aftershocks from file %s " % infile);
+    lon, lat, time, depth, magnitude = [], [], [], [], [];
+
+    ifile = open(infile);
+    for line in ifile:
+        temp = line.split();
+        if temp[0][0] == '#':
+            continue;
+        else:
+            time.append(temp[0]);
+            lon.append(float(temp[1]));
+            lat.append(float(temp[2]));
+            depth.append(float(temp[3]));
+            magnitude.append(float(temp[4]));
+    ifile.close();
+    return [lon, lat, depth, magnitude, time];
 
 def read_disp_points(infile):
     """
