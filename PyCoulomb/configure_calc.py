@@ -38,3 +38,25 @@ def configure_stress_calculation(config_file):
                          dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, alpha=alpha, outdir=output_dir);
     print(MyParams);
     return MyParams;
+
+
+def write_valid_config_file(directory):
+    configobj = configparser.ConfigParser()
+    configobj["io-config"] = {};
+    ioconfig = configobj["io-config"];
+    ioconfig["exp_name"] = 'my_experiment';
+    ioconfig["input_file"] = 'my_input.intxt';
+    ioconfig["output_dir"] = 'Outputs/';
+    ioconfig["aftershocks"] = '[optional]';
+    ioconfig["gps_file"] = '[optional]'
+    configobj["compute-config"] = {};
+    computeconfig = configobj["compute-config"];
+    computeconfig["strike_num_receivers"] = '10';
+    computeconfig["dip_num_receivers"] = '10';
+    computeconfig["mu"] = '30000000';
+    computeconfig["lame1"] = '30000000';
+    computeconfig["fixed_rake"] = '[optional]';
+    with open(directory+'/dummy_config.txt', 'w') as configfile:
+        configobj.write(configfile)
+    print("Writing file %s " % directory+"/dummy_config.txt");
+    return;

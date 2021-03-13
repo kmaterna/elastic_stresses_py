@@ -8,3 +8,4 @@ from . import io_inr
 from . import io_intxt
 from . import output_manager
 from . import run_dc3d
+from . import pygmt_plots

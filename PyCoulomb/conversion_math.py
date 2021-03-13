@@ -1,6 +1,5 @@
 # Stress and strain functions
-# Conversion functions
-# Fault plane geometric functions
+# Fault object functions
 
 
 import numpy as np

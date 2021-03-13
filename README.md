@@ -8,7 +8,7 @@ This code uses Okada's (1992) DC3D function to compute elastic displacements, st
 This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/). This code also requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). It requires a few utility functions in a separate utilities repository (https://github.com/kmaterna/Tectonic_Utils).  To get the utilities library, please ```pip install Tectonic-Utils```. 
 
 ### Installation and Usage: 
-To install, you can clone this library onto your computer into a location that is on your $PYTHONPATH (in other words, the parent directory holding Elastic_stresses_py/ must be on your $PYTHONPATH).  For convenience, it is nice (but not required) to put the full path to Elastic_stresses_py/PyCoulomb/ on your regular system $PATH so the main executable ```elastic_stresses_driver.py``` can be found.   
+To install, you can clone this library onto your computer into a location that is on your $PYTHONPATH (in other words, the parent directory holding Elastic_stresses_py/ must be on your $PYTHONPATH).  For convenience, it is nice (but not required) to put the full path to Elastic_stresses_py/PyCoulomb/bin on your regular system $PATH so the main executable ```elastic_stresses_driver.py``` can be found.   
 
 Most of the behavior of the program is controlled by a config text file. An example config file is provided in examples/. The elastic parameters mu and lamda, as well as your input/output options, are set in config file. You call the program by 
 ```bash
@@ -28,7 +28,6 @@ elastic_stresses_driver.py config.txt
 * Produces output tables of stresses and displacements.
 
 ### Future work: 
-* Generate a valid but empty config file and/or input file
 * Read in full moment tensor (not just double couple focal mechanisms)
 * Make output vector plots (gps obs vs. model etc.) to pygmt
 * Read .inr files (like Coulomb)
