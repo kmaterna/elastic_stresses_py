@@ -95,16 +95,16 @@ def map_vertical_def(params, inputs, filename, outfile):
 
     # First make surfaces of east/north/up deformation for later plotting
     outdir = params.outdir;
-    inc = 0.002;
+    inc = 0.0005;
     call(['gmt', 'surface', outdir + '/xyz_model.txt', '-G' + outdir + '/vert.grd',
-          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc)],
-         shell=False);
+          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
+          '-r'], shell=False);
     call(['gmt', 'surface', outdir + '/xyu_model.txt', '-G' + outdir + '/east.grd',
-          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc)],
-         shell=False);
+          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
+          '-r'], shell=False);
     call(['gmt', 'surface', outdir + '/xyv_model.txt', '-G' + outdir + '/north.grd',
-          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc)],
-         shell=False);
+          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
+         '-r'], shell=False);
 
     # Build a PyGMT plot
     fig = pygmt.Figure();

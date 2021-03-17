@@ -15,7 +15,8 @@ from Tectonic_Utils.seismo import MT_calculations
 def read_intxt(input_file):
     print("Reading source and receiver fault information from file %s " % input_file);
     sources, receivers = [], [];
-    [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = input_general_compute_params(input_file);
+    [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = get_general_compute_params(input_file);
+    [start_x, end_x, start_y, end_y, xinc, yinc] = compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolat);
     ifile = open(input_file, 'r');
     for line in ifile:
         temp = line.split();
@@ -23,27 +24,23 @@ def read_intxt(input_file):
             if temp[0] == 'Source_WC:':  # wells and coppersmith convenient format
                 one_source_object = get_source_wc(line, zerolon, zerolat);
                 sources.append(one_source_object);
-                print("RtLat slip: %f m, Reverse slip: %f m" % (one_source_object.rtlat, one_source_object.reverse));
             if temp[0] == 'Source_Patch:':  # source-slip convenient format
                 one_source_object = get_source_patch(line, zerolon, zerolat);
                 sources.append(one_source_object);
-                print("RtLat slip: %f m, Reverse slip: %f m" % (one_source_object.rtlat, one_source_object.reverse));
             if temp[0] == 'Source_FM:':  # point source from focal mechanism
                 one_source_object = get_FocalMech_source(line, zerolon, zerolat);
                 sources.append(one_source_object);
             if temp[0] == "Source_MT:":  # point source from moment tensor
                 one_source_object = get_MT_source(line, zerolon, zerolat);
                 sources.append(one_source_object);
-            if temp[0] == 'Receiver:':
+            if temp[0] == 'Receiver:':  # receiver fault
                 one_receiver_object = get_receiver_fault(line, zerolon, zerolat);
                 receivers.append(one_receiver_object);
     ifile.close();
 
     # Wrapping up the inputs.
-    [start_gridx, end_gridx, start_gridy, end_gridy, xinc, yinc] = compute_grid_params_general(minlon, maxlon, minlat,
-                                                                                               maxlat, zerolat);
-    input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_gridx, finish_gridx=end_gridx,
-                                start_gridy=start_gridy, finish_gridy=end_gridy, xinc=xinc, yinc=yinc, minlon=minlon,
+    input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_x, finish_gridx=end_x,
+                                start_gridy=start_y, finish_gridy=end_y, xinc=xinc, yinc=yinc, minlon=minlon,
                                 maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
                                 receiver_object=receivers, source_object=sources);
     return input_obj;
@@ -83,7 +80,7 @@ def write_intxt(input_object, output_file):
 # Functions to parse lines of text into objects
 # ------------------------------------
 
-def input_general_compute_params(input_file):
+def get_general_compute_params(input_file):
     [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = None, None, None, None, None, None, None, None;
     ifile = open(input_file, 'r');
     for line in ifile:
@@ -106,6 +103,7 @@ def get_receiver_fault(line, zerolon, zerolat):
     one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, Kode=100,
                                            rtlat=rtlat, reverse=reverse, potency=[], strike=strike, dipangle=dip,
                                            rake=rake, top=top, bottom=bottom, comment=comment);
+    defensive_programming_faults(one_receiver_object);
     return one_receiver_object;
 
 def get_source_patch(line, zerolon, zerolat):
@@ -117,6 +115,7 @@ def get_source_patch(line, zerolon, zerolat):
     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
                                          Kode=100, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
                                          dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
+    defensive_programming_faults(one_source_object);
     return one_source_object;
 
 def get_source_wc(line, zerolon, zerolat):
@@ -129,6 +128,7 @@ def get_source_wc(line, zerolon, zerolat):
     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
                                          Kode=100, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
                                          dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
+    defensive_programming_faults(one_source_object);
     return one_source_object;
 
 def get_FocalMech_source(line, zerolon, zerolat):
@@ -139,6 +139,7 @@ def get_FocalMech_source(line, zerolon, zerolat):
     one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
                                          reverse=reverse, potency=potency, strike=strike, dipangle=dip,
                                          rake=rake, top=depth, bottom=depth, comment=comment);
+    defensive_programming_faults(one_source_object);
     return one_source_object;
 
 def get_MT_source(line, zerolon, zerolat):
@@ -150,7 +151,24 @@ def get_MT_source(line, zerolon, zerolat):
     one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
                                          reverse=reverse, potency=potency, strike=strike, dipangle=dip,
                                          rake=rake, top=depth, bottom=depth, comment=comment);
+    defensive_programming_faults(one_source_object);
     return one_source_object;
+
+
+def defensive_programming_faults(onefault):
+    """Assert sanity on faults to make sure they've been read properly"""
+    assert (-360 < onefault.strike < 360), RuntimeError("Invalid strike parameter for fault object");
+    assert (-360 < onefault.rake < 360), RuntimeError("Invalid rake parameter for fault object");
+    assert (0 < onefault.dip < 90), RuntimeError("Invalid dip parameter for fault object");
+    assert (abs(onefault.xstart) < 200), RuntimeError("Too distant fault (>200km) for fault object");
+    assert (abs(onefault.xfinish) < 200), RuntimeError("Too distant fault (>200km) for fault object");
+    assert (abs(onefault.ystart) < 200), RuntimeError("Too distant fault (>200km) for fault object");
+    assert (abs(onefault.yfinish) < 200), RuntimeError("Too distant fault (>200km) for fault object");
+    assert (onefault.top > 0), RuntimeError("Invalid depth parameter for fault object");
+    assert (onefault.bottom > onefault.top), RuntimeError("Bottom of fault above top of fault. ");
+    if onefault.rtlat > 0 or onefault.reverse > 0:
+        print("RtLat slip: %f m, Reverse slip: %f m" % (onefault.rtlat, onefault.reverse));
+    return;
 
 
 # ------------------------------------
@@ -220,23 +238,29 @@ def compute_params_for_WC_source(strike, dip, rake, depth, mag, faulting_type, f
     L = wells_and_coppersmith.RLD_from_M(mag, faulting_type);  # rupture length
     W = wells_and_coppersmith.RW_from_M(mag, faulting_type);  # rupture width
     slip = wells_and_coppersmith.rectangular_slip(L * 1000, W * 1000, mag);  # must input in meters
-    # if the hypocenter is really the center of the rupture:
+    # if hypocenter is really the center of the rupture:
     # xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, -L/2, strike);
     # xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L/2, strike);
-    # assuming hypocenter is on one side of rupture:
+    # top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
+    # if hypocenter is on one side of rupture:
     xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, 0, strike);
     xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L, strike);
     rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake);
-    top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
+    top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
     comment = '';
     return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment];
 
 def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fault_lat, slip, zerolon, zerolat):
     [xcorner, ycorner] = fault_vector_functions.latlon2xy(fault_lon, fault_lat, zerolon, zerolat);
+    # if  hypocenter is really the center of the rupture:
+    # xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, -L/2, strike);
+    # xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L/2, strike);
+    # top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
+    # if hypocenter is on one side of rupture:
     xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, 0, strike);
     xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L, strike);
-    rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake);
     top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
+    rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake);
     comment = '';
     return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment]
 
@@ -254,19 +278,29 @@ def get_DC_potency(rake, momentmagnitude, mu):
     Return the four-vector used in Okada DC3D0.
     Pot1 = strike-slip moment of DC / mu
     Pot2 = dip-slip moment of DC / mu
-    Pot3 = inflation = M_ISO / lambda
-    Pot4 = tensile = M_lineardipole / mu
+    Pot3 = tensile = M_TENSILE / lambda
+    Pot4 = inflation = M_ISO / mu
     In a more general case, we would use a different MT format to handle non-DC parts.
     Right now, it only handles DC focal mechanisms.
     Moment in newton meters
     """
     total_moment = moment_calculations.moment_from_mw(momentmagnitude);
+    dc_moment = total_moment * 1.00;
+
+    # # TESTING CODE HERE FOR OPENING MODE FRACTURE. THIS SHOULD BE CODED BETTER IN THE FUTURE.
+    # # p3 SHOULD USUALLY BE DIVIDED BY LAMDA
+    # dc_moment = total_moment * 0.65;
+    # opening_moment = total_moment - dc_moment;
+    # # p3 = opening_moment / mu;
+    # # p4 = 0;
+    # # END TESTING CODE
+
     strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
     print("strike_slip: ", strike_slip_fraction);
     print("dip_slip: ", dip_slip_fraction);
     strike_slip_fraction = -1 * strike_slip_fraction;  # DC3D0 wants left lateral slip.
-    p1 = total_moment * strike_slip_fraction / mu;
-    p2 = total_moment * dip_slip_fraction / mu;
+    p1 = dc_moment * strike_slip_fraction / mu;
+    p2 = dc_moment * dip_slip_fraction / mu;
     # In the double-couple case, this is zero.
     p3 = 0;
     p4 = 0;
@@ -282,18 +316,19 @@ def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1
 
 def get_MT_potency(MT, rake, mu, lame1):
     """
+    An unfinished function, since the computation is not trivial.
     Return the four-vector used in Okada DC3D0 from the full six-component moment tensor.
     Pot1 = strike-slip moment of DC / mu
     Pot2 = dip-slip moment of DC / mu
-    Pot3 = inflation = M_ISO / lambda
-    Pot4 = tensile = M_lineardipole / mu
+    Pot3 = tensile = M_TENSILE / lambda
+    Pot4 = inflation = M_ISO / mu
     Moment in newton meters
     """
     # compute the DC moment, ISO moment, and tensile moment.
     iso, clvd, dc = MT_calculations.decompose_iso_dc_clvd(MT);
     dc_moment = dc[0][0];
-    tensile_moment = 0;  # THIS IS WHAT OKADA NEEDS.  WILL COMPUTE SEPARATELY WITH MINSON ET AL 2007
-    iso_moment = 0;  # SAME
+    tensile_moment = 0;  # THIS IS WHAT OKADA NEEDS.  WILL COMPUTE SEPARATELY WITH MINSON ET AL 2007. NOT DONE YET.
+    iso_moment = 0;  # SAME. NOT DONE YET.
 
     strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
     strike_slip_fraction = -1 * strike_slip_fraction;  # DC3D0 wants left lateral slip.
