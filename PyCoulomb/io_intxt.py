@@ -159,13 +159,13 @@ def defensive_programming_faults(onefault):
     """Assert sanity on faults to make sure they've been read properly"""
     assert (-360 < onefault.strike < 360), RuntimeError("Invalid strike parameter for fault object");
     assert (-360 < onefault.rake < 360), RuntimeError("Invalid rake parameter for fault object");
-    assert (0 < onefault.dip < 90), RuntimeError("Invalid dip parameter for fault object");
+    assert (0 < onefault.dipangle < 90), RuntimeError("Invalid dip parameter for fault object");
     assert (abs(onefault.xstart) < 200), RuntimeError("Too distant fault (>200km) for fault object");
     assert (abs(onefault.xfinish) < 200), RuntimeError("Too distant fault (>200km) for fault object");
     assert (abs(onefault.ystart) < 200), RuntimeError("Too distant fault (>200km) for fault object");
     assert (abs(onefault.yfinish) < 200), RuntimeError("Too distant fault (>200km) for fault object");
-    assert (onefault.top > 0), RuntimeError("Invalid depth parameter for fault object");
-    assert (onefault.bottom > onefault.top), RuntimeError("Bottom of fault above top of fault. ");
+    assert (onefault.top >= 0), RuntimeError("Invalid depth parameter for fault object");
+    assert (onefault.bottom >= onefault.top), RuntimeError("Bottom of fault above top of fault. ");
     if onefault.rtlat > 0 or onefault.reverse > 0:
         print("RtLat slip: %f m, Reverse slip: %f m" % (onefault.rtlat, onefault.reverse));
     return;
@@ -296,8 +296,8 @@ def get_DC_potency(rake, momentmagnitude, mu):
     # # END TESTING CODE
 
     strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
-    print("strike_slip: ", strike_slip_fraction);
-    print("dip_slip: ", dip_slip_fraction);
+    print("strike_slip fraction: ", strike_slip_fraction, " / 1.0");
+    print("dip_slip fraction: ", dip_slip_fraction, " / 1.0");
     strike_slip_fraction = -1 * strike_slip_fraction;  # DC3D0 wants left lateral slip.
     p1 = dc_moment * strike_slip_fraction / mu;
     p2 = dc_moment * dip_slip_fraction / mu;

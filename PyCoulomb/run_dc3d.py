@@ -130,7 +130,7 @@ def compute_grid_def(params, inputs):
     numcols = np.shape(u_displacements)[1]
     for ky in range(numrows):
         for kx in range(numcols):
-            u_disp, v_disp, w_disp = compute_surface_disp_point(params, inputs, x2d[ky][kx], y2d[ky][kx]);
+            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, x2d[ky][kx], y2d[ky][kx]);
             u_displacements[ky][kx] = u_disp;
             v_displacements[ky][kx] = v_disp;
             w_displacements[ky][kx] = w_disp;
@@ -152,10 +152,13 @@ def compute_ll_def(params, inputs, disp_points):
 
     # For each coordinate requested.
     for k in range(len(x)):
-        u_disp, v_disp, w_disp = compute_surface_disp_point(params, inputs, x[k], y[k]);
+        u_disp, v_disp, w_disp, strain_tensor = compute_surface_disp_point(params, inputs, x[k], y[k]);
         u_ll[k] = u_disp;
         v_ll[k] = v_disp;
         w_ll[k] = w_disp;
+
+        print("STRAIN TENSOR AT DEEP WELL:")
+        print(strain_tensor);
 
     return [u_ll, v_ll, w_ll];
 
@@ -166,6 +169,7 @@ def compute_surface_disp_point(params, inputs, x, y):
     x/y in the same coordinate system as the fault object.
     """
     u_disp, v_disp, w_disp = 0, 0, 0;
+    strain_tensor_total = np.zeros((3, 3));
 
     for fault in inputs.source_object:
 
@@ -180,28 +184,38 @@ def compute_surface_disp_point(params, inputs, x, y):
         # Preparing to rotate to a fault-oriented coordinate system.
         theta = fault.strike - 90;
         theta = np.deg2rad(theta);
-        R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
-        R2 = np.array([[np.cos(-theta), -np.sin(-theta)], [np.sin(-theta), np.cos(-theta)]])
+        R = np.array([[np.cos(theta), -np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0],
+                      [0, 0, 1]]);  # horizontal rotation into strike-aligned coordinates.
+        R2 = np.array([[np.cos(-theta), -np.sin(-theta), 0], [np.sin(-theta), np.cos(-theta), 0], [0, 0, 1]]);
 
         # Compute the position relative to the translated, rotated fault.
-        translated_pos = np.array([[x - fault.xstart], [y - fault.ystart]]);
-        xy = R.dot(translated_pos);
+        translated_pos = np.array([[x - fault.xstart], [y - fault.ystart], [0]]);  # at surface of earth
+        xyz = R.dot(translated_pos);
         # Solve for displacements at the surface
         if fault.potency:
-            success, u, grad_u = dc3d0wrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip,
+            success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip,
                                               [fault.potency[0], fault.potency[1], fault.potency[2], fault.potency[3]]);
             u = u * 1e-6;  # Unit correction: potency from N-m results in displacements in microns.
+            grad_u = grad_u * 1e-9;  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
         else:
-            success, u, grad_u = dc3dwrapper(params.alpha, [xy[0], xy[1], 0.0], depth, dip, [0, L], [-W, 0],
-                                             [strike_slip, dip_slip, 0.0]);
-        urot = R2.dot(np.array([[u[0]], [u[1]]]));
+            success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
+                                             [strike_slip, dip_slip, 0.0]);    # assume zero tensile
+            grad_u = grad_u * 1e-3;  # DC3D Unit correction.
+
+        # Rotate back into the unprimed coordinates.
+        urot = R2.dot(np.array([[u[0]], [u[1]], [u[2]]]));
+
+        # Strain tensor math
+        desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
+        strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u);
+        strain_tensor_total = np.add(strain_tensor, strain_tensor_total);
 
         # Update the displacements from all sources
         u_disp = u_disp + urot[0];
         v_disp = v_disp + urot[1];
         w_disp = w_disp + u[2];  # vertical
 
-    return u_disp, v_disp, w_disp;
+    return u_disp, v_disp, w_disp, strain_tensor_total;
 
 
 def compute_strains_stresses(params, inputs):
@@ -243,8 +257,7 @@ def compute_strains_stresses(params, inputs):
                 success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip,
                                                   [source.potency[0], source.potency[1], source.potency[2],
                                                    source.potency[3]]);
-                grad_u = grad_u * 1e-9;  # DC3D0 Unit correction:
-                # potency from N-m results in displacements in nanostrain
+                grad_u = grad_u * 1e-9;  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
             else:
                 success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
                                                  [strike_slip, dip_slip, 0.0]);
@@ -252,7 +265,6 @@ def compute_strains_stresses(params, inputs):
             # Solve for displacement gradients at center of receiver fault
 
             # Rotate grad_u back into the unprimed coordinates.
-            # Divide by 1000 because coordinate units (km) and slip units (m) are different by 1000.
             desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
 
             # Then rotate again into receiver coordinates.
