@@ -30,7 +30,6 @@ elastic_stresses_driver.py config.txt
 ### Future work: 
 * Finish output of strain tensor for given lon/lat pairs
 * Read in full moment tensor (not just double couple focal mechanisms)
-* Make output vector plots (gps obs vs. model etc.) to pygmt
 * Read .inr files (like Coulomb)
 
 ### Additional Input Formats beyond Coulomb Format: 

@@ -139,3 +139,70 @@ def map_vertical_def(params, inputs, filename, outfile):
     fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="mycpt.cpt", G="-0.045/0.045", B=["x0.01", "y+L\"Disp(m)\""]);
     fig.savefig(outfile);
     return;
+
+
+def map_displacement_vectors(params, inputs, disp_points, out_object, outfile, vmin=None, vmax=None):
+    """
+    Make a plot of modeled vector displacement from the disp_points
+    """
+    if not disp_points:
+        return;
+
+    proj = 'M4i'
+    region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+
+    # Make modeled vertical displacement color map
+    if not vmin:
+        vmin = np.min(out_object.w_ll);
+        vmax = np.max(out_object.w_ll);
+    pygmt.makecpt(C="roma", T=str(vmin)+"/"+str(vmax)+"/"+str((vmax-vmin)/100), D="o", H="mycpt.cpt");
+
+    # Build a PyGMT plot
+    fig = pygmt.Figure();
+    fig.basemap(region=region, projection=proj, B="+t\"Coseismic Displacements\"");
+    fig.coast(region=region, projection=proj, N='1', W='1.0p,black', S='lightblue',
+              L="n0.4/0.06+c" + str(region[2]) + "+w20", B="1.0");
+    fig.plot(disp_points.lon, disp_points.lat, style='c0.3c', color=out_object.w_ll, C='mycpt.cpt', pen="thin,black");
+
+    # Draw vectors and vector scale bar
+    scale = (np.max(np.abs(out_object.u_ll)) * 100 / 0.012);  # empirical scaling to get convenient display
+    fig.plot(x=disp_points.lon, y=disp_points.lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
+             direction=[out_object.u_ll, out_object.v_ll], pen="thin,black");
+    fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
+             direction=[[0.010], [0]],  pen="thin,black");  # scale vector
+    fig.text(x=[region[0]+0.45], y=[region[2]+0.15], text='10 mm model');  # scale label
+    # Plot the observations if they exist
+    if len(disp_points.lon) == len(disp_points.dE_obs):
+        fig.plot(x=disp_points.lon, y=disp_points.lat, style='v0.2c+e+gred+h0+p1p,red+z' + str(scale),
+                 direction=[disp_points.dE_obs, disp_points.dN_obs], pen="thin,red");
+        fig.plot(x=[region[0]+0.30], y=[region[2]+0.35],  style='v0.2c+e+gred+h0+p1p,red+z'+str(scale),
+                 direction=[[0.010], [0]],  pen="thin,red");  # scale vector
+        fig.text(x=[region[0]+0.50], y=[region[2]+0.45], text='10 mm obs');  # scale label
+
+    # Draw each source
+    eq_lon, eq_lat = [], [];
+    for source in inputs.source_object:
+        srclon, srclat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon, inputs.zerolat);
+        eq_lon.append(srclon);
+        eq_lat.append(srclat);
+        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
+        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
+        if not source.potency:
+            fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
+        else:
+            fig.plot(x=lons, y=lats, style='s0.3c', G="purple", pen="thin,black");  # in case of point sources
+    fig.plot(eq_lon, eq_lat, style='s0.3c', G="purple", pen="thin,black");
+
+    # Annotate with aftershock locations
+    if params.aftershocks:
+        if 'ncsn' in params.aftershocks:
+            [lon, lat, _, _, _] = io_additionals.read_aftershock_table_ncsn(params.aftershocks);
+        else:
+            [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
+        fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
+
+    labeling_interval = np.round(np.abs(vmax-vmin)/8, 5);
+    fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="mycpt.cpt", G=str(vmin)+"/"+str(vmax), B=["x"+str(labeling_interval),
+                                                                                        "y+L\"Vert Disp(m)\""]);
+    fig.savefig(outfile);
+    return;

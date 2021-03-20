@@ -26,7 +26,7 @@ def produce_outputs(params, inputs, disp_points, out_object):
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
-    slip_vector_map(params, inputs, disp_points, out_object);
+    pygmt_plots.map_displacement_vectors(params, inputs, disp_points, out_object, params.outdir+"vector_plot.png")
     pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vert.grd", params.outdir+"vertical_map.png");
     return;
 
@@ -147,92 +147,6 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     return;
 
 
-def slip_vector_map(params, input_object, disp_points, out_object, vmin=None, vmax=None):
-    """
-    Here we will make a plot of vector displacement from the given GPS_LL file
-    We will include vertical deformation too.
-    The source faults will be colored by slip values.
-    Sources colored by slip would probably be great here.
-    Doing this in basic plotting until pygmt has good vector plotting utilities
-    CAN I RE-WRITE THIS IN PYGMT NOW?
-    """
-
-    if not disp_points:
-        return;
-
-    # Vertical cmap (mm)
-    if not vmin:
-        vmin = -10;
-    if not vmax:
-        vmax = 10;
-    color_boundary_object_vert = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
-    vertical_cmap = cm.ScalarMappable(norm=color_boundary_object_vert, cmap='RdYlBu_r');
-
-    # slip cmap
-    slip_total = [np.sqrt(source.rtlat ** 2 + source.reverse ** 2) for source in input_object.source_object];
-    slipmin = 0
-    slipmax = np.max(slip_total) + 0.1;
-    color_boundary_object_slip = matplotlib.colors.Normalize(vmin=slipmin, vmax=slipmax, clip=True);
-    slip_cmap = cm.ScalarMappable(norm=color_boundary_object_slip, cmap='jet');
-
-    # MAKING THE FITURE
-    plt.figure(figsize=(16, 10), dpi=300);
-    lonW = input_object.minlon;
-    lonE = input_object.maxlon;
-    latS = input_object.minlat;
-    latN = input_object.maxlat;
-
-    # Drawing Sources
-    for source in input_object.source_object:
-        slip = np.sqrt(source.rtlat ** 2 + source.reverse ** 2);
-        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
-        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, input_object.zerolon, input_object.zerolat);
-        fault_vertices = np.column_stack((lons[0:4], lats[0:4]));
-        patch_color = slip_cmap.to_rgba(slip);
-        mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0);
-        plt.gca().add_patch(mypolygon);
-        # plt.plot(lons, lats, linewidth=1,color='purple');
-        # plt.plot(lons[0:2], lats[0:2], linewidth=3,color='purple');  # the top edge of the fault patch
-        if source.potency:
-            plt.plot(lons[0], lats[0], marker='s', markersize=10, color='purple');  # the location of focal mechanism
-
-    # Displacement vectors at GPS stations
-    # Smaller scale here means zooming in on the vectors (appropriate for small events)
-    max_vector = np.nanmax(
-        np.sqrt(np.multiply(out_object.u_ll, out_object.u_ll) + np.multiply(out_object.v_ll, out_object.v_ll)));
-    scale = max_vector * 3000;  # 2000 gives a reasonable sized vector for 1m of slip
-    if disp_points:
-        for i in range(len(disp_points.lon)):
-            patch_color = vertical_cmap.to_rgba(1000 * out_object.w_ll[i]);
-            plt.plot(disp_points.lon[i], disp_points.lat[i], marker='o', markersize=15, markeredgecolor='black',
-                     color=patch_color);
-            plt.quiver(disp_points.lon[i], disp_points.lat[i], 1000 * out_object.u_ll[i], 1000 * out_object.v_ll[i],
-                       scale=scale, color='black', zorder=10);
-            if len(disp_points.lon) == len(disp_points.dE_obs):
-                plt.quiver(disp_points.lon[i], disp_points.lat[i], 1000 * disp_points.dE_obs[i],
-                           1000 * disp_points.dN_obs[i], scale=scale, color='red', zorder=10);
-        # plt.text(disp_points[0][i],disp_points[1][i],disp_points[2][i]);  # If you want to label the GPS stations
-        plt.quiver(lonW + 0.02, latS + 0.03, 20.0, 0.0, scale=scale, color='black');
-        plt.text(lonW + 0.02, latS + 0.05, "20mm model", color="black", fontsize=20);
-
-    # Drawing colorbars
-    cbar = plt.colorbar(vertical_cmap);
-    cbar.set_label("Vertical Motion (mm)", fontsize=16);
-    cbar.ax.tick_params(labelsize=14);
-    cbar2 = plt.colorbar(slip_cmap);
-    cbar2.set_label("Fault Slip (m)", fontsize=16);
-    cbar2.ax.tick_params(labelsize=14);
-
-    plt.xlim([lonW, lonE]);
-    plt.ylim([latS, latN]);
-    plt.xlabel("Longitude", fontsize=24);
-    plt.ylabel("Latitude", fontsize=24);
-    plt.gca().tick_params(axis='both', which='major', labelsize=24)
-    plt.savefig(params.outdir + 'slip_vector_map.png');
-    plt.close();
-    return;
-
-
 def write_output_files(params, out_object, disp_points):
     # Write synethetic displacement output file
     ofile = open(params.outdir + 'disps_model_grid.txt', 'w');
@@ -246,7 +160,7 @@ def write_output_files(params, out_object, disp_points):
                 out_object.v_disp[i][j], out_object.w_disp[i][j]));
     ofile.close();
 
-    # Write lists of lon/lat/def for each component of deformation
+    # Write lists of lon/lat/def for each component of deformation in synthetic grid
     ofile = open(params.outdir + 'xyz_model.txt', 'w');
     for i in np.arange(0, len(out_object.y)):
         for j in np.arange(0, len(out_object.x)):
@@ -282,6 +196,7 @@ def write_output_files(params, out_object, disp_points):
     ofile.close();
     print("Write file %s " % params.outdir+"stresses.txt");
 
+    # Write output file for GPS displacements
     if disp_points:
         ofile = open(params.outdir + 'll_disps.txt', 'w');
         ofile.write("# Format: lon lat u v w (m)\n");
