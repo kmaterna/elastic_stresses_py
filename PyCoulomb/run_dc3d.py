@@ -7,7 +7,7 @@ from . import conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def do_stress_computation(params, inputs, disp_points):
+def do_stress_computation(params, inputs, disp_points, strain_points):
     """
     * Step 0. Split receiver fault into many sub-faults if necessary
     * Step 1. Compute strains and displacements
@@ -22,11 +22,13 @@ def do_stress_computation(params, inputs, disp_points):
     # Refactoring here.
     [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_grid_def(params, subfaulted_inputs);
     [u_ll, v_ll, w_ll] = compute_ll_def(params, subfaulted_inputs, disp_points);
+    [strain_tensor_results] = compute_ll_strain(params, subfaulted_inputs, strain_points);
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements,
-                                w_disp=w_displacements, u_ll=u_ll, v_ll=v_ll, w_ll=w_ll, zerolon=inputs.zerolon,
-                                zerolat=inputs.zerolat,
+                                w_disp=w_displacements, u_ll=u_ll, v_ll=v_ll, w_ll=w_ll,
+                                strains = strain_tensor_results,
+                                zerolon=inputs.zerolon, zerolat=inputs.zerolat,
                                 source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object,
                                 receiver_normal=receiver_normal, receiver_shear=receiver_shear,
                                 receiver_coulomb=receiver_coulomb);
@@ -137,6 +139,26 @@ def compute_grid_def(params, inputs):
     return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
 
 
+def compute_ll_strain(params, inputs, strain_points):
+    """Loop through a list of lon/lat and compute their strains due to all sources put together."""
+    if not strain_points:
+        return None;
+    x, y = [], [];
+    for i in range(len(strain_points.lon)):
+        [xi, yi] = fault_vector_functions.latlon2xy(strain_points.lon[i], strain_points.lat[i], inputs.zerolon,
+                                                    inputs.zerolat);
+        x.append(xi);
+        y.append(yi);
+
+    strain_tensor_results = [];
+    # For each coordinate requested.
+    for k in range(len(x)):
+        _, _, _, strain_tensor = compute_surface_disp_point(params, inputs, x[k], y[k]);
+        strain_tensor_results.append(strain_tensor);
+
+    return [strain_tensor_results];
+
+
 def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
     if not disp_points:
@@ -152,13 +174,10 @@ def compute_ll_def(params, inputs, disp_points):
 
     # For each coordinate requested.
     for k in range(len(x)):
-        u_disp, v_disp, w_disp, strain_tensor = compute_surface_disp_point(params, inputs, x[k], y[k]);
+        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, x[k], y[k]);
         u_ll[k] = u_disp;
         v_ll[k] = v_disp;
         w_ll[k] = w_disp;
-
-        print("STRAIN TENSOR AT DEEP WELL:")
-        print(strain_tensor);
 
     return [u_ll, v_ll, w_ll];
 

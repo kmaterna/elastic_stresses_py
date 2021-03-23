@@ -74,10 +74,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
 
     # Annotate with aftershock locations
     if params.aftershocks:
-        if 'ncsn' in params.aftershocks:
-            [lon, lat, _, _, _] = io_additionals.read_aftershock_table_ncsn(params.aftershocks);
-        else:
-            [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
+        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
         fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
 
     fig.savefig(params.outdir + label + '_map.png');
@@ -115,10 +112,7 @@ def map_vertical_def(params, inputs, filename, outfile):
               L="n0.23/0.06+c" + str(region[2]) + "+w20", B="1.0");
     # Annotate with aftershock locations
     if params.aftershocks:
-        if 'ncsn' in params.aftershocks:
-            [lon, lat, _, _, _] = io_additionals.read_aftershock_table_ncsn(params.aftershocks);
-        else:
-            [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
+        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
         fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
 
     # Draw each source
@@ -195,10 +189,7 @@ def map_displacement_vectors(params, inputs, disp_points, out_object, outfile, v
 
     # Annotate with aftershock locations
     if params.aftershocks:
-        if 'ncsn' in params.aftershocks:
-            [lon, lat, _, _, _] = io_additionals.read_aftershock_table_ncsn(params.aftershocks);
-        else:
-            [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
+        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
         fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
 
     labeling_interval = np.round(np.abs(vmax-vmin)/8, 5);

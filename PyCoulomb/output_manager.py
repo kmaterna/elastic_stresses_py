@@ -13,12 +13,12 @@ from . import pygmt_plots
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def produce_outputs(params, inputs, disp_points, out_object):
+def produce_outputs(params, inputs, disp_points, strain_points, out_object):
     call(['mkdir', '-p', params.outdir], shell=False);
     call(['cp', params.config_file, params.outdir], shell=False);
     call(['cp', params.input_file, params.outdir], shell=False);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
-    write_output_files(params, out_object, disp_points);
+    write_output_files(params, out_object, disp_points, strain_points);
     surface_def_plot(params, out_object);  # a grid of synthetic points
     stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
     stress_plot(params, out_object, 'normal');
@@ -45,6 +45,9 @@ def write_subfaulted_inp(inputs, out_object, outfile):
 
 
 def surface_def_plot(params, out_object):
+    """
+    Plots surface displacements on the synthetic cartesian grid domain
+    """
     print("Making plot of predicted displacement throughout model domain.")
     print("Max vertical displacement is %f m" % (out_object.w_disp.max()));
     # Plot of elastic surface deformation from the given input model.
@@ -147,7 +150,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     return;
 
 
-def write_output_files(params, out_object, disp_points):
+def write_output_files(params, out_object, disp_points, strain_points):
     # Write synethetic displacement output file
     ofile = open(params.outdir + 'disps_model_grid.txt', 'w');
     ofile.write("# Format: x y lon lat udisp vdisp wdisp (m) \n");
@@ -203,5 +206,18 @@ def write_output_files(params, out_object, disp_points):
         for i in range(len(out_object.u_ll)):
             ofile.write("%f %f %f %f %f\n" % (
                 disp_points.lon[i], disp_points.lat[i], out_object.u_ll[i], out_object.v_ll[i], out_object.w_ll[i]));
+        ofile.close();
+
+    # write output file for strains
+    if strain_points:
+        ofile=open(params.outdir + 'll_strains.txt', 'w');
+        ofile.write("# Format: lon lat strain_tensor (microstrain)\n")
+        for i in range(len(strain_points.lon)):
+            eij = np.multiply(out_object.strains[i], 1e6);  # microstrain
+            ofile.write("%f %f\n" % (strain_points.lon[i], strain_points.lat[i]) );
+            ofile.write("%f %f %f\n" % (eij[0][0], eij[0][1], eij[0][2]));
+            ofile.write("%f %f %f\n" % (eij[1][0], eij[1][1], eij[1][2]));
+            ofile.write("%f %f %f\n" % (eij[2][0], eij[2][1], eij[2][2]));
+            ofile.write("\n");
         ofile.close();
     return;

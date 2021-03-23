@@ -17,8 +17,12 @@ def configure_stress_calculation(config_file):
     exp_name = configobj.get('io-config', 'exp_name');
     input_file = configobj.get('io-config', 'input_file');
     output_dir = configobj.get('io-config', 'output_dir');
-    aftershocks = configobj.get('io-config', 'aftershocks') if configobj.has_option('io-config', 'aftershocks') else None;
-    gps_file = configobj.get('io-config', 'gps_disp_points') if configobj.has_option('io-config', 'gps_disp_points') else None;
+    aftershocks = configobj.get('io-config', 'aftershocks') \
+        if configobj.has_option('io-config', 'aftershocks') else None;
+    gps_file = configobj.get('io-config', 'gps_disp_points') \
+        if configobj.has_option('io-config', 'gps_disp_points') else None;
+    strain_file = configobj.get('io-config', 'strain_file') \
+        if configobj.has_option('io-config', 'strain_file') else None;
     output_dir = output_dir + exp_name + '/';
 
     # Computation parameters
@@ -28,13 +32,15 @@ def configure_stress_calculation(config_file):
     lame1 = configobj.getfloat('compute-config', 'lame1');  # this is lambda
     alpha = (lame1 + mu) / (lame1 + 2 * mu);
     # alpha = parameter for Okada functions. It is 2/3 for simplest case. See DC3D.f documentation.
-    fixed_rake = configobj.getfloat('compute-config', 'fixed_rake') if configobj.has_option('compute-config', 'fixed_rake') else None;
+    fixed_rake = configobj.getfloat('compute-config', 'fixed_rake') \
+        if configobj.has_option('compute-config', 'fixed_rake') else None;
     # on receiver faults, we need to specify rake globally if we're using .inp format. No effect for other file formats.
     if '.inp' in input_file:
         assert fixed_rake, ValueError("Must provide fixed_rake for receiver faults in .inp file. ex: 90 (reverse).");
 
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
-                         disp_points_file=gps_file, strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
+                         disp_points_file=gps_file, strain_file=strain_file,
+                         strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
                          dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, alpha=alpha, outdir=output_dir);
     print(MyParams);
     return MyParams;
@@ -48,7 +54,8 @@ def write_valid_config_file(directory):
     ioconfig["input_file"] = 'my_input.intxt';
     ioconfig["output_dir"] = 'Outputs/';
     ioconfig["aftershocks"] = '[optional]';
-    ioconfig["gps_file"] = '[optional]'
+    ioconfig["gps_disp_points"] = '[optional]';
+    ioconfig["strain_file"] = '[optional]';
     configobj["compute-config"] = {};
     computeconfig = configobj["compute-config"];
     computeconfig["strike_num_receivers"] = '10';

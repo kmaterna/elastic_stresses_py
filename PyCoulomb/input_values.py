@@ -14,6 +14,7 @@ from . import io_additionals
 
 
 def read_inputs(params):
+    # Read source and receiver faults for calculation
     if '.inp' in params.input_file:
         input_object = io_inp.read_inp(params.input_file, params.fixed_rake);  # fixed rake format
     elif '.inr' in params.input_file:
@@ -25,11 +26,13 @@ def read_inputs(params):
     else:
         print("Error! Unrecognized type of input file!");
         input_object = [];
+
+    # Read points where displacement or strain will be written out
+    disp_points, strain_points = None, None;
     if params.disp_points_file:
         disp_points = io_additionals.read_disp_points(params.disp_points_file);
-    else:
-        print("Not reading any GPS points for displacements.");
-        disp_points = None;
+    if params.strain_file:
+        strain_points = io_additionals.read_disp_points(params.strain_file);
 
     assert input_object.source_object, ValueError("You have not specified any sources.");
-    return [input_object, disp_points];
+    return [input_object, disp_points, strain_points];
