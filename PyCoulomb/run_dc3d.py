@@ -27,7 +27,7 @@ def do_stress_computation(params, inputs, disp_points, strain_points):
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements,
                                 w_disp=w_displacements, u_ll=u_ll, v_ll=v_ll, w_ll=w_ll,
-                                strains = strain_tensor_results,
+                                strains=strain_tensor_results,
                                 zerolon=inputs.zerolon, zerolat=inputs.zerolat,
                                 source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object,
                                 receiver_normal=receiver_normal, receiver_shear=receiver_shear,
@@ -184,55 +184,27 @@ def compute_ll_def(params, inputs, disp_points):
 
 def compute_surface_disp_point(params, inputs, x, y):
     """
-    A major compute loop for each source object at an x/y point.
+    A major compute loop for each source object at one x/y point.
     x/y in the same coordinate system as the fault object.
+    Computes displacement and strain tensor
     """
     u_disp, v_disp, w_disp = 0, 0, 0;
     strain_tensor_total = np.zeros((3, 3));
+    computation_depth = 0;  # at surface of earth
 
     for fault in inputs.source_object:
 
-        # Fault parameters
-        L = fault_vector_functions.get_strike_length(fault.xstart, fault.xfinish, fault.ystart, fault.yfinish);
-        W = fault_vector_functions.get_downdip_width(fault.top, fault.bottom, fault.dipangle);
-        depth = fault.top;
-        dip = fault.dipangle;
-        strike_slip = fault.rtlat * -1;  # The dc3d coordinate system has left-lateral positive.
-        dip_slip = fault.reverse;
-
-        # Preparing to rotate to a fault-oriented coordinate system.
-        theta = fault.strike - 90;
-        theta = np.deg2rad(theta);
-        R = np.array([[np.cos(theta), -np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0],
-                      [0, 0, 1]]);  # horizontal rotation into strike-aligned coordinates.
-        R2 = np.array([[np.cos(-theta), -np.sin(-theta), 0], [np.sin(-theta), np.cos(-theta), 0], [0, 0, 1]]);
-
-        # Compute the position relative to the translated, rotated fault.
-        translated_pos = np.array([[x - fault.xstart], [y - fault.ystart], [0]]);  # at surface of earth
-        xyz = R.dot(translated_pos);
-        # Solve for displacements at the surface
-        if fault.potency:
-            success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip,
-                                              [fault.potency[0], fault.potency[1], fault.potency[2], fault.potency[3]]);
-            u = u * 1e-6;  # Unit correction: potency from N-m results in displacements in microns.
-            grad_u = grad_u * 1e-9;  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
-        else:
-            success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
-                                             [strike_slip, dip_slip, 0.0]);    # assume zero tensile
-            grad_u = grad_u * 1e-3;  # DC3D Unit correction.
-
-        # Rotate back into the unprimed coordinates.
-        urot = R2.dot(np.array([[u[0]], [u[1]], [u[2]]]));
+        desired_coords_grad_u, desired_coords_u = compute_strains_stresses_from_one_fault(fault, x, y,
+                                                                                          computation_depth, params);
 
         # Strain tensor math
-        desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
         strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u);
         strain_tensor_total = np.add(strain_tensor, strain_tensor_total);
 
         # Update the displacements from all sources
-        u_disp = u_disp + urot[0];
-        v_disp = v_disp + urot[1];
-        w_disp = w_disp + u[2];  # vertical
+        u_disp = u_disp + desired_coords_u[0];
+        v_disp = v_disp + desired_coords_u[1];
+        w_disp = w_disp + desired_coords_u[2];  # vertical
 
     return u_disp, v_disp, w_disp, strain_tensor_total;
 
@@ -254,37 +226,8 @@ def compute_strains_stresses(params, inputs):
         for source in inputs.source_object:
             # A major compute loop for each source object.
 
-            L = fault_vector_functions.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
-            W = fault_vector_functions.get_downdip_width(source.top, source.bottom, source.dipangle);
-            depth = source.top;
-            dip = source.dipangle;
-            strike_slip = source.rtlat * -1;  # The dc3d coordinate system has left-lateral positive.
-            dip_slip = source.reverse;
-
-            # Preparing to rotate to a fault-oriented coordinate system.
-            theta = source.strike - 90;
-            theta = np.deg2rad(theta);
-            R = np.array([[np.cos(theta), -np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0],
-                          [0, 0, 1]]);  # horizontal rotation into strike-aligned coordinates.
-            R2 = np.array([[np.cos(-theta), -np.sin(-theta), 0], [np.sin(-theta), np.cos(-theta), 0], [0, 0, 1]]);
-
-            # Compute the position relative to the translated, rotated fault.
-            translated_pos = np.array(
-                [[centercoords[0] - source.xstart], [centercoords[1] - source.ystart], [-centercoords[2]]]);
-            xyz = R.dot(translated_pos);
-            if source.potency:
-                success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip,
-                                                  [source.potency[0], source.potency[1], source.potency[2],
-                                                   source.potency[3]]);
-                grad_u = grad_u * 1e-9;  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
-            else:
-                success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
-                                                 [strike_slip, dip_slip, 0.0]);
-                grad_u = grad_u * 1e-3;  # DC3D Unit correction.
-            # Solve for displacement gradients at center of receiver fault
-
-            # Rotate grad_u back into the unprimed coordinates.
-            desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
+            desired_coords_grad_u, _ = compute_strains_stresses_from_one_fault(source, centercoords[0], centercoords[1],
+                                                                               centercoords[2], params);
 
             # Then rotate again into receiver coordinates.
             strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u);
@@ -304,3 +247,46 @@ def compute_strains_stresses(params, inputs):
 
     # return lists of normal, shear, coulomb values for each receiver.
     return [receiver_normal, receiver_shear, receiver_coulomb];
+
+
+def compute_strains_stresses_from_one_fault(source, x, y, z, params):
+    """
+    The main math of DC3D
+    Operates on a source object (e.g., fault),
+    and an xyz position in the same cartesian reference frame.
+    """
+    L = fault_vector_functions.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
+    W = fault_vector_functions.get_downdip_width(source.top, source.bottom, source.dipangle);
+    depth = source.top;
+    dip = source.dipangle;
+    strike_slip = source.rtlat * -1;  # The dc3d coordinate system has left-lateral positive.
+    dip_slip = source.reverse;
+
+    # Preparing to rotate to a fault-oriented coordinate system.
+    theta = source.strike - 90;
+    theta = np.deg2rad(theta);
+    R = np.array([[np.cos(theta), -np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0],
+                  [0, 0, 1]]);  # horizontal rotation into strike-aligned coordinates.
+    R2 = np.array([[np.cos(-theta), -np.sin(-theta), 0], [np.sin(-theta), np.cos(-theta), 0], [0, 0, 1]]);
+
+    # Compute the position relative to the translated, rotated fault.
+    translated_pos = np.array(
+        [[x - source.xstart], [y - source.ystart], [-z]]);
+    xyz = R.dot(translated_pos);
+    if source.potency:
+        success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip,
+                                          [source.potency[0], source.potency[1], source.potency[2],
+                                           source.potency[3]]);
+        grad_u = grad_u * 1e-9;  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
+        u = u * 1e-6;  # Unit correction: potency from N-m results in displacements in microns.
+    else:
+        success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
+                                         [strike_slip, dip_slip, 0.0]);   # note: zero tensile here by construction...
+        grad_u = grad_u * 1e-3;  # DC3D Unit correction.
+    # Solve for displacement gradients at certain xyz position
+
+    # Rotate grad_u back into the unprimed coordinates.
+    desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
+    desired_coords_u = R2.dot(np.array([[u[0]], [u[1]], [u[2]]]));
+
+    return desired_coords_grad_u, desired_coords_u;

@@ -210,7 +210,7 @@ def write_output_files(params, out_object, disp_points, strain_points):
 
     # write output file for strains
     if strain_points:
-        ofile=open(params.outdir + 'll_strains.txt', 'w');
+        ofile = open(params.outdir + 'll_strains.txt', 'w');
         ofile.write("# Format: lon lat strain_tensor (microstrain)\n")
         for i in range(len(strain_points.lon)):
             eij = np.multiply(out_object.strains[i], 1e6);  # microstrain
