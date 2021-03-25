@@ -23,6 +23,9 @@ def map_stress_plot(params, inputs, out_object, stress_component):
         plotting_stress = out_object.receiver_coulomb;  # The default option
         label = 'Coulomb';
 
+    if not out_object.receiver_object:
+        return;
+
     # Make stress bounds for map.
     stress_bounds = [abs(np.min(plotting_stress)), abs(np.max(plotting_stress))];
     stress_bound = np.max(stress_bounds);  # setting the scale to symmetric about zero

@@ -70,6 +70,9 @@ By convention, right lateral strike slip is positive, and reverse dip slip is po
 
 For input files, strike/rake/dip have units of degrees. Length/width/depth have units of km. Slip has units of meters.   
 
+PR1 in the Coulomb input format is never used. Specifying Poisson's ratio should be done at the computation level through lame1 and mu in the config file, thus altering alpha in the Okada formulation.
+
+Mu and Lambda in the Source_FM and Source_MT format are only ever used for computing potency, not for the rest of the computation. Set the domain elastic parameters at the computation level through lame1 and mu1 in the config file.
 
 ## Results: 
 

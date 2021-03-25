@@ -144,7 +144,7 @@ def compute_grid_def(params, inputs):
 def compute_ll_strain(params, inputs, strain_points):
     """Loop through a list of lon/lat and compute their strains due to all sources put together."""
     if not strain_points:
-        return None;
+        return [None];
     x, y = [], [];
     for i in range(len(strain_points.lon)):
         [xi, yi] = fault_vector_functions.latlon2xy(strain_points.lon[i], strain_points.lat[i], inputs.zerolon,
@@ -164,7 +164,7 @@ def compute_ll_strain(params, inputs, strain_points):
 def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
     if not disp_points:
-        return None, None, None;
+        return [None, None, None];
     x, y = [], [];
     for i in range(len(disp_points.lon)):
         [xi, yi] = fault_vector_functions.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon,
@@ -220,6 +220,8 @@ def compute_strains_stresses(params, inputs):
 
     # The values we're actually going to output.
     receiver_shear, receiver_normal, receiver_coulomb = [], [], [];
+    if not inputs.receiver_object:
+        return [receiver_normal, receiver_shear, receiver_coulomb];
 
     for receiver in inputs.receiver_object:
         centercoords = conversion_math.get_fault_center(receiver);

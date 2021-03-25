@@ -27,7 +27,7 @@ def produce_outputs(params, inputs, disp_points, strain_points, out_object):
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
     pygmt_plots.map_displacement_vectors(params, inputs, disp_points, out_object, params.outdir+"vector_plot.png")
-    pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vert.grd", params.outdir+"vertical_map.png");
+    # pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vert.grd", params.outdir+"vertical_map.png");
     return;
 
 
@@ -97,6 +97,9 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
         stress_component = out_object.receiver_normal;
     else:
         stress_component = out_object.receiver_coulomb;
+
+    if not out_object.receiver_object:
+        return;
 
     # Select boundaries of color map.
     if not vmin:
@@ -187,17 +190,18 @@ def write_output_files(params, out_object, disp_points, strain_points):
     ofile.close();
 
     # Write output file for stresses.
-    ofile = open(params.outdir + 'stresses.txt', 'w');
-    ofile.write("# Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
-    for i in range(len(out_object.receiver_object)):
-        rec = out_object.receiver_object[i];
-        # [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
-        center = conversion_math.get_fault_center(rec);
-        ofile.write("%f %f %f %f %f %f %f \n" % (
-            center[0], center[1], center[2], rec.rake, out_object.receiver_normal[i], out_object.receiver_shear[i],
-            out_object.receiver_coulomb[i]));
-    ofile.close();
-    print("Write file %s " % params.outdir+"stresses.txt");
+    if out_object.receiver_object:
+        ofile = open(params.outdir + 'stresses.txt', 'w');
+        ofile.write("# Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
+        for i in range(len(out_object.receiver_object)):
+            rec = out_object.receiver_object[i];
+            # [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
+            center = conversion_math.get_fault_center(rec);
+            ofile.write("%f %f %f %f %f %f %f \n" % (
+                center[0], center[1], center[2], rec.rake, out_object.receiver_normal[i], out_object.receiver_shear[i],
+                out_object.receiver_coulomb[i]));
+        ofile.close();
+        print("Write file %s " % params.outdir+"stresses.txt");
 
     # Write output file for GPS displacements
     if disp_points:

@@ -24,8 +24,7 @@ def read_inputs(params):
     elif '.inzero' in params.input_file:
         input_object = io_intxt.read_intxt(params.input_file);  # a point source in convenient format
     else:
-        print("Error! Unrecognized type of input file!");
-        input_object = [];
+        raise Exception("Error! Unrecognized type of input file!");
 
     # Read points where displacement or strain will be written out
     disp_points, strain_points = None, None;
