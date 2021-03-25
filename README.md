@@ -28,7 +28,8 @@ elastic_stresses_driver.py config.txt
 * Produces output tables of stresses and displacements.
 
 ### Future work: 
-* Finish output of strain tensor for given lon/lat pairs
+* Output computations at depths other than the surface
+* Input non-zero tensile slip 
 * Read in full moment tensor (not just double couple focal mechanisms)
 * Read .inr files (like Coulomb)
 

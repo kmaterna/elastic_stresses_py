@@ -51,6 +51,7 @@ def read_inp(input_file, fixed_rake):
                     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
                                                          Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[],
                                                          strike=strike, dipangle=dipangle, rake=rake, top=top,
+                                                         zerolon=zerolon, zerolat=zerolat,
                                                          bottom=bottom, comment=comment);
                     sources.append(one_source_object)
                 else:  # here we have a receiver fault
@@ -60,6 +61,7 @@ def read_inp(input_file, fixed_rake):
                     one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
                                                            yfinish=yfinish, Kode=Kode, rtlat=0, reverse=0, potency=[],
                                                            strike=strike, dipangle=dipangle, rake=rake, top=top,
+                                                           zerolon=zerolon, zerolat=zerolat,
                                                            bottom=bottom, comment=comment);
                     receivers.append(one_receiver_object);
     ifile.close();

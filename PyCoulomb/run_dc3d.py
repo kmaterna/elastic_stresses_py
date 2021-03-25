@@ -73,6 +73,7 @@ def split_subfault_receivers(params, inputs):
                                                                   ystart=ysplit_array[k], yfinish=ysplit_array[k + 1],
                                                                   Kode=fault.Kode, rtlat=0, reverse=0, potency=[],
                                                                   strike=fault.strike, dipangle=fault.dipangle,
+                                                                  zerolon=inputs.zerolon, zerolat=inputs.zerolat,
                                                                   rake=fault.rake, top=zsplit_array[j],
                                                                   bottom=zsplit_array[j + 1], comment=fault.comment);
                     subfaulted_receivers.append(single_subfaulted_receiver);

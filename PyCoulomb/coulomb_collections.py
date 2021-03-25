@@ -13,7 +13,7 @@ Params = collections.namedtuple('Params', [
 Faults_object = collections.namedtuple('Faults_object', [
     'xstart', 'xfinish',
     'ystart', 'yfinish',
-    'Kode',
+    'Kode', 'zerolon', 'zerolat',
     'rtlat', 'reverse', 'potency',
     'strike', 'dipangle', 'rake',
     'top', 'bottom', 'comment']);
