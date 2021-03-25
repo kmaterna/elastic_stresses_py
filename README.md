@@ -18,7 +18,7 @@ elastic_stresses_driver.py config.txt
 ### Capabilities: 
 * Reads source and receiver faults from .inp formatted Coulomb input files.
 * Reads source and receiver faults from .intxt files, a more convenient input format wheere slip is specified by length/width or by Wells and Coppersmith (1994) scaling rules
-* Reads point sources and receiver faults from .inzero, a focal mechanism input format
+* Reads point sources and receiver faults from .inzero, a focal mechanism / moment tensor input format
 * Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
 * Computes elastic displacements and stresses due to slip on source faults.
 * Writes .inp formatted Coulomb files with split subfaults.
@@ -29,7 +29,6 @@ elastic_stresses_driver.py config.txt
 
 ### Future work: 
 * Output computations at depths other than the surface
-* Input non-zero tensile slip 
 * Read in full moment tensor (not just double couple focal mechanisms)
 * Read .inr files (like Coulomb)
 
@@ -40,7 +39,7 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
 * **Receiver Format:** Describes receiver faults 
     * "Receiver: strike rake dip length_km width_km lon lat depth_km
 * **Slip Format:** For slip distributions and fault patches. 
-    * "Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m"
+    * "Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m (opt: tensile_m)"
 * **WC Format:** For catalogs using Wells and Coppersmith (1994) 
     * "Source_WC: strike rake dip magnitude faulting_type lon lat depth_km" 
 * **FM Format:** For focal mechanisms 

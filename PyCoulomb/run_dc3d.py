@@ -71,7 +71,8 @@ def split_subfault_receivers(params, inputs):
                 for k in range(strike_split):
                     single_subfaulted_receiver = cc.Faults_object(xstart=xsplit_array[k], xfinish=xsplit_array[k + 1],
                                                                   ystart=ysplit_array[k], yfinish=ysplit_array[k + 1],
-                                                                  Kode=fault.Kode, rtlat=0, reverse=0, potency=[],
+                                                                  Kode=fault.Kode, rtlat=0, reverse=0,
+                                                                  tensile=0, potency=[],
                                                                   strike=fault.strike, dipangle=fault.dipangle,
                                                                   zerolon=inputs.zerolon, zerolat=inputs.zerolat,
                                                                   rake=fault.rake, top=zsplit_array[j],
@@ -282,7 +283,7 @@ def compute_strains_stresses_from_one_fault(source, x, y, z, params):
         u = u * 1e-6;  # Unit correction: potency from N-m results in displacements in microns.
     else:
         success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
-                                         [strike_slip, dip_slip, 0.0]);   # note: zero tensile here by construction...
+                                         [strike_slip, dip_slip, source.tensile]);
         grad_u = grad_u * 1e-3;  # DC3D Unit correction.
     # Solve for displacement gradients at certain xyz position
 

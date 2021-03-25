@@ -49,7 +49,7 @@ def read_inp(input_file, fixed_rake):
                      comment] = read_fault_line(line);
                     rake = fault_vector_functions.get_rake(rtlat, reverse);
                     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                                         Kode=Kode, rtlat=rtlat, reverse=reverse, potency=[],
+                                                         Kode=Kode, rtlat=rtlat, reverse=reverse, tensile=0, potency=[],
                                                          strike=strike, dipangle=dipangle, rake=rake, top=top,
                                                          zerolon=zerolon, zerolat=zerolat,
                                                          bottom=bottom, comment=comment);
@@ -59,7 +59,8 @@ def read_inp(input_file, fixed_rake):
                      comment] = read_fault_line(line);
                     rake = fixed_rake;
                     one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
-                                                           yfinish=yfinish, Kode=Kode, rtlat=0, reverse=0, potency=[],
+                                                           yfinish=yfinish, Kode=Kode, rtlat=0, reverse=0,
+                                                           tensile=0, potency=[],
                                                            strike=strike, dipangle=dipangle, rake=rake, top=top,
                                                            zerolon=zerolon, zerolat=zerolat,
                                                            bottom=bottom, comment=comment);

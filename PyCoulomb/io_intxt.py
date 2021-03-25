@@ -99,20 +99,21 @@ def get_receiver_fault(line, zerolon, zerolat):
      comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, 0,
                                                zerolon, zerolat);
     one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, Kode=100,
-                                           rtlat=rtlat, reverse=reverse, potency=[], strike=strike, dipangle=dip,
-                                           zerolon=zerolon, zerolat=zerolat,
+                                           rtlat=rtlat, reverse=reverse, tensile=0, potency=[],
+                                           strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat,
                                            rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_receiver_object);
     return one_receiver_object;
 
 def get_source_patch(line, zerolon, zerolat):
     """Create a source object from a patch in text file"""
-    [strike, rake, dip, L, W, slip, fault_lon, fault_lat, fault_depth] = read_source_line_slip_convention(line);
+    [strike, rake, dip, L, W, slip, tensile, fault_lon, fault_lat, fault_depth] = read_source_line_slip_convention(line);
     [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
      comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, slip,
                                                zerolon, zerolat);
     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                         Kode=100, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
+                                         Kode=100, rtlat=rtlat, reverse=reverse, tensile=tensile,
+                                         potency=[], strike=strike,
                                          zerolon=zerolon, zerolat=zerolat,
                                          dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_source_object);
@@ -126,7 +127,8 @@ def get_source_wc(line, zerolon, zerolat):
      comment] = compute_params_for_WC_source(strike, dip, rake, fault_depth, magnitude, faulting_type, fault_lon,
                                              fault_lat, zerolon, zerolat);
     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                         Kode=100, rtlat=rtlat, reverse=reverse, potency=[], strike=strike,
+                                         Kode=100, rtlat=rtlat, reverse=reverse, tensile=0,
+                                         potency=[], strike=strike,
                                          zerolon=zerolon, zerolat=zerolat,
                                          dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_source_object);
@@ -138,7 +140,8 @@ def get_FocalMech_source(line, zerolon, zerolat):
     [x, y, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat, zerolon,
                                                                                zerolat, mu);
     one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
-                                         reverse=reverse, potency=potency, strike=strike, dipangle=dip,
+                                         reverse=reverse, tensile=0,
+                                         potency=potency, strike=strike, dipangle=dip,
                                          zerolon=zerolon, zerolat=zerolat,
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
@@ -151,7 +154,8 @@ def get_MT_source(line, zerolon, zerolat):
     [x, y, rtlat, reverse, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu,
                                                                             lam1);
     one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
-                                         reverse=reverse, potency=potency, strike=strike, dipangle=dip,
+                                         reverse=reverse, tensile=0, potency=potency,
+                                         strike=strike, dipangle=dip,
                                          zerolon=zerolon, zerolat=zerolat,
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
@@ -190,7 +194,11 @@ def read_source_line_slip_convention(line):
     [strike, rake, dip, length, width] = [float(i) for i in line.split()[1:6]];
     [updip_corner_lon, updip_corner_lat, updip_corner_dep] = [float(i) for i in line.split()[6:9]];
     slip = float(line.split()[9]);
-    return [strike, rake, dip, length, width, slip, updip_corner_lon, updip_corner_lat, updip_corner_dep];
+    if len(line.split()) > 9:
+        tensile = float(line.split()[10]);
+    else:
+        tensile = 0;
+    return [strike, rake, dip, length, width, slip, tensile, updip_corner_lon, updip_corner_lat, updip_corner_dep];
 
 def read_receiver_line(line):
     """Format: strike rake dip length_km width_km lon lat depth_km"""
@@ -289,14 +297,6 @@ def get_DC_potency(rake, momentmagnitude, mu):
     """
     total_moment = moment_calculations.moment_from_mw(momentmagnitude);
     dc_moment = total_moment * 1.00;
-
-    # # TESTING CODE HERE FOR OPENING MODE FRACTURE. THIS SHOULD BE CODED BETTER IN THE FUTURE.
-    # # p3 SHOULD USUALLY BE DIVIDED BY LAMDA
-    # dc_moment = total_moment * 0.65;
-    # opening_moment = total_moment - dc_moment;
-    # # p3 = opening_moment / mu;
-    # # p4 = 0;
-    # # END TESTING CODE
 
     strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
     print("strike_slip fraction: ", strike_slip_fraction, " / 1.0");
