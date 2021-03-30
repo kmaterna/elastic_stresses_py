@@ -194,7 +194,7 @@ def read_source_line_slip_convention(line):
     [strike, rake, dip, length, width] = [float(i) for i in line.split()[1:6]];
     [updip_corner_lon, updip_corner_lat, updip_corner_dep] = [float(i) for i in line.split()[6:9]];
     slip = float(line.split()[9]);
-    if len(line.split()) > 9:
+    if len(line.split()) > 10:
         tensile = float(line.split()[10]);
     else:
         tensile = 0;

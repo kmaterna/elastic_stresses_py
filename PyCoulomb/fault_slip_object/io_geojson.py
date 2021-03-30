@@ -1,5 +1,10 @@
 """"
 Functions for slippy IO of faults and slip distributions into list of fault_slip_object dictionaries
+
+Format json: basis1, basis2, length(m), width(m), nlength, nwidth, strike, dip, position [lon, lat, dep], penalty
+
+Format slippy: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lateral[m] thrust[m] tensile[m]
+
 """
 
 import numpy as np
@@ -50,6 +55,7 @@ def read_slippy_distribution(infile):
     :returns: list of fault dictionaries
     :rtype: list
     """
+    print("Reading slippy distribution %s " % infile);
     fault_list = [];
     [lon, lat, depth, strike, dip, length, width, ll_slip,
      thrust_slip, _, _] = np.loadtxt(infile, skiprows=1, unpack=True, dtype={"names": ('lon', 'lat', 'depth', 'strike',
