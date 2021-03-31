@@ -24,13 +24,13 @@ def write_static1D_file(fault_dict_list, disp_points, filename):
     lons, lats = fault_slip_object.get_four_corners_lon_lat(one_fault);
     fault_lon = lons[2];
     fault_lat = lats[2];  # the deeper edge towards the strike direction
-    ofile.write(" %f %f %.2f %.2f %.2f %.2f \n" % (fault_lon, fault_lat, one_fault["length"], one_fault["strike"],
+    ofile.write(" %f %f %.2f %.2f %.2f %.2f \n" % (fault_lat, fault_lon, one_fault["length"], one_fault["strike"],
                                                    one_fault["rake"], one_fault["slip"]*100) );  # lon/lat etc
 
     ofile.write("%d\n" % len(disp_points.lon));
     for i in range(len(disp_points.lon)):
-        ofile.write("{0:>13f}".format(disp_points.lon[i]) );
-        ofile.write("{0:>13f}\n".format(disp_points.lat[i]));
+        ofile.write("{0:>13f}".format(disp_points.lat[i]) );
+        ofile.write("{0:>13f}\n".format(disp_points.lon[i]));
     ofile.close();
     return;
 
@@ -46,13 +46,14 @@ def read_static1D_output_file(output_filename, _input_filename):
     """
     Read the displacements from the output of a Static-1D calculation.
     Input_filename will eventually be implemented to make the displacements and lon/lat into one object.
+    Returns displacements in m.
     """
     print("Reading file %s " % output_filename);
     ifile = open(output_filename);
     xdisp, ydisp, zdisp = [], [], [];
     for line in ifile:
-        xdisp.append(float(line[20:33]));
-        ydisp.append(float(line[34:46]));
-        zdisp.append(float(line[47:59]));
+        xdisp.append((1/100)*float(line[20:33]));
+        ydisp.append((1/100)*float(line[33:46]));
+        zdisp.append((1/100)*float(line[46:59]));
     ifile.close();
     return xdisp, ydisp, zdisp;
