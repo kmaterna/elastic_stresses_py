@@ -49,7 +49,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None,
                  direction=[[0.1], [0]],  pen="thin,black");  # scale vector
         fig.text(x=[region[0]+0.45], y=[region[2]+0.15], text='10 cm model');  # scale label
 
-    fig.colorbar(D="jBr+w3.5i/0.2i+o2.5c/1.5c+h", C="mycpt.cpt", I="0.8",
+    fig.colorbar(D="jBr+w3.5i/0.2i+o2.5c/1.5c+h", C="mycpt.cpt",
                  G=str(vmin) + "/" + str(vmax), B=["x" + str(0.05), "y+L\"Slip(m)\""]);
     fig.savefig(outfile);
     return;
