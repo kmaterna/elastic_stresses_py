@@ -2,9 +2,7 @@
 Functions for slippy IO of faults and slip distributions into list of fault_slip_object dictionaries
 
 Format json: basis1, basis2, length(m), width(m), nlength, nwidth, strike, dip, position [lon, lat, dep], penalty
-
 Format slippy: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lateral[m] thrust[m] tensile[m]
-
 """
 
 import numpy as np
@@ -40,6 +38,7 @@ def read_faults_json(infile):
         one_fault["depth"] = -config["faults"][key]["position"][2] / 1000;
         one_fault["rake"] = 0;
         one_fault["slip"] = 0;
+        one_fault["tensile"] = 0;
         fault_list.append(one_fault);
     return fault_list;
 
@@ -77,6 +76,7 @@ def read_slippy_distribution(infile):
         one_fault["lat"] = corner_lat;
         one_fault["rake"] = fault_vector_functions.get_rake(ll_slip[i], thrust_slip[i]);
         one_fault["slip"] = fault_vector_functions.get_total_slip(ll_slip[i], thrust_slip[i]);
+        one_fault["tensile"] = 0;
         fault_list.append(one_fault);
     return fault_list;
 

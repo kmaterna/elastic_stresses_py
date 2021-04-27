@@ -18,7 +18,8 @@ Utility_Dict:
     lat(back top corner),
     depth(top, km),
     rake(deg),
-    slip(m)
+    slip(m),
+    tensile(m)
 }
 If the fault is a receiver fault, we put slip = 0
 """

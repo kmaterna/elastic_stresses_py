@@ -19,12 +19,13 @@ def coulomb_fault_to_fault_dict(source_object):
         one_fault = {"strike": src.strike, "dip": src.dipangle, "depth": src.top,
                      "rake": fault_vector_functions.get_rake(src.rtlat, src.reverse),
                      "slip": fault_vector_functions.get_total_slip(src.rtlat, src.reverse),
+                     "tensile": src.tensile,
                      "length": fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart,
                                                                         src.yfinish),
                      "width": fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle)};
         lon, lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
         one_fault["lon"] = lon;
-        one_fault["lat"] = lat;
+        one_fault["lat"] = lat
         fault_dict_list.append(one_fault);
     return fault_dict_list;
 
@@ -38,7 +39,7 @@ def fault_dict_to_coulomb_fault(fault_dict_list):
         rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(onefault['slip'], onefault['rake']);
         xfinish, yfinish = fault_vector_functions.add_vector_to_point(0, 0, onefault['length'], onefault['strike']);
         one_source = cc.Faults_object(xstart=0, xfinish=xfinish, ystart=0, yfinish=yfinish, Kode=100,
-                                      rtlat=rtlat, reverse=reverse, tensile=0,
+                                      rtlat=rtlat, reverse=reverse, tensile=onefault['tensile'],
                                       potency=[], strike=onefault['strike'],
                                       dipangle=onefault['dip'], zerolon=onefault['lon'], zerolat=onefault['lat'],
                                       rake=onefault['rake'], top=onefault['depth'], bottom=bottom, comment='');

@@ -162,19 +162,22 @@ def map_displacement_vectors(params, inputs, disp_points, out_object, outfile, v
     fig.plot(disp_points.lon, disp_points.lat, style='c0.3c', color=out_object.w_ll, C='mycpt.cpt', pen="thin,black");
 
     # Draw vectors and vector scale bar
-    scale = (np.max(np.abs(out_object.u_ll)) * 100 / 0.012);  # empirical scaling to get convenient display
+    scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
+    # scale_factor = 100; scale_arrow = 0.010;  vectext = "10 mm";  # 10 mm, small vectors
+
+    scale = (np.max(np.abs(out_object.u_ll)) * scale_factor / 0.012);  # empirical scaling to get convenient display
     fig.plot(x=disp_points.lon, y=disp_points.lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
              direction=[out_object.u_ll, out_object.v_ll], pen="thin,black");
     fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
-             direction=[[0.010], [0]],  pen="thin,black");  # scale vector
-    fig.text(x=[region[0]+0.45], y=[region[2]+0.15], text='10 mm model');  # scale label
+             direction=[[scale_arrow], [0]],  pen="thin,black");  # scale vector
+    fig.text(x=[region[0]+0.45], y=[region[2]+0.15], text=vectext+" model");  # scale label
     # Plot the observations if they exist
     if len(disp_points.lon) == len(disp_points.dE_obs):
         fig.plot(x=disp_points.lon, y=disp_points.lat, style='v0.2c+e+gred+h0+p1p,red+z' + str(scale),
                  direction=[disp_points.dE_obs, disp_points.dN_obs], pen="thin,red");
         fig.plot(x=[region[0]+0.30], y=[region[2]+0.35],  style='v0.2c+e+gred+h0+p1p,red+z'+str(scale),
-                 direction=[[0.010], [0]],  pen="thin,red");  # scale vector
-        fig.text(x=[region[0]+0.50], y=[region[2]+0.45], text='10 mm obs');  # scale label
+                 direction=[[scale_arrow], [0]],  pen="thin,red");  # scale vector
+        fig.text(x=[region[0]+0.50], y=[region[2]+0.45], text=vectext+' obs');  # scale label
 
     # Draw each source
     eq_lon, eq_lat = [], [];

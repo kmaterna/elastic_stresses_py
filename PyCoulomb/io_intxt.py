@@ -95,11 +95,14 @@ def get_general_compute_params(input_file):
 def get_receiver_fault(line, zerolon, zerolat):
     """Create a receiver object from line in text file"""
     [strike, rake, dip, L, W, fault_lon, fault_lat, fault_depth] = read_receiver_line(line);
-    [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
-     comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, 0,
-                                               zerolon, zerolat);
+    [xstart, xfinish, ystart, yfinish, _, _, top, bottom, comment] = compute_params_for_slip_source(strike, dip, rake,
+                                                                                                    fault_depth, L, W,
+                                                                                                    fault_lon,
+                                                                                                    fault_lat, 0,
+                                                                                                    zerolon,
+                                                                                                    zerolat);
     one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, Kode=100,
-                                           rtlat=rtlat, reverse=reverse, tensile=0, potency=[],
+                                           rtlat=0, reverse=0, tensile=0, potency=[],
                                            strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat,
                                            rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_receiver_object);
@@ -107,10 +110,10 @@ def get_receiver_fault(line, zerolon, zerolat):
 
 def get_source_patch(line, zerolon, zerolat):
     """Create a source object from a patch in text file"""
-    [strike, rake, dip, L, W, slip, tensile, fault_lon, fault_lat, fault_depth] = read_source_line_slip_convention(line);
+    [strike, rake, dip, L, W, slip, tensile, flt_lon, flt_lat, fault_depth] = read_source_line_slip_convention(line);
     [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
-     comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, fault_lon, fault_lat, slip,
-                                               zerolon, zerolat);
+     comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, flt_lon, flt_lat, slip, zerolon,
+                                               zerolat);
     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
                                          Kode=100, rtlat=rtlat, reverse=reverse, tensile=tensile,
                                          potency=[], strike=strike,
