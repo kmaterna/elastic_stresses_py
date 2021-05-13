@@ -7,6 +7,7 @@ Format intxt: strike rake dip length(km) width(km) updip_corner_lon updip_corner
 """
 from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 from Tectonic_Utils.geodesy import fault_vector_functions
+import numpy as np
 
 
 def coulomb_fault_to_fault_dict(source_object):
@@ -45,3 +46,11 @@ def fault_dict_to_coulomb_fault(fault_dict_list):
                                       rake=onefault['rake'], top=onefault['depth'], bottom=bottom, comment='');
         source_object.append(one_source);
     return source_object;
+
+
+def read_pycoulomb_displacements(filename):
+    lon, lat, disp_x_Okada, disp_y_Okada, disp_z_Okada = np.loadtxt(filename, skiprows=1,
+                                                                    usecols=(0, 1, 2, 3, 4), unpack=True);
+    disp_points = cc.Displacement_points(lon=lon, lat=lat, dE_obs=disp_x_Okada, dN_obs=disp_y_Okada,
+                                         dU_obs=disp_z_Okada, Se_obs=None, Sn_obs=None, Su_obs=None, name=None);
+    return disp_points;

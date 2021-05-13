@@ -24,18 +24,18 @@ def read_faults_json(infile):
     fault_list = [];
     config_file = open(infile, 'r')
     config = json.load(config_file);
-    for key in config["faults"].keys():
-        one_fault = {"strike": config["faults"][key]["strike"], "dip": config["faults"][key]["dip"],
-                     "length": config["faults"][key]["length"] / 1000.0,
-                     "width": config["faults"][key]["width"] / 1000.0};
-        center_lon = config["faults"][key]["position"][0];
-        center_lat = config["faults"][key]["position"][1];
+    for key in config.keys():
+        one_fault = {"strike": config[key]["strike"], "dip": config[key]["dip"],
+                     "length": config[key]["length"] / 1000.0,
+                     "width": config[key]["width"] / 1000.0};
+        center_lon = config[key]["position"][0];
+        center_lat = config[key]["position"][1];
         x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, one_fault["length"] / 2,
                                                                       one_fault["strike"] - 180);  # in km
         corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);  #
         one_fault["lon"] = corner_lon;
         one_fault["lat"] = corner_lat;
-        one_fault["depth"] = -config["faults"][key]["position"][2] / 1000;
+        one_fault["depth"] = -config[key]["position"][2] / 1000;
         one_fault["rake"] = 0;
         one_fault["slip"] = 0;
         one_fault["tensile"] = 0;
