@@ -35,7 +35,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, reg
         lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
         fig.plot(x=lons, y=lats, Z=str(item["slip"]), pen="thick,black", G="+z", C="mycpt.cpt");
         fig.plot(x=lons[0:2], y=lats[0:2], pen="thickest,black", G="+z", C="mycpt.cpt");
-    fig.coast(region=region, projection=proj, N='2', W='0.5p,black', L="g-125.5/39.6+c1.5+w50");
+    fig.coast(region=region, projection=proj, N='2', W='0.5p,black', L="g-124.75/40.6+c1.5+w50");
 
     if disp_points:
         fig.plot(x=disp_points.lon, y=disp_points.lat, style='s0.07i', color='blue', pen="thin,black");

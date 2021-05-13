@@ -42,9 +42,6 @@ def read_static1D_input_files(filename, gps_filename=None):
     If the points are inside the same input file, you don't need the second argument
     Object 1: fault dict, in the internal format.
     Object 2: disp points (lats and lons only since this is inputs)
-
-    lon(back top corner),
-    lat(back top corner),
     """
     disp_points = read_static1d_disp_points(filename, gps_filename);
     fault_dict_list = [];
@@ -74,7 +71,6 @@ def read_static1D_input_files(filename, gps_filename=None):
             new_fault = {"strike": strike, "dip": dip, "length": length, "rake": rake, "slip": slip/100, "tensile": 0,
                          "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat};
             fault_dict_list.append(new_fault);
-
     ifile.close();
     return fault_dict_list, disp_points;
 
@@ -142,6 +138,11 @@ def read_static1D_output_file(output_filename, gps_input_filename):
 
 
 def read_visco1D_output_file(output_filename, gps_input_filename):
+    """
+    Read the displacements from the output of a Visco-1D calculation into a disp_points object.
+    Returns displacements in m.
+    Currently appears to be the same as the reading function for static1D outputs.
+    """
     print("Reading file %s " % output_filename);
     disp_points_only = read_static1d_disp_points(gps_input_filename, None);
     ifile = open(output_filename);
