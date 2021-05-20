@@ -6,7 +6,7 @@ from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
 
 
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, region=None,
-                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=0.005):
+                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=0.005, fault_traces=None):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
     In order to use this function with other formats, like intxt or slippy, convert to the internal fault dict first.
@@ -18,8 +18,9 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, reg
         lons, lats = fault_slip_object.get_four_corners_lon_lat(fault_dict_list[0]);
         region = [np.min(lons)-buffer_deg, np.max(lons)+buffer_deg, np.min(lats)-buffer_deg, np.max(lats)+buffer_deg];
     fig = pygmt.Figure();
+    fig_width_deg = region[1] - region[0];
     fig.basemap(region=region, projection=proj, B="+t");
-    fig.coast(shorelines="1.0p,black", region=region, N="1", projection=proj, B="1.0");  # the boundary
+    fig.coast(shorelines="1.0p,black", region=region, N="1", projection=proj, B=str(fig_width_deg/5));  # the boundary
     fig.coast(region=region, projection=proj, N='2', W='0.5p,black', S='lightblue');
 
     # Drawing fault slip with a color scale.
@@ -35,7 +36,12 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, reg
         lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
         fig.plot(x=lons, y=lats, Z=str(item["slip"]), pen="thick,black", G="+z", C="mycpt.cpt");
         fig.plot(x=lons[0:2], y=lats[0:2], pen="thickest,black", G="+z", C="mycpt.cpt");
-    fig.coast(region=region, projection=proj, N='2', W='0.5p,black', L="g-124.75/40.6+c1.5+w50");
+    fig.coast(region=region, projection=proj, N='2', W='0.5p,black', L="g-124.75/40.2+c1.5+w50");
+
+    # Optional lines you can draw on the plot
+    if fault_traces:
+        for item in fault_traces:
+            fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
 
     if disp_points:
         fig.plot(x=disp_points.lon, y=disp_points.lat, style='s0.07i', color='blue', pen="thin,black");
