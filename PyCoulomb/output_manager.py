@@ -27,7 +27,7 @@ def produce_outputs(params, inputs, disp_points, strain_points, out_object):
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
     pygmt_plots.map_displacement_vectors(params, inputs, disp_points, out_object, params.outdir+"vector_plot.png")
-    # pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vert.grd", params.outdir+"vertical_map.png");
+    pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vert.grd", params.outdir+"vertical_map.png");
     return;
 
 

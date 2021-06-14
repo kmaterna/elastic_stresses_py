@@ -6,10 +6,8 @@ using Wells and Coppersmith 1994, in the same way that Coulomb does.
 
 import numpy as np
 from . import coulomb_collections as cc
-from Tectonic_Utils.seismo import wells_and_coppersmith
-from Tectonic_Utils.seismo import moment_calculations
+from Tectonic_Utils.seismo import wells_and_coppersmith, moment_calculations, MT_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
-from Tectonic_Utils.seismo import MT_calculations
 
 
 def read_intxt(input_file):
@@ -45,8 +43,11 @@ def read_intxt(input_file):
                                 receiver_object=receivers, source_object=sources);
     return input_obj;
 
-def write_intxt(input_object, output_file):
+
+def write_intxt(input_object, output_file, label=None):
     ofile = open(output_file, 'w');
+    if label:
+        ofile.write(label);
     ofile.write("# General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero\n");
     ofile.write("# Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m\n");
     ofile.write("# Receiver: strike rake dip length_km width_km lon lat depth_km\n\n");

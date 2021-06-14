@@ -3,8 +3,18 @@ Functions for conversion of faults and slip distributions from PyCoulomb into li
 
 Some of these faults may come in through .intxt files. Use io_intxt to read them.
 
-Format intxt: strike rake dip length(km) width(km) updip_corner_lon updip_corner_lat updip_corner_dep(km) slip
+Format intxt:
+    strike
+    rake
+    dip
+    length(km)
+    width(km)
+    updip_corner_lon
+    updip_corner_lat
+    updip_corner_dep(km)
+    slip
 """
+
 from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 from Tectonic_Utils.geodesy import fault_vector_functions
 import numpy as np
