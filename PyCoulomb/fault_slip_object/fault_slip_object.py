@@ -28,6 +28,7 @@ from .io_pycoulomb import fault_dict_to_coulomb_fault
 from Tectonic_Utils.geodesy import fault_vector_functions
 from Tectonic_Utils.seismo import moment_calculations
 from Elastic_stresses_py.PyCoulomb import conversion_math
+import numpy as np
 
 
 def get_four_corners_lon_lat(fault_dict_object):
@@ -50,4 +51,17 @@ def get_total_moment(fault_dict_object_list, mu=30e9):
         A = item["width"] * 1000 * item["length"] * 1000;
         d = item["slip"];
         total_moment += moment_calculations.moment_from_muad(mu, A, d);
+    return total_moment;
+
+
+def get_total_moment_depth_dependent(fault_dict_object_list, depths, mus):
+    """Compute total moment using a depth-dependent G calculation"""
+    total_moment = 0;
+    for item in fault_dict_object_list:
+        depth = item["depth"];
+        idx = np.abs(depths - depth).argmin()
+        G = mus[idx];
+        A = item["width"] * 1000 * item["length"] * 1000;
+        d = item["slip"];
+        total_moment += moment_calculations.moment_from_muad(G, A, d);
     return total_moment;
