@@ -132,7 +132,7 @@ def map_vertical_def(params, inputs, filename, outfile):
         else:
             fig.plot(x=lons, y=lats, style='s0.3c', G="purple", pen="thin,black");  # in case of point sources
     # Annotate with earthquake location.
-    fig.plot(eq_lon, eq_lat, style='s0.3c', G="purple", pen="thin,black");
+    fig.plot(eq_lon, eq_lat, style='s0.05c', G="purple", pen="thin,black");
     fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="mycpt.cpt", G="-0.045/0.045", B=["x0.01", "y+L\"Disp(m)\""]);
     fig.savefig(outfile);
     return;

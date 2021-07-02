@@ -21,7 +21,7 @@ def produce_outputs(params, inputs, disp_points, strain_points, out_object):
     write_output_files(params, out_object, disp_points, strain_points);
     surface_def_plot(params, out_object);  # a grid of synthetic points
     stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
-    stress_plot(params, out_object, 'normal');
+    # stress_plot(params, out_object, 'normal');
     stress_plot(params, out_object, 'coulomb');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
