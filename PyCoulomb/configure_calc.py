@@ -30,6 +30,7 @@ def configure_stress_calculation(config_file):
     dip_num_receivers = configobj.getint('compute-config', 'dip_num_receivers');
     mu = configobj.getfloat('compute-config', 'mu');
     lame1 = configobj.getfloat('compute-config', 'lame1');  # this is lambda
+    B = configobj.getfloat('compute-config', 'B');
     alpha = (lame1 + mu) / (lame1 + 2 * mu);
     # alpha = parameter for Okada functions. It is 2/3 for simplest case. See DC3D.f documentation.
     fixed_rake = configobj.getfloat('compute-config', 'fixed_rake') \
@@ -41,7 +42,8 @@ def configure_stress_calculation(config_file):
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                          disp_points_file=gps_file, strain_file=strain_file,
                          strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
-                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, alpha=alpha, outdir=output_dir);
+                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
+                         alpha=alpha, outdir=output_dir);
     print(MyParams);
     return MyParams;
 
@@ -62,6 +64,7 @@ def write_valid_config_file(directory):
     computeconfig["dip_num_receivers"] = '10';
     computeconfig["mu"] = '30000000';
     computeconfig["lame1"] = '30000000';
+    computeconfig["B"] = '0';
     computeconfig["fixed_rake"] = '[optional]';
     with open(directory+'/dummy_config.txt', 'w') as configfile:
         configobj.write(configfile)

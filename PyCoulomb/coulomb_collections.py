@@ -7,7 +7,7 @@ Params = collections.namedtuple('Params', [
     'strike_num_receivers',
     'dip_num_receivers',
     'fixed_rake',
-    'mu', 'lame1',
+    'mu', 'lame1', 'B',
     'alpha', 'outdir']);
 
 Faults_object = collections.namedtuple('Faults_object', [

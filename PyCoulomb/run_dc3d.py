@@ -240,7 +240,7 @@ def compute_strains_stresses(params, inputs):
             # Then compute shear, normal, and coulomb stresses.
             [normal, shear, coulomb] = conversion_math.get_coulomb_stresses(stress_tensor, receiver.strike,
                                                                             receiver.rake, receiver.dipangle,
-                                                                            inputs.FRIC);
+                                                                            inputs.FRIC, params.B);
             normal_sum = normal_sum + normal;
             shear_sum = shear_sum + shear;
             coulomb_sum = coulomb_sum + coulomb;

@@ -35,10 +35,13 @@ def get_stress_tensor(eij, lamda, mu):
                 stress_tensor[i][j] = 2*mu*eij[i][j];
     return stress_tensor;
 
-def get_coulomb_stresses(tau, strike, rake, dip, friction):
+def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
     """
     Given a stress tensor, strike, rake, and dip
     Resolve the stress changes on the fault plane.
+    Tau is full 3x3 stress tensor
+    Friction is coefficient of friction
+    B is Skepmton's coefficient
     Return in KPa
     """
 
@@ -48,7 +51,8 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction):
     traction_vector = np.dot(tau, plane_normal);
 
     # The stress that's normal to the receiver fault plane:
-    normal_stress = np.dot(plane_normal, traction_vector);  # positive for unclamping stress (same as Coulomb software)
+    dry_normal_stress = np.dot(plane_normal, traction_vector);  # positive = unclamping (same as Coulomb software)
+    effective_normal_stress = dry_normal_stress - np.average(np.diag(tau)) * B;
 
     # The shear stress causing strike slip (in the receiver fault plane).
     shear_rtlat = np.dot(strike_unit_vector, traction_vector);
@@ -64,13 +68,13 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction):
     shear_in_rake_dir = rotated_shear[0];
 
     # Finally, do unit conversion
-    normal_stress = normal_stress/1000.0;  # convert to KPa
+    effective_normal_stress = effective_normal_stress/1000.0;  # convert to KPa
     shear_stress = shear_in_rake_dir/1000.0;
 
     # The Coulomb Failure Hypothesis
-    coulomb_stress = shear_stress + (friction*normal_stress);   # the sign here is important.
+    coulomb_stress = shear_stress + (friction*effective_normal_stress);   # the sign here is important.
 
-    return normal_stress, shear_stress, coulomb_stress;
+    return effective_normal_stress, shear_stress, coulomb_stress;
 
 
 # ----------------------------
