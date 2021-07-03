@@ -52,7 +52,7 @@ For all finite sources (i.e., Patch, WC), lon/lat/depth refer to the back updip 
 
 For WC Source Format, faulting_type = ["SS","R","N","ALL"] from the Wells and Coppersmith indications of Strike Slip, Reverse, Normal, and All. 
 
-An example .intxt file with WC source format might look like: 
+An example .intxt file with a "Slip Format" source might look like: 
 ```
 # General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero
 # Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m

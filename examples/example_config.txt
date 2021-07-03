@@ -12,6 +12,7 @@ output_dir = Outputs/
 [compute-config]
 mu = 30e9 
 lame1 = 30e9
+B = 0
 fixed_rake = 90
 strike_num_receivers = 10
 dip_num_receivers = 10
