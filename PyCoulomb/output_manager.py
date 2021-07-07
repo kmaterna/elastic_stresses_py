@@ -20,9 +20,10 @@ def produce_outputs(params, inputs, disp_points, strain_points, out_object):
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
     write_output_files(params, out_object, disp_points, strain_points);
     surface_def_plot(params, out_object);  # a grid of synthetic points
-    stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
+    # stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
     # stress_plot(params, out_object, 'normal');
     stress_plot(params, out_object, 'coulomb');
+    stress_cross_section_cartesian(params, out_object, 'coulomb');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
@@ -102,10 +103,14 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
         return;
 
     # Select boundaries of color map.
+    auto_vmin = np.min(stress_component);  # one number
+    auto_vmax = np.max(stress_component);  # one number
+    auto_extreme = np.max(np.abs([auto_vmin, auto_vmax]));
+    auto_bounds = [-auto_extreme, auto_extreme];
     if not vmin:
-        vmin = np.min(stress_component);
+        vmin = auto_bounds[0];
     if not vmax:
-        vmax = np.max(stress_component);
+        vmax = auto_bounds[1];
     color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
     custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
 
@@ -149,6 +154,73 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     plt.xlim([out_object.x.min(), out_object.x.max()])
     plt.ylim([out_object.y.min(), out_object.y.max()])
     plt.savefig(params.outdir + 'Stresses_' + stress_type + '.eps');
+    plt.close();
+    return;
+
+def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, vmax=None):
+    """
+    default vmin,vmax are in KPa
+    Vertical plots of fault patches in cartesian space, colored by the magnitude of the stress component.
+    """
+    print("Making vertical plot of %s stress on receiver fault patches. " % stress_type);
+
+    if stress_type == 'shear':
+        stress_component = out_object.receiver_shear;
+    elif stress_type == 'normal':
+        stress_component = out_object.receiver_normal;
+    else:
+        stress_component = out_object.receiver_coulomb;
+
+    # Select boundaries of color map, usually forcing even distribution around 0
+    auto_vmin = np.min(stress_component);  # one number
+    auto_vmax = np.max(stress_component);  # one number
+    auto_extreme = np.max(np.abs([auto_vmin, auto_vmax]));
+    auto_bounds = [-auto_extreme, auto_extreme];
+    if not vmin:
+        vmin = auto_bounds[0];
+    if not vmax:
+        vmax = auto_bounds[1];
+    color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
+    custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
+
+    # Figure of stresses.
+    plt.figure(figsize=(17, 8));
+
+    for i in range(len(stress_component)):
+        xcoords = [out_object.receiver_object[i].xstart, out_object.receiver_object[i].xstart,
+                   out_object.receiver_object[i].xfinish, out_object.receiver_object[i].xfinish];
+        ycoords = [out_object.receiver_object[i].ystart, out_object.receiver_object[i].ystart,
+                   out_object.receiver_object[i].yfinish, out_object.receiver_object[i].yfinish];
+        zcoords = [out_object.receiver_object[i].top, out_object.receiver_object[i].bottom,
+                   out_object.receiver_object[i].bottom, out_object.receiver_object[i].top];
+        fault_strike = out_object.receiver_object[i].strike
+        x1, y1 = conversion_math.rotate_points(xcoords[0], ycoords[0], fault_strike);
+        x2, y2 = conversion_math.rotate_points(xcoords[1], ycoords[1], fault_strike);
+        x3, y3 = conversion_math.rotate_points(xcoords[2], ycoords[2], fault_strike);
+        x4, y4 = conversion_math.rotate_points(xcoords[3], ycoords[3], fault_strike);
+        ycoords = [y1, y2, y3, y4];
+        fault_vertices = np.column_stack((ycoords, zcoords));
+        patch_color = custom_cmap.to_rgba(stress_component[i]);
+
+        mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0);
+        plt.gca().add_patch(mypolygon);
+
+    custom_cmap.set_array(np.arange(vmin, vmax, 100));
+    cb = plt.colorbar(custom_cmap);
+    cb.set_label('Kilopascals', fontsize=22);
+    for label in cb.ax.yaxis.get_ticklabels():
+        label.set_size(18)
+
+    plt.grid();
+    plt.gca().tick_params(axis='both', which='major', labelsize=18)
+    plt.title(stress_type + ' stress from source faults', fontsize=22)
+    plt.xlim([out_object.x.min(), out_object.x.max()])
+    plt.xlabel('Distance (km)', fontsize=18);
+    plt.ylabel('Depth (km)', fontsize=18);
+    plt.ylim([0, 10]);
+    plt.gca().invert_yaxis();
+    plt.gca().invert_xaxis();
+    plt.savefig(params.outdir + 'Stresses_cross_section_' + stress_type + '.eps');
     plt.close();
     return;
 

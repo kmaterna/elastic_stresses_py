@@ -65,3 +65,29 @@ def get_total_moment_depth_dependent(fault_dict_object_list, depths, mus):
         d = item["slip"];
         total_moment += moment_calculations.moment_from_muad(G, A, d);
     return total_moment;
+
+
+def add_two_fault_dict_lists(list1, list2):
+    """Assuming identical geometry in the two lists"""
+    if len(list1) != len(list2):
+        raise Exception("Error! Two fault_dict lists are not identical");
+    new_list = [];
+    for item1, item2 in zip(list1, list2):
+        ss_1, ds_1 = fault_vector_functions.get_rtlat_dip_slip(item1["slip"], item1["rake"]);
+        ss_2, ds_2 = fault_vector_functions.get_rtlat_dip_slip(item2["slip"], item2["rake"]);
+        ss_total = ss_1 + ss_2;  # rtlat
+        ds_total = ds_1 + ds_2;  # reverse
+        slip_total = fault_vector_functions.get_total_slip(ss_total, ds_total);
+        rake_total = fault_vector_functions.get_rake(ss_total, ds_total);
+        new_item = {"strike": item1["strike"],
+                    "dip": item1["dip"],
+                    "length": item1["length"],
+                    "width": item1["width"],
+                    "lon": item1["lon"],
+                    "lat": item1["lat"],
+                    "depth": item1["depth"],
+                    "tensile": item1["tensile"]+item2["tensile"],
+                    "slip": slip_total,
+                    "rake": rake_total };
+        new_list.append(new_item);
+    return new_list;

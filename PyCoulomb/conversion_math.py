@@ -137,3 +137,10 @@ def get_fault_slip_moment(fault_object, mu):
     seismic_moment = mu * area * slip;
     moment_magnitude = moment_calculations.mw_from_moment(seismic_moment);
     return seismic_moment, moment_magnitude;
+
+def rotate_points(x, y, degrees):
+    rot_matrix = np.array([[np.cos(np.deg2rad(degrees)), -np.sin(np.deg2rad(degrees))],
+                           [np.sin(np.deg2rad(degrees)), np.cos(np.deg2rad(degrees))]]);
+    unprimed_vector = np.array([[x], [y]])
+    xprime, yprime = np.dot(rot_matrix, unprimed_vector);
+    return xprime, yprime;
