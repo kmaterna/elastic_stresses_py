@@ -69,3 +69,26 @@ def write_slippy_distribution(faults_list, outfile):
                                                    item["width"]*1000, -1*rtlat_slip, -1*dip_slip, tensile_slip) );
     ofile.close();
     return;
+
+def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outfile):
+    """
+    :param faults_list: a list of fault dictionaries
+    :param outfile: name of output file.
+    :param shear: list of shear stress change on each element, kpa
+    :param normal: list of normal stress, kpa
+    :param coulomb: list of coulomb stress, kpa
+    Caveat: This is ALMOST slippy format.
+    You will lose the fault segment number, and we add the rake column.
+    """
+    print("Writing file %s " % outfile);
+    ofile = open(outfile, 'w');
+    ofile.write("# lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees] rake[degrees] length[m] width[m] "
+                "shear[KPa] normal[KPa] coulomb[KPa]\n");
+    for i, item in enumerate(faults_list):
+        x_center, y_center = fault_vector_functions.add_vector_to_point(0, 0, item["length"] / 2, item["strike"]);
+        center_lon, center_lat = fault_vector_functions.xy2lonlat(x_center, y_center, item["lon"], item["lat"]);
+        ofile.write("%f %f %f " % (center_lon, center_lat, item["depth"]*-1000) );
+        ofile.write("%f %f %f %f %f %f %f %f \n" % (item["strike"], item["dip"], item["rake"], item["length"]*1000,
+                                                    item["width"]*1000, shear[i], normal[i], coulomb[i]) );
+    ofile.close();
+    return;

@@ -82,8 +82,9 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
 # ----------------------------
 
 def get_fault_center(fault_object):
-    """Compute the x-y-z coordinates of the center of a fault patch.
-    Index is the i'th fault patch in this fault_object"""
+    """
+    Compute the x-y-z coordinates of the center of a PyCoulomb fault patch (a namedtuple)
+    """
     W = fault_vector_functions.get_downdip_width(fault_object.top, fault_object.bottom, fault_object.dipangle);
     center_z = (fault_object.top+fault_object.bottom)/2.0;
     updip_center_x = (fault_object.xstart+fault_object.xfinish)/2.0;

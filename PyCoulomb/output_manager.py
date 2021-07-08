@@ -7,9 +7,8 @@ import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from subprocess import call
 from . import coulomb_collections as cc
-from . import conversion_math
-from . import io_inp
-from . import pygmt_plots
+from . import conversion_math, io_inp, pygmt_plots, io_additionals
+from . import fault_slip_object
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -157,6 +156,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     plt.close();
     return;
 
+
 def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, vmax=None):
     """
     default vmin,vmax are in KPa
@@ -225,75 +225,56 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     return;
 
 
-def write_output_files(params, out_object, disp_points, strain_points):
-    # Write synethetic displacement output file
-    ofile = open(params.outdir + 'disps_model_grid.txt', 'w');
-    ofile.write("# Format: x y lon lat udisp vdisp wdisp (m) \n");
-    for i in np.arange(0, len(out_object.y)):
-        for j in np.arange(0, len(out_object.x)):
-            loni, lati = fault_vector_functions.xy2lonlat(out_object.x2d[i][j], out_object.y2d[i][j],
-                                                          out_object.zerolon, out_object.zerolat);
-            ofile.write("%f %f %f %f %f %f %f\n" % (
-                out_object.x2d[i][j], out_object.y2d[i][j], loni, lati, out_object.u_disp[i][j],
-                out_object.v_disp[i][j], out_object.w_disp[i][j]));
-    ofile.close();
+def write_synthetic_grid_triplets(x, y, x2d, y2d, zerolon, zerolat, u, v, w, outdir):
+    """
+    Write lists of lon/lat/def for each component of deformation in synthetic grid
+    Used for GMT plots
+    """
+    ofile_w = open(outdir + 'xyz_model.txt', 'w');
+    ofile_u = open(outdir + 'xyu_model.txt', 'w');
+    ofile_v = open(outdir + 'xyv_model.txt', 'w');
+    for i in np.arange(0, len(y)):
+        for j in np.arange(0, len(x)):
+            loni, lati = fault_vector_functions.xy2lonlat(x2d[i][j], y2d[i][j], zerolon, zerolat);
+            ofile_w.write("%f %f %f\n" % (loni, lati, w[i][j]));
+            ofile_u.write("%f %f %f\n" % (loni, lati, u[i][j]));
+            ofile_v.write("%f %f %f\n" % (loni, lati, v[i][j]));
+    ofile_w.close();
+    ofile_u.close();
+    ofile_v.close();
+    return;
 
-    # Write lists of lon/lat/def for each component of deformation in synthetic grid
-    ofile = open(params.outdir + 'xyz_model.txt', 'w');
-    for i in np.arange(0, len(out_object.y)):
-        for j in np.arange(0, len(out_object.x)):
-            loni, lati = fault_vector_functions.xy2lonlat(out_object.x2d[i][j], out_object.y2d[i][j],
-                                                          out_object.zerolon, out_object.zerolat);
-            ofile.write("%f %f %f\n" % (loni, lati, out_object.w_disp[i][j]));
+
+def write_synthetic_grid_full_results(x, y, x2d, y2d, zerolon, zerolat, u, v, w, outdir):
+    ofile = open(outdir + 'disps_model_grid.txt', 'w');
+    ofile.write("# Format: x y lon lat udisp vdisp wdisp (m) \n");
+    for i in np.arange(0, len(y)):
+        for j in np.arange(0, len(x)):
+            loni, lati = fault_vector_functions.xy2lonlat(x2d[i][j], y2d[i][j], zerolon, zerolat);
+            ofile.write("%f %f %f %f %f %f %f\n" % (x2d[i][j], y2d[i][j], loni, lati, u[i][j], v[i][j], w[i][j]));
     ofile.close();
-    ofile = open(params.outdir + 'xyu_model.txt', 'w');
-    for i in np.arange(0, len(out_object.y)):
-        for j in np.arange(0, len(out_object.x)):
-            loni, lati = fault_vector_functions.xy2lonlat(out_object.x2d[i][j], out_object.y2d[i][j],
-                                                          out_object.zerolon, out_object.zerolat);
-            ofile.write("%f %f %f\n" % (loni, lati, out_object.u_disp[i][j]));
-    ofile.close();
-    ofile = open(params.outdir + 'xyv_model.txt', 'w');
-    for i in np.arange(0, len(out_object.y)):
-        for j in np.arange(0, len(out_object.x)):
-            loni, lati = fault_vector_functions.xy2lonlat(out_object.x2d[i][j], out_object.y2d[i][j],
-                                                          out_object.zerolon, out_object.zerolat);
-            ofile.write("%f %f %f\n" % (loni, lati, out_object.v_disp[i][j]));
-    ofile.close();
+    return;
+
+
+def write_output_files(params, out_object, disp_points, strain_points):
+    # Write synethetic displacement output file and lists of lon/lat/def for synthetic grid
+    write_synthetic_grid_full_results(out_object.x, out_object.y, out_object.x2d, out_object.y2d, out_object.zerolon,
+                                      out_object.zerolat, out_object.u_disp, out_object.v_disp, out_object.w_disp,
+                                      params.outdir);
+    write_synthetic_grid_triplets(out_object.x, out_object.y, out_object.x2d, out_object.y2d, out_object.zerolon,
+                                  out_object.zerolat, out_object.u_disp, out_object.v_disp, out_object.w_disp,
+                                  params.outdir);
 
     # Write output file for stresses.
     if out_object.receiver_object:
-        ofile = open(params.outdir + 'stresses.txt', 'w');
-        ofile.write("# Format: centerx centery centerz rake normal shear coulomb (kpa)\n");
-        for i in range(len(out_object.receiver_object)):
-            rec = out_object.receiver_object[i];
-            # [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
-            center = conversion_math.get_fault_center(rec);
-            ofile.write("%f %f %f %f %f %f %f \n" % (
-                center[0], center[1], center[2], rec.rake, out_object.receiver_normal[i], out_object.receiver_shear[i],
-                out_object.receiver_coulomb[i]));
-        ofile.close();
-        print("Write file %s " % params.outdir+"stresses.txt");
+        fault_dict_list = fault_slip_object.io_pycoulomb.coulomb_fault_to_fault_dict(out_object.receiver_object);
+        fault_slip_object.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_normal,
+                                                                       out_object.receiver_shear,
+                                                                       out_object.receiver_coulomb,
+                                                                       params.outdir+'stresses_full.txt');
 
-    # Write output file for GPS displacements
-    if disp_points:
-        ofile = open(params.outdir + 'll_disps.txt', 'w');
-        ofile.write("# Format: lon lat u v w (m)\n");
-        for i in range(len(out_object.u_ll)):
-            ofile.write("%f %f %f %f %f\n" % (
-                disp_points.lon[i], disp_points.lat[i], out_object.u_ll[i], out_object.v_ll[i], out_object.w_ll[i]));
-        ofile.close();
-
-    # write output file for strains
-    if strain_points:
-        ofile = open(params.outdir + 'll_strains.txt', 'w');
-        ofile.write("# Format: lon lat strain_tensor (microstrain)\n")
-        for i in range(len(strain_points.lon)):
-            eij = np.multiply(out_object.strains[i], 1e6);  # microstrain
-            ofile.write("%f %f\n" % (strain_points.lon[i], strain_points.lat[i]) );
-            ofile.write("%f %f %f\n" % (eij[0][0], eij[0][1], eij[0][2]));
-            ofile.write("%f %f %f\n" % (eij[1][0], eij[1][1], eij[1][2]));
-            ofile.write("%f %f %f\n" % (eij[2][0], eij[2][1], eij[2][2]));
-            ofile.write("\n");
-        ofile.close();
+    # Write output files for GPS displacements and strains at specific lon/lat points (if used)
+    io_additionals.write_disp_points_results(disp_points, out_object.u_ll, out_object.v_ll, out_object.w_ll,
+                                             params.outdir+"ll_disps.txt");
+    io_additionals.write_strain_results(strain_points, out_object.strains, params.outdir+'ll_strains.txt');
     return;
