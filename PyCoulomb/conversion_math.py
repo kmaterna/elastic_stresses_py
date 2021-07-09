@@ -97,11 +97,12 @@ def get_fault_center(fault_object):
     center = [center_point[0], center_point[1], center_z];
     return center;
 
-def get_fault_four_corners(fault_object):
+def get_fault_four_corners(fault_object, coords="cartesian"):
     """
     Get the four corners of the object, including updip and downdip.
     depth is fault_object.top
     dip is fault_object.dipangle (in case you need it)
+    coords can be "cartesian" or "geographic" for lon/lat
     """
     W = fault_vector_functions.get_downdip_width(fault_object.top, fault_object.bottom, fault_object.dipangle);
     strike = fault_object.strike;
@@ -116,10 +117,21 @@ def get_fault_four_corners(fault_object):
     downdip_point1 = fault_vector_functions.add_vector_to_point(fault_object.xfinish, fault_object.yfinish, vector_mag,
                                                                 strike+90);
 
+    if coords == 'geographic':
+        updip_point0 = fault_vector_functions.xy2lonlat_single(updip_point0[0], updip_point0[1],
+                                                               fault_object.zerolon, fault_object.zerolat);
+        updip_point1 = fault_vector_functions.xy2lonlat_single(updip_point1[0], updip_point1[1],
+                                                               fault_object.zerolon, fault_object.zerolat);
+        downdip_point0 = fault_vector_functions.xy2lonlat_single(downdip_point0[0], downdip_point0[1],
+                                                                 fault_object.zerolon, fault_object.zerolat);
+        downdip_point1 = fault_vector_functions.xy2lonlat_single(downdip_point1[0], downdip_point1[1],
+                                                                 fault_object.zerolon, fault_object.zerolat);
+
     x_total = [updip_point0[0], updip_point1[0], downdip_point1[0], downdip_point0[0], updip_point0[0]];
     y_total = [updip_point0[1], updip_point1[1], downdip_point1[1], downdip_point0[1], updip_point0[1]];
     x_updip = [updip_point0[0], updip_point1[0]];
     y_updip = [updip_point0[1], updip_point1[1]];
+
     return [x_total, y_total, x_updip, y_updip];
 
 def get_fault_slip_moment(fault_object, mu):

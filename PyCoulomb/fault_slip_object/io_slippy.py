@@ -92,3 +92,35 @@ def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outf
                                                     item["width"]*1000, shear[i], normal[i], coulomb[i]) );
     ofile.close();
     return;
+
+def read_stress_slippy_format(infile):
+    """
+    Read stress results from CFS calculation
+    :param infile: text file in full-stress format
+    :returns: fault_list (internal dictionary format). shear, normal, and coulomb are lists in KPa
+    """
+    print("Reading file %s " % infile);
+    fault_list = [];
+    [lon, lat, depth, strike, dip, rake, length, width, shear,
+     normal, coulomb] = np.loadtxt(infile, skiprows=1, unpack=True, dtype={"names": ('lon', 'lat', 'depth', 'strike',
+                                                                                     'dip', 'rake', 'length', 'width',
+                                                                                     'shear', 'normal', 'coulomb'),
+                                                                           "formats": (float, float, float, float,
+                                                                                       float, float, float, float,
+                                                                                       float, float, float, float)});
+    for i in range(len(lon)):
+        one_fault = {"strike": strike[i], "dip": dip[i], "length": length[i] / 1000, "width": width[i] / 1000,
+                     "depth": -depth[i] / 1000};
+        center_lon = lon[i];
+        center_lat = lat[i];
+        x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, one_fault["length"] / 2,
+                                                                      one_fault["strike"] - 180);  # in km
+        corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);
+        one_fault["lon"] = corner_lon;
+        one_fault["lat"] = corner_lat;
+        one_fault["rake"] = rake[i];
+        one_fault["slip"] = 0;
+        one_fault["tensile"] = 0;
+        fault_list.append(one_fault);
+
+    return fault_list, shear, normal, coulomb;
