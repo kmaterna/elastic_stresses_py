@@ -138,11 +138,13 @@ def map_vertical_def(params, inputs, filename, outfile):
     return;
 
 
-def map_displacement_vectors(params, inputs, disp_points, out_object, outfile, vmin=None, vmax=None):
+def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfile, vmin=None, vmax=None):
     """
-    Make a plot of modeled vector displacement from the disp_points
+    Make a plot of modeled vector displacement from model_disp_points
+    obs_disp_points is an object that can be used to also plot observations at the same points.
     """
-    if not disp_points:
+    model_disp_points = out_object.model_disp_points;
+    if not model_disp_points:
         return;
 
     proj = 'M4i'
@@ -150,8 +152,8 @@ def map_displacement_vectors(params, inputs, disp_points, out_object, outfile, v
 
     # Make modeled vertical displacement color map
     if not vmin:
-        vmin = np.min(out_object.w_ll);
-        vmax = np.max(out_object.w_ll);
+        vmin = np.min(model_disp_points.dU_obs);
+        vmax = np.max(model_disp_points.dU_obs);
     pygmt.makecpt(C="roma", T=str(vmin)+"/"+str(vmax)+"/"+str((vmax-vmin)/100), D="o", H="mycpt.cpt");
 
     # Build a PyGMT plot
@@ -159,22 +161,23 @@ def map_displacement_vectors(params, inputs, disp_points, out_object, outfile, v
     fig.basemap(region=region, projection=proj, B="+t\"Coseismic Displacements\"");
     fig.coast(region=region, projection=proj, N='1', W='1.0p,black', S='lightblue',
               L="n0.4/0.06+c" + str(region[2]) + "+w20", B="1.0");
-    fig.plot(disp_points.lon, disp_points.lat, style='c0.3c', color=out_object.w_ll, C='mycpt.cpt', pen="thin,black");
+    fig.plot(model_disp_points.lon, model_disp_points.lat, style='c0.3c', color=model_disp_points.dU_obs, C='mycpt.cpt',
+             pen="thin,black");
 
     # Draw vectors and vector scale bar
     scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
     # scale_factor = 100; scale_arrow = 0.010;  vectext = "10 mm";  # 10 mm, small vectors
 
-    scale = (np.max(np.abs(out_object.u_ll)) * scale_factor / 0.012);  # empirical scaling to get convenient display
-    fig.plot(x=disp_points.lon, y=disp_points.lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
-             direction=[out_object.u_ll, out_object.v_ll], pen="thin,black");
+    scale = (np.max(np.abs(model_disp_points.dE_obs)) * scale_factor / 0.012);  # empirical scaling, convenient display
+    fig.plot(x=model_disp_points.lon, y=model_disp_points.lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
+             direction=[model_disp_points.dE_obs, model_disp_points.dN_obs], pen="thin,black");
     fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
              direction=[[scale_arrow], [0]],  pen="thin,black");  # scale vector
     fig.text(x=[region[0]+0.45], y=[region[2]+0.15], text=vectext+" model");  # scale label
     # Plot the observations if they exist
-    if len(disp_points.lon) == len(disp_points.dE_obs):
-        fig.plot(x=disp_points.lon, y=disp_points.lat, style='v0.2c+e+gred+h0+p1p,red+z' + str(scale),
-                 direction=[disp_points.dE_obs, disp_points.dN_obs], pen="thin,red");
+    if len(obs_disp_points.dE_obs) > 0:
+        fig.plot(x=obs_disp_points.lon, y=obs_disp_points.lat, style='v0.2c+e+gred+h0+p1p,red+z' + str(scale),
+                 direction=[obs_disp_points.dE_obs, obs_disp_points.dN_obs], pen="thin,red");
         fig.plot(x=[region[0]+0.30], y=[region[2]+0.35],  style='v0.2c+e+gred+h0+p1p,red+z'+str(scale),
                  direction=[[scale_arrow], [0]],  pen="thin,red");  # scale vector
         fig.text(x=[region[0]+0.50], y=[region[2]+0.45], text=vectext+' obs');  # scale label

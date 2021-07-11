@@ -12,12 +12,12 @@ from . import fault_slip_object
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def produce_outputs(params, inputs, disp_points, strain_points, out_object):
+def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object):
     call(['mkdir', '-p', params.outdir], shell=False);
     call(['cp', params.config_file, params.outdir], shell=False);
     call(['cp', params.input_file, params.outdir], shell=False);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
-    write_output_files(params, out_object, disp_points, strain_points);
+    write_output_files(params, out_object, obs_strain_points);
     surface_def_plot(params, out_object);  # a grid of synthetic points
     # stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
     # stress_plot(params, out_object, 'normal');
@@ -26,9 +26,26 @@ def produce_outputs(params, inputs, disp_points, strain_points, out_object):
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
     # pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
-    pygmt_plots.map_displacement_vectors(params, inputs, disp_points, out_object, params.outdir+"vector_plot.png")
+    pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object, params.outdir+"vector_plot.png")
     pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vert.grd", params.outdir+"vertical_map.png");
     return;
+
+
+def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
+    """
+    Determine boundaries of a symmetric colormap object (like stress change), coding all the edge-case logic here
+    """
+    if not plotting_array:
+        return -1, 1;
+    auto_vmin = np.min(plotting_array);  # one number
+    auto_vmax = np.max(plotting_array);  # one number
+    auto_extreme = np.max(np.abs([auto_vmin, auto_vmax]));
+    auto_bounds = [-auto_extreme, auto_extreme];
+    if not vmin:
+        vmin = auto_bounds[0];
+    if not vmax:
+        vmax = auto_bounds[1];
+    return vmin, vmax;
 
 
 def write_subfaulted_inp(inputs, out_object, outfile):
@@ -102,14 +119,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
         return;
 
     # Select boundaries of color map.
-    auto_vmin = np.min(stress_component);  # one number
-    auto_vmax = np.max(stress_component);  # one number
-    auto_extreme = np.max(np.abs([auto_vmin, auto_vmax]));
-    auto_bounds = [-auto_extreme, auto_extreme];
-    if not vmin:
-        vmin = auto_bounds[0];
-    if not vmax:
-        vmax = auto_bounds[1];
+    vmin, vmax = produce_vmin_vmax_symmetric(stress_component, vmin, vmax);
     color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
     custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
 
@@ -172,14 +182,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
         stress_component = out_object.receiver_coulomb;
 
     # Select boundaries of color map, usually forcing even distribution around 0
-    auto_vmin = np.min(stress_component);  # one number
-    auto_vmax = np.max(stress_component);  # one number
-    auto_extreme = np.max(np.abs([auto_vmin, auto_vmax]));
-    auto_bounds = [-auto_extreme, auto_extreme];
-    if not vmin:
-        vmin = auto_bounds[0];
-    if not vmax:
-        vmax = auto_bounds[1];
+    vmin, vmax = produce_vmin_vmax_symmetric(stress_component, vmin, vmax);
     color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
     custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
 
@@ -256,7 +259,7 @@ def write_synthetic_grid_full_results(x, y, x2d, y2d, zerolon, zerolat, u, v, w,
     return;
 
 
-def write_output_files(params, out_object, disp_points, strain_points):
+def write_output_files(params, out_object, obs_strain_points):
     # Write synethetic displacement output file and lists of lon/lat/def for synthetic grid
     write_synthetic_grid_full_results(out_object.x, out_object.y, out_object.x2d, out_object.y2d, out_object.zerolon,
                                       out_object.zerolat, out_object.u_disp, out_object.v_disp, out_object.w_disp,
@@ -274,7 +277,6 @@ def write_output_files(params, out_object, disp_points, strain_points):
                                                                        params.outdir+'stresses_full.txt');
 
     # Write output files for GPS displacements and strains at specific lon/lat points (if used)
-    io_additionals.write_disp_points_results(disp_points, out_object.u_ll, out_object.v_ll, out_object.w_ll,
-                                             params.outdir+"ll_disps.txt");
-    io_additionals.write_strain_results(strain_points, out_object.strains, params.outdir+'ll_strains.txt');
+    io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");
+    io_additionals.write_strain_results(obs_strain_points, out_object.strains, params.outdir+'ll_strains.txt');
     return;

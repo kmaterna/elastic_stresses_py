@@ -113,8 +113,8 @@ def read_latloninDEF(gps_filename):
     """
     print("Reading file %s" % gps_filename);
     [lat, lon] = np.loadtxt(gps_filename, skiprows=1, unpack=True);
-    disp_points = coulomb_collections.Displacement_points(lon=lon, lat=lat, dE_obs=None, dN_obs=None, dU_obs=None,
-                                                          Se_obs=None, Sn_obs=None, Su_obs=None, name=None);
+    disp_points = coulomb_collections.Displacement_points(lon=lon, lat=lat, dE_obs=(), dN_obs=(), dU_obs=(),
+                                                          Se_obs=(), Sn_obs=(), Su_obs=(), name=());
     print("Returning %d lat/lon pairs " % len(lon));
     return disp_points;
 
@@ -131,8 +131,8 @@ def read_disp_points_from_static1d(filename):
             lat.append(float(line.split()[0]));
             lon.append(float(line.split()[1]));
     ifile.close();
-    disp_points = coulomb_collections.Displacement_points(lon=lon, lat=lat, dE_obs=None, dN_obs=None, dU_obs=None,
-                                                          Se_obs=None, Sn_obs=None, Su_obs=None, name=None);
+    disp_points = coulomb_collections.Displacement_points(lon=lon, lat=lat, dE_obs=(), dN_obs=(), dU_obs=(),
+                                                          Se_obs=(), Sn_obs=(), Su_obs=(), name=());
     print("Returning %d lat/lon pairs " % len(lon));
     return disp_points;
 
@@ -162,8 +162,8 @@ def read_static1D_output_file(output_filename, gps_input_filename):
     ifile.close();
     disp_points_only = read_static1d_disp_points(gps_input_filename, None);
     modeled_disp_points = coulomb_collections.Displacement_points(lon=disp_points_only.lon, lat=disp_points_only.lat,
-                                                                  dE_obs=xdisp, dN_obs=ydisp, dU_obs=zdisp, Se_obs=None,
-                                                                  Sn_obs=None, Su_obs=None, name=None);
+                                                                  dE_obs=xdisp, dN_obs=ydisp, dU_obs=zdisp, Se_obs=(),
+                                                                  Sn_obs=(), Su_obs=(), name=());
     return modeled_disp_points;
 
 
@@ -194,3 +194,40 @@ def write_visco1D_source_file(fault_dict_list, filename):
     ofile.write('0\n');  # evaluate at depth specified in earlier runs of green's functions
     ofile.close();
     return;
+
+
+def read_stat2C_geometry(infile):
+    """
+    Reading a fault geometry file used for stat2c.f, specifically for the Cascadia subduction zone
+    """
+    faultlist = [];
+    with open(infile, 'r') as ifile:
+        for line in ifile:
+            temp = line.split();
+            if len(temp) == 2:
+                upper_depth, lower_depth = float(temp[0]), float(temp[1]);
+            elif len(temp) == 7:
+                lower_lat_corner = float(temp[0]);  # in degrees
+                lower_lon_corner = float(temp[1]);  # in degrees
+                length = float(temp[2]);  # in km
+                strike = float(temp[3]);  # in degrees
+                rake = float(temp[4]);  # in degrees
+                dip = float(temp[6]);  # in degrees
+                slip = float(temp[5])*10;  # from cm/yr into mm/yr
+                downdip_width = fault_vector_functions.get_downdip_width(upper_depth, lower_depth, dip);
+
+                vector_mag = downdip_width * np.cos(np.deg2rad(dip));  # how far the bottom edge is displaced
+                upper_corner_along_strike = fault_vector_functions.add_vector_to_point(0, 0, vector_mag, strike - 90);
+                upper_corner_back_edge = fault_vector_functions.add_vector_to_point(upper_corner_along_strike[0],
+                                                                                    upper_corner_along_strike[1],
+                                                                                    length, -strike);
+                fault_lon, fault_lat = fault_vector_functions.xy2lonlat_single(upper_corner_back_edge[0],
+                                                                               upper_corner_back_edge[1],
+                                                                               lower_lon_corner,
+                                                                               lower_lat_corner);
+
+                new_fault = {"strike": strike, "dip": dip, "length": length, "rake": rake, "slip": slip, "tensile": 0,
+                             "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat};
+                faultlist.append(new_fault);
+
+    return faultlist;

@@ -32,10 +32,9 @@ Input_object = collections.namedtuple('Input_object', [
 
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',
-    'x2d', 'y2d',
-    'u_disp', 'v_disp', 'w_disp', 'strains',
+    'x2d', 'y2d', 'u_disp', 'v_disp', 'w_disp',
     'zerolon', 'zerolat',
-    'u_ll', 'v_ll', 'w_ll',
+    'model_disp_points', 'strains',
     'source_object', 'receiver_object',
     'receiver_normal', 'receiver_shear', 'receiver_coulomb']);
 
@@ -45,3 +44,4 @@ Displacement_points = collections.namedtuple('Disp_Points', [
     'Se_obs', 'Sn_obs', 'Su_obs',
     'name']);
 # Currently, disp_points sub-elements are lists, not organized as a large list of individual objects.
+# Would be good to re-write that.

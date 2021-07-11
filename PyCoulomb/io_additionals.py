@@ -64,23 +64,30 @@ def read_disp_points(infile):
     return disp_points;
 
 
-def write_disp_points_results(disp_points, x_disps, y_disps, z_disps, outfile):
+def write_disp_points_results(disp_points, outfile):
+    """
+    Write the contents of disp_points (dE_obs etc.)
+    """
     if disp_points:
         ofile = open(outfile, 'w');
         ofile.write("# Format: lon lat u v w (m)\n");
         for i in range(len(disp_points.lon)):
-            ofile.write("%f %f %f %f %f\n" % (
-                disp_points.lon[i], disp_points.lat[i], x_disps[i], y_disps[i], z_disps[i]));
+            ofile.write("%f %f " % (disp_points.lon[i], disp_points.lat[i]));
+            ofile.write("%f %f %f\n" % (disp_points.dE_obs[i], disp_points.dN_obs[i], disp_points.dU_obs[i]));
         ofile.close();
     return;
 
-def write_strain_results(strain_points, strains, outfile):
-    if strain_points:
+def write_strain_results(obs_strain_points, strains, outfile):
+    """
+    obs_strain_points is an object of format cc.dips_points
+    strains is a list of tensors
+    """
+    if obs_strain_points:
         ofile = open(outfile, 'w');
         ofile.write("# Format: lon lat strain_tensor (microstrain)\n")
-        for i in range(len(strain_points.lon)):
+        for i in range(len(obs_strain_points.lon)):
             eij = np.multiply(strains[i], 1e6);  # microstrain
-            ofile.write("%f %f\n" % (strain_points.lon[i], strain_points.lat[i]));
+            ofile.write("%f %f\n" % (obs_strain_points.lon[i], obs_strain_points.lat[i]));
             ofile.write("%f %f %f\n" % (eij[0][0], eij[0][1], eij[0][2]));
             ofile.write("%f %f %f\n" % (eij[1][0], eij[1][1], eij[1][2]));
             ofile.write("%f %f %f\n" % (eij[2][0], eij[2][1], eij[2][2]));

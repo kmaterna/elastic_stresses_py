@@ -28,8 +28,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, reg
     range_of_slip = np.max(fault_colors) - np.min(fault_colors);
     if range_of_slip == 0:
         range_of_slip = 0.010;  # very small slip.
-    vmin = np.min(fault_colors) - 0.1*range_of_slip;
-    vmax = np.max(fault_colors) + 0.1*range_of_slip;
+    vmin = np.min(fault_colors) - (0.1*range_of_slip+0.001);
+    vmax = np.max(fault_colors) + (0.1*range_of_slip+0.001);
     pygmt.makecpt(C="devon", T=str(vmin)+"/"+str(vmax)+"/"+str((vmax-vmin)/100), G="0/1", D="o", I=True,
                   H="mycpt.cpt");  # slip divided into 100
     for item in fault_dict_list:
@@ -63,6 +63,6 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, reg
             fig.text(x=[region[0]+0.45], y=[region[2]+0.15], text=scale_arrow[2]+' model');  # scale label
 
     fig.colorbar(D="jBr+w3.5i/0.2i+o2.5c/1.5c+h", C="mycpt.cpt",
-                 G=str(vmin) + "/" + str(vmax), B=["x" + str(range_of_slip/10), "y+L\"Slip(m)\""]);
+                 G=str(vmin+0.001) + "/" + str(vmax-0.001), B=["x" + str(range_of_slip/10), "y+L\"Slip(m)\""]);
     fig.savefig(outfile);
     return;

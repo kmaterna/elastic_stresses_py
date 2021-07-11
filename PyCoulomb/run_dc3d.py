@@ -21,13 +21,13 @@ def do_stress_computation(params, inputs, disp_points, strain_points):
 
     # Refactoring here.
     [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_grid_def(params, subfaulted_inputs);
-    [u_ll, v_ll, w_ll] = compute_ll_def(params, subfaulted_inputs, disp_points);
+    model_disp_points = compute_ll_def(params, subfaulted_inputs, disp_points);
     [strain_tensor_results] = compute_ll_strain(params, subfaulted_inputs, strain_points);
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements,
-                                w_disp=w_displacements, u_ll=u_ll, v_ll=v_ll, w_ll=w_ll,
-                                strains=strain_tensor_results,
+                                w_disp=w_displacements,
+                                strains=strain_tensor_results, model_disp_points=model_disp_points,
                                 zerolon=inputs.zerolon, zerolat=inputs.zerolat,
                                 source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object,
                                 receiver_normal=receiver_normal, receiver_shear=receiver_shear,
@@ -164,7 +164,7 @@ def compute_ll_strain(params, inputs, strain_points):
 def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
     if not disp_points:
-        return [None, None, None];
+        return None;
     x, y = [], [];
     for i in range(len(disp_points.lon)):
         [xi, yi] = fault_vector_functions.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon,
@@ -181,7 +181,10 @@ def compute_ll_def(params, inputs, disp_points):
         v_ll[k] = v_disp;
         w_ll[k] = w_disp;
 
-    return [u_ll, v_ll, w_ll];
+    model_disp_points = cc.Displacement_points(lon=disp_points.lon, lat=disp_points.lat, dE_obs=u_ll, dN_obs=v_ll,
+                                               dU_obs=w_ll, Se_obs=(), Sn_obs=(), Su_obs=(), name=());
+
+    return model_disp_points;
 
 
 def compute_surface_disp_point(params, inputs, x, y):

@@ -26,9 +26,9 @@ def welcome_and_parse_runstring():
 
 def drive_calculation(config_file):
     params = PyCoulomb.configure_calc.configure_stress_calculation(config_file);
-    [inputs, disp_points, strain_points] = PyCoulomb.input_values.read_inputs(params);
-    out_object = PyCoulomb.run_dc3d.do_stress_computation(params, inputs, disp_points, strain_points);
-    PyCoulomb.output_manager.produce_outputs(params, inputs, disp_points, strain_points, out_object);
+    [inputs, obs_disp_points, obs_strain_points] = PyCoulomb.input_values.read_inputs(params);
+    out_object = PyCoulomb.run_dc3d.do_stress_computation(params, inputs, obs_disp_points, obs_strain_points);
+    PyCoulomb.output_manager.produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object);
     return;
 
 

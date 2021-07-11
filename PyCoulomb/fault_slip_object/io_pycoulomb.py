@@ -71,5 +71,5 @@ def read_pycoulomb_displacements(filename):
     lon, lat, disp_x_Okada, disp_y_Okada, disp_z_Okada = np.loadtxt(filename, skiprows=1,
                                                                     usecols=(0, 1, 2, 3, 4), unpack=True);
     disp_points = cc.Displacement_points(lon=lon, lat=lat, dE_obs=disp_x_Okada, dN_obs=disp_y_Okada,
-                                         dU_obs=disp_z_Okada, Se_obs=None, Sn_obs=None, Su_obs=None, name=None);
+                                         dU_obs=disp_z_Okada, Se_obs=(), Sn_obs=(), Su_obs=(), name=());
     return disp_points;
