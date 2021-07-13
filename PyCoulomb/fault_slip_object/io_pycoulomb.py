@@ -70,6 +70,10 @@ def fault_dict_to_coulomb_fault(fault_dict_list, zerolon_system=None, zerolat_sy
 def read_pycoulomb_displacements(filename):
     lon, lat, disp_x_Okada, disp_y_Okada, disp_z_Okada = np.loadtxt(filename, skiprows=1,
                                                                     usecols=(0, 1, 2, 3, 4), unpack=True);
-    disp_points = cc.Displacement_points(lon=lon, lat=lat, dE_obs=disp_x_Okada, dN_obs=disp_y_Okada,
-                                         dU_obs=disp_z_Okada, Se_obs=(), Sn_obs=(), Su_obs=(), name=());
+    disp_points = [];
+    for i in range(len(lon)):
+        disp_point = cc.Displacement_points(lon=lon[i], lat=lat[i], dE_obs=disp_x_Okada[i], dN_obs=disp_y_Okada[i],
+                                            dU_obs=disp_z_Okada[i], Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan,
+                                            name="");
+        disp_points.append(disp_point);
     return disp_points;

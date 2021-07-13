@@ -37,43 +37,37 @@ def read_disp_points(infile):
     # lon lat de dn du se sn su name
     """
     print("Reading displacement points from file %s " % infile);
-    lon, lat, names = [], [], [];
-    dE_obs, dN_obs, dU_obs = [], [], [];
-    Se_obs, Sn_obs, Su_obs = [], [], [];
+    disp_points_list = [];
     ifile = open(infile, 'r');
     for line in ifile:
         temp = line.split();
         if temp[0][0] == '#':
             continue;
         else:
-            lon.append(float(temp[0]));
-            lat.append(float(temp[1]));
+            lon, lat = float(temp[0]), float(temp[1]);
+            dE_obs, dN_obs, dU_obs = np.nan, np.nan, np.nan;
+            Se_obs, Sn_obs, Su_obs = np.nan, np.nan, np.nan;
+            name = "";
             if len(temp) >= 8:  # if we have longer GPS format with uncertainties
-                names.append(temp[-1]);
-                dE_obs.append(float(temp[2]));
-                dN_obs.append(float(temp[3]));
-                dU_obs.append(float(temp[4]));
-                Se_obs.append(float(temp[5]));
-                Sn_obs.append(float(temp[6]));
-                Su_obs.append(float(temp[7]));
-            else:
-                names.append("");
+                name = temp[-1];
+                dE_obs, dN_obs, dU_obs = float(temp[2]), float(temp[3]), float(temp[4]);
+                Se_obs, Sn_obs, Su_obs = float(temp[5]), float(temp[6]), float(temp[7]);
+            new_disp_point = cc.Displacement_points(lon=lon, lat=lat, dE_obs=dE_obs, dN_obs=dN_obs, dU_obs=dU_obs,
+                                                    Se_obs=Se_obs, Sn_obs=Sn_obs, Su_obs=Su_obs, name=name);
+            disp_points_list.append(new_disp_point);
     ifile.close();
-    disp_points = cc.Displacement_points(lon=lon, lat=lat, dE_obs=dE_obs, dN_obs=dN_obs, dU_obs=dU_obs, Se_obs=Se_obs,
-                                         Sn_obs=Sn_obs, Su_obs=Su_obs, name=names);
-    return disp_points;
+    return disp_points_list;
 
 
 def write_disp_points_results(disp_points, outfile):
     """
     Write the contents of disp_points (dE_obs etc.)
     """
-    if disp_points:
+    if len(disp_points) > 0:
         ofile = open(outfile, 'w');
         ofile.write("# Format: lon lat u v w (m)\n");
-        for i in range(len(disp_points.lon)):
-            ofile.write("%f %f " % (disp_points.lon[i], disp_points.lat[i]));
-            ofile.write("%f %f %f\n" % (disp_points.dE_obs[i], disp_points.dN_obs[i], disp_points.dU_obs[i]));
+        for point in disp_points:
+            ofile.write("%f %f %f %f %f\n" % (point.lon, point.lat, point.dE_obs, point.dN_obs, point.dU_obs));
         ofile.close();
     return;
 

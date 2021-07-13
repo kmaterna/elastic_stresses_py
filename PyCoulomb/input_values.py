@@ -27,7 +27,7 @@ def read_inputs(params):
         raise Exception("Error! Unrecognized type of input file!");
 
     # Read points where displacement or strain will be written out
-    disp_points, strain_points = None, None;
+    disp_points, strain_points = (), ();
     if params.disp_points_file:
         disp_points = io_additionals.read_disp_points(params.disp_points_file);
     if params.strain_file:

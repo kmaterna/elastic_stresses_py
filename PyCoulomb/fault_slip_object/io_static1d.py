@@ -4,7 +4,7 @@ Functions to read and write STATIC1D input files for fault slip and displacement
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
 from . import fault_slip_object
-from Elastic_stresses_py.PyCoulomb import coulomb_collections
+from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 
 
 def write_static1D_source_file(fault_dict_list, disp_points, filename):
@@ -29,25 +29,30 @@ def write_static1D_source_file(fault_dict_list, disp_points, filename):
         line = write_fault_slip_line_static1d_visco1d(fault);
         ofile.write(line);
 
-    ofile.write("%d\n" % len(disp_points.lon));
-    for i in range(len(disp_points.lon)):
-        ofile.write("{0:>13f}".format(disp_points.lat[i]) );
-        ofile.write("{0:>13f}\n".format(disp_points.lon[i]));
+    ofile.write("%d\n" % len(disp_points));
+    for point in disp_points:
+        ofile.write("{0:>13f}".format(point.lat) );
+        ofile.write("{0:>13f}\n".format(point.lon));
     ofile.close();
     return;
 
 
-def read_static1D_source_file(filename, gps_filename=None):
+def read_static1D_source_file(filename, gps_filename=None, headerlines=0):
     """
     Read a number of static1d fault segments and gps station locations into objects.
     If the points are inside the same input file, you don't need the second argument
     Object 1: fault dict, in the internal format.
     Object 2: disp points (lats and lons only since this is inputs)
     """
-    disp_points = read_static1d_disp_points(filename, gps_filename);
+    if gps_filename:
+        disp_points = read_static1d_disp_points(filename, gps_filename);
+    else:
+        disp_points = [];
     fault_dict_list = [];
     ifile = open(filename);
-    headerline = ifile.readline();   # reading header information, skipping first line.
+    headerline = ifile.readline();
+    for i in range(headerlines):
+        headerline = ifile.readline();   # skipping any other header information.
     lower_depth = float(headerline.split()[0]);  # in km
     upper_depth = float(headerline.split()[1]);  # in km
     dip = float(headerline.split()[2]);  # in degrees
@@ -62,6 +67,7 @@ def read_static1D_source_file(filename, gps_filename=None):
 def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
     """
     read a line from fred's format of faults into my format of faults
+    for Visco1D, the slip field is pretty meaningless
     """
     lower_lat_corner = float(line.split()[0]);  # in degrees
     lower_lon_corner = float(line.split()[1]);  # in degrees
@@ -102,7 +108,7 @@ def read_static1d_disp_points(filename1, filename2):
     or with a separate file called "latlon.inDEF".
     """
     disp_points = read_disp_points_from_static1d(filename1);
-    if len(disp_points.lon) == 0:
+    if len(disp_points) == 0:
         disp_points = read_disp_points_from_static1d(filename2);
     return disp_points;
 
@@ -112,10 +118,13 @@ def read_latloninDEF(gps_filename):
     Read gps station locations from static1d inputs (latlon.inDEF) into a disp_points object.
     """
     print("Reading file %s" % gps_filename);
+    disp_points = [];
     [lat, lon] = np.loadtxt(gps_filename, skiprows=1, unpack=True);
-    disp_points = coulomb_collections.Displacement_points(lon=lon, lat=lat, dE_obs=(), dN_obs=(), dU_obs=(),
-                                                          Se_obs=(), Sn_obs=(), Su_obs=(), name=());
-    print("Returning %d lat/lon pairs " % len(lon));
+    for i in range(len(lon)):
+        disp_point = cc.Displacement_points(lon=lon, lat=lat, dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
+                                            Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="");
+        disp_points.append(disp_point);
+    print("Returning %d lat/lon pairs " % len(disp_points));
     return disp_points;
 
 
@@ -124,25 +133,26 @@ def read_disp_points_from_static1d(filename):
     Read gps station locations from static1d inputs into a disp_points object.
     """
     print("Reading file %s" % filename);
-    lat, lon = [], [];
+    disp_points = [];
     ifile = open(filename, 'r');
     for line in ifile:
         if len(line.split()) == 2:
-            lat.append(float(line.split()[0]));
-            lon.append(float(line.split()[1]));
+            disp_point = cc.Displacement_points(lon=float(line.split()[1]), lat=float(line.split()[0]),
+                                                dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
+                                                Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="");
+            disp_points.append(disp_point);
     ifile.close();
-    disp_points = coulomb_collections.Displacement_points(lon=lon, lat=lat, dE_obs=(), dN_obs=(), dU_obs=(),
-                                                          Se_obs=(), Sn_obs=(), Su_obs=(), name=());
-    print("Returning %d lat/lon pairs " % len(lon));
+
+    print("Returning %d lat/lon pairs " % len(disp_points));
     return disp_points;
 
 
 def write_disp_points_static1d(disp_points, filename):
-    print("Writing %d points in file %s" % (len(disp_points.lon), filename));
+    print("Writing %d points in file %s" % (len(disp_points), filename));
     ofile = open(filename, 'w');
-    ofile.write("%d\n" % (len(disp_points.lon)) );
-    for i in range(len(disp_points.lon)):
-        ofile.write('%f %f\n' % (disp_points.lat[i], disp_points.lon[i]));
+    ofile.write("%d\n" % (len(disp_points)) );
+    for point in disp_points:
+        ofile.write('%f %f\n' % (point.lat, point.lon));
     ofile.close();
     return;
 
@@ -154,16 +164,18 @@ def read_static1D_output_file(output_filename, gps_input_filename):
     """
     print("Reading file %s " % output_filename);
     ifile = open(output_filename);
-    xdisp, ydisp, zdisp = [], [], [];
+    xdisp, ydisp, zdisp, modeled_disp_points = [], [], [], [];
     for line in ifile:
         xdisp.append((1/100)*float(line[20:33]));
         ydisp.append((1/100)*float(line[33:46]));
         zdisp.append((1/100)*float(line[46:59]));
     ifile.close();
     disp_points_only = read_static1d_disp_points(gps_input_filename, None);
-    modeled_disp_points = coulomb_collections.Displacement_points(lon=disp_points_only.lon, lat=disp_points_only.lat,
-                                                                  dE_obs=xdisp, dN_obs=ydisp, dU_obs=zdisp, Se_obs=(),
-                                                                  Sn_obs=(), Su_obs=(), name=());
+    for i in range(len(disp_points_only)):
+        modeled_disp_point = cc.Displacement_points(lon=disp_points_only[i].lon, lat=disp_points_only[i].lat,
+                                                    dE_obs=xdisp[i], dN_obs=ydisp[i], dU_obs=zdisp[i], Se_obs=np.nan,
+                                                    Sn_obs=np.nan, Su_obs=np.nan, name="");
+        modeled_disp_points.append(modeled_disp_point);
     return modeled_disp_points;
 
 
@@ -213,7 +225,7 @@ def read_stat2C_geometry(infile):
                 strike = float(temp[3]);  # in degrees
                 rake = float(temp[4]);  # in degrees
                 dip = float(temp[6]);  # in degrees
-                slip = float(temp[5])*10;  # from cm/yr into mm/yr
+                slip = float(temp[5])/100;  # from cm/yr into m/yr
                 downdip_width = fault_vector_functions.get_downdip_width(upper_depth, lower_depth, dip);
 
                 vector_mag = downdip_width * np.cos(np.deg2rad(dip));  # how far the bottom edge is displaced

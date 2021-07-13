@@ -5,7 +5,7 @@ import pygmt
 from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
 
 
-def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, region=None,
+def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
                                  scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=0.005, fault_traces=None):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
@@ -43,20 +43,22 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=None, reg
         for item in fault_traces:
             fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
 
-    if disp_points:
-        fig.plot(x=disp_points.lon, y=disp_points.lat, style='s0.07i', color='blue', pen="thin,black");
-        if disp_points.dE_obs is not None:
-            disp_z = disp_points.dU_obs;
-            disp_x = disp_points.dE_obs;
-            disp_y = disp_points.dN_obs;
+    if len(disp_points) > 0:
+        lon = np.array([x.lon for x in disp_points]);
+        lat = np.array([x.lat for x in disp_points]);
+        disp_x = np.array([x.dE_obs for x in disp_points]);
+        disp_y = np.array([x.dN_obs for x in disp_points]);
+        disp_z = np.array([x.dU_obs for x in disp_points]);
+        fig.plot(x=lon, y=lat, style='s0.07i', color='blue', pen="thin,black");
+        if sum(~np.isnan(disp_z)) > 0:
             vmin_v = np.min(disp_z);
             vmax_v = np.max(disp_z);
             pygmt.makecpt(C="roma", T=str(vmin_v)+"/"+str(vmax_v)+"/"+str((vmax_v-vmin_v)/100), D="o", H="vert.cpt");
-            fig.plot(disp_points.lon, disp_points.lat, style='c0.3c', color=disp_z, C='vert.cpt', pen="thin,black");
+            fig.plot(lon, lat, style='c0.3c', color=disp_z, C='vert.cpt', pen="thin,black");
             fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="vert.cpt", G=str(vmin_v*0.99)+"/"+str(vmax_v*0.99),
                          B=["x"+str(v_labeling_interval), "y+L\"Vert Disp(m)\""]);
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
-            fig.plot(x=disp_points.lon, y=disp_points.lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
+            fig.plot(x=lon, y=lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[disp_x, disp_y], pen="thin,black");
             fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector

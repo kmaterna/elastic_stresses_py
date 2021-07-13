@@ -43,5 +43,4 @@ Displacement_points = collections.namedtuple('Disp_Points', [
     'dE_obs', 'dN_obs', 'dU_obs',
     'Se_obs', 'Sn_obs', 'Su_obs',
     'name']);
-# Currently, disp_points sub-elements are lists, not organized as a large list of individual objects.
-# Would be good to re-write that.
+# Disp_points are now lists of individual disp_point elements

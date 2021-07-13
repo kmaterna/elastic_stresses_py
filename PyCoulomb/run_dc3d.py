@@ -163,27 +163,13 @@ def compute_ll_strain(params, inputs, strain_points):
 
 def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
-    if not disp_points:
-        return None;
-    x, y = [], [];
-    for i in range(len(disp_points.lon)):
-        [xi, yi] = fault_vector_functions.latlon2xy(disp_points.lon[i], disp_points.lat[i], inputs.zerolon,
-                                                    inputs.zerolat);
-        x.append(xi);
-        y.append(yi);
-
-    u_ll, v_ll, w_ll = np.zeros(len(x)), np.zeros(len(x)), np.zeros(len(x));
-
-    # For each coordinate requested.
-    for k in range(len(x)):
-        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, x[k], y[k]);
-        u_ll[k] = u_disp;
-        v_ll[k] = v_disp;
-        w_ll[k] = w_disp;
-
-    model_disp_points = cc.Displacement_points(lon=disp_points.lon, lat=disp_points.lat, dE_obs=u_ll, dN_obs=v_ll,
-                                               dU_obs=w_ll, Se_obs=(), Sn_obs=(), Su_obs=(), name=());
-
+    model_disp_points = [];
+    for point in disp_points:
+        [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat);
+        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, xi, yi);
+        model_point = cc.Displacement_points(lon=point.lon, lat=point.lat, dE_obs=u_disp[0], dN_obs=v_disp[0],
+                                             dU_obs=w_disp[0], Se_obs=(), Sn_obs=(), Su_obs=(), name=());
+        model_disp_points.append(model_point);
     return model_disp_points;
 
 
