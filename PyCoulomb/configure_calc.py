@@ -62,8 +62,8 @@ def write_valid_config_file(directory):
     computeconfig = configobj["compute-config"];
     computeconfig["strike_num_receivers"] = '10';
     computeconfig["dip_num_receivers"] = '10';
-    computeconfig["mu"] = '30000000';
-    computeconfig["lame1"] = '30000000';
+    computeconfig["mu"] = '30000000000';
+    computeconfig["lame1"] = '30000000000';
     computeconfig["B"] = '0';
     computeconfig["fixed_rake"] = '[optional]';
     with open(directory+'/dummy_config.txt', 'w') as configfile:
