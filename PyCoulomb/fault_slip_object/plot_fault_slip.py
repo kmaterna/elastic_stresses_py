@@ -25,7 +25,11 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
 
     # Drawing fault slip with a color scale.
     fault_colors = [_i["slip"] for _i in fault_dict_list];
-    range_of_slip = np.max(fault_colors) - np.min(fault_colors);
+    if len(fault_colors) > 0:
+        range_of_slip = np.max(fault_colors) - np.min(fault_colors);
+    else:
+        fault_colors = [0];  # some default arguments in case of empty fault_dict_list
+        range_of_slip = 0;
     if range_of_slip == 0:
         range_of_slip = 0.010;  # very small slip.
     vmin = np.min(fault_colors) - (0.1*range_of_slip+0.001);

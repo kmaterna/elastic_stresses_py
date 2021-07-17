@@ -59,6 +59,19 @@ def read_disp_points(infile):
     return disp_points_list;
 
 
+def vel_object_to_disp_points(velfield):
+    """
+    Convert from StationVel objects from GNSS Python library into disp_points
+    """
+    disp_points_list = [];
+    for item in velfield:
+        new_disp_point = cc.Displacement_points(lon=item.elon, lat=item.nlat, dE_obs=item.e/1000, dN_obs=item.n/1000,
+                                                dU_obs=item.u/1000, Se_obs=item.se/1000, Sn_obs=item.sn/1000,
+                                                Su_obs=item.su/1000, name=item.name);
+        disp_points_list.append(new_disp_point);
+    return disp_points_list;
+
+
 def write_disp_points_results(disp_points, outfile):
     """
     Write the contents of disp_points (dE_obs etc.)
