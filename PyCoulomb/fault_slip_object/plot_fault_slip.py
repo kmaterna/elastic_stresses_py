@@ -6,7 +6,8 @@ from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
 
 
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
-                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=0.005, fault_traces=None):
+                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=0.005, fault_traces=None,
+                                 title=""):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
     In order to use this function with other formats, like intxt or slippy, convert to the internal fault dict first.
@@ -19,7 +20,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         region = [np.min(lons)-buffer_deg, np.max(lons)+buffer_deg, np.min(lats)-buffer_deg, np.max(lats)+buffer_deg];
     fig = pygmt.Figure();
     fig_width_deg = region[1] - region[0];
-    fig.basemap(region=region, projection=proj, B="+t");
+    fig.basemap(region=region, projection=proj, B="+t\"" + title + "\"");
     fig.coast(shorelines="1.0p,black", region=region, N="1", projection=proj, B=str(fig_width_deg/5));  # the boundary
     fig.coast(region=region, projection=proj, N='2', W='0.5p,black', S='lightblue');
 
