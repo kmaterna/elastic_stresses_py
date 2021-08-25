@@ -148,11 +148,23 @@ def read_disp_points_from_static1d(filename):
 
 
 def write_disp_points_static1d(disp_points, filename):
+    """A very small function for taking cc.displacements_points into static1D format"""
     print("Writing %d points in file %s" % (len(disp_points), filename));
     ofile = open(filename, 'w');
     ofile.write("%d\n" % (len(disp_points)) );
     for point in disp_points:
         ofile.write('%f %f\n' % (point.lat, point.lon));
+    ofile.close();
+    return;
+
+
+def write_stationvel_points_static1d(stationvels, filename):
+    """A very small function for taking gnss stationvels into static1D format"""
+    print("Writing %d points in file %s" % (len(stationvels), filename));
+    ofile = open(filename, 'w');
+    ofile.write("%d\n" % (len(stationvels)) );
+    for point in stationvels:
+        ofile.write('%f %f\n' % (point.nlat, point.elon));
     ofile.close();
     return;
 
