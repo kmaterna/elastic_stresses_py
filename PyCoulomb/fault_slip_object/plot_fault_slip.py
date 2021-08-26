@@ -54,12 +54,15 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         disp_x = np.array([x.dE_obs for x in disp_points]);
         disp_y = np.array([x.dN_obs for x in disp_points]);
         disp_z = np.array([x.dU_obs for x in disp_points]);
+        lon_vert = np.array([x.lon for x in disp_points if ~np.isnan(x.dU_obs)]);
+        lat_vert = np.array([x.lat for x in disp_points if ~np.isnan(x.dU_obs)]);
+        disp_z_vert = np.array([x.dU_obs for x in disp_points if ~np.isnan(x.dU_obs)]);
         fig.plot(x=lon, y=lat, style='s0.07i', color='blue', pen="thin,black");
         if sum(~np.isnan(disp_z)) > 0:
-            vmin_v = np.min(disp_z);
-            vmax_v = np.max(disp_z);
+            vmin_v = np.nanmin(disp_z);
+            vmax_v = np.nanmax(disp_z);
             pygmt.makecpt(C="roma", T=str(vmin_v)+"/"+str(vmax_v)+"/"+str((vmax_v-vmin_v)/100), D="o", H="vert.cpt");
-            fig.plot(lon, lat, style='c0.3c', color=disp_z, C='vert.cpt', pen="thin,black");
+            fig.plot(lon_vert, lat_vert, style='c0.3c', color=disp_z_vert, C='vert.cpt', pen="thin,black");
             fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="vert.cpt", G=str(vmin_v*0.99)+"/"+str(vmax_v*0.99),
                          B=["x"+str(v_labeling_interval), "y+L\"Vert Disp(m)\""]);
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display

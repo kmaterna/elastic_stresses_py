@@ -63,6 +63,7 @@ def write_disp_points_results(disp_points, outfile):
     """
     Write the contents of disp_points (dE_obs etc.)
     """
+    print("Writing %s " % outfile);
     if len(disp_points) > 0:
         ofile = open(outfile, 'w');
         ofile.write("# Format: lon lat u v w (m)\n");
