@@ -22,7 +22,7 @@ def do_stress_computation(params, inputs, disp_points, strain_points):
     # Refactoring here.
     [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_grid_def(params, subfaulted_inputs);
     model_disp_points = compute_ll_def(params, subfaulted_inputs, disp_points);
-    [strain_tensor_results] = compute_ll_strain(params, subfaulted_inputs, strain_points);
+    strain_tensor_results = compute_ll_strain(params, subfaulted_inputs, strain_points);
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements,
@@ -144,7 +144,7 @@ def compute_grid_def(params, inputs):
 def compute_ll_strain(params, inputs, strain_points):
     """Loop through a list of lon/lat and compute their strains due to all sources put together."""
     if not strain_points:
-        return [None];
+        return [];
     x, y = [], [];
     for i in range(len(strain_points.lon)):
         [xi, yi] = fault_vector_functions.latlon2xy(strain_points.lon[i], strain_points.lat[i], inputs.zerolon,
@@ -158,11 +158,13 @@ def compute_ll_strain(params, inputs, strain_points):
         _, _, _, strain_tensor = compute_surface_disp_point(params, inputs, x[k], y[k]);
         strain_tensor_results.append(strain_tensor);
 
-    return [strain_tensor_results];
+    return strain_tensor_results;
 
 
 def compute_ll_def(params, inputs, disp_points):
     """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
+    if not disp_points:
+        return [];
     model_disp_points = [];
     for point in disp_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat);

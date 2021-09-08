@@ -20,9 +20,9 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         region = [np.min(lons)-buffer_deg, np.max(lons)+buffer_deg, np.min(lats)-buffer_deg, np.max(lats)+buffer_deg];
     fig = pygmt.Figure();
     fig_width_deg = region[1] - region[0];
-    fig.basemap(region=region, projection=proj, B="+t\"" + title + "\"");
-    fig.coast(shorelines="1.0p,black", region=region, N="1", projection=proj, B=str(fig_width_deg/5));  # the boundary
-    fig.coast(region=region, projection=proj, N='2', W='0.5p,black', S='lightblue');
+    fig.basemap(region=region, projection=proj, frame="+t\"" + title + "\"");
+    fig.coast(shorelines="1.0p,black", region=region, N="1", projection=proj, frame=str(fig_width_deg/5));  # boundary
+    fig.coast(region=region, projection=proj, borders='2', W='0.5p,black', water='lightblue');
 
     # Drawing fault slip with a color scale.
     fault_colors = [_i["slip"] for _i in fault_dict_list];
@@ -59,11 +59,15 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         disp_z_vert = np.array([x.dU_obs for x in disp_points if ~np.isnan(x.dU_obs)]);
         fig.plot(x=lon, y=lat, style='s0.07i', color='blue', pen="thin,black");
         if sum(~np.isnan(disp_z)) > 0:
-            vmin_v = np.nanmin(disp_z);
-            vmax_v = np.nanmax(disp_z);
-            pygmt.makecpt(C="roma", T=str(vmin_v)+"/"+str(vmax_v)+"/"+str((vmax_v-vmin_v)/100), D="o", H="vert.cpt");
+            vmin_v = np.nanmin(disp_z_vert);
+            vmax_v = np.nanmax(disp_z_vert);
+            total_interval = vmax_v - vmin_v;
+            pygmt.makecpt(C="roma", T=str(vmin_v-(total_interval*0.07))+"/" +
+                                      str(vmax_v+(total_interval*0.07))+"/" +
+                                      str(total_interval/100), D="o", H="vert.cpt");
             fig.plot(lon_vert, lat_vert, style='c0.3c', color=disp_z_vert, C='vert.cpt', pen="thin,black");
-            fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="vert.cpt", G=str(vmin_v*0.99)+"/"+str(vmax_v*0.99),
+            fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="vert.cpt", G=str(vmin_v-total_interval*0.07)+"/" +
+                                                                   str(vmax_v+total_interval*0.07),
                          B=["x"+str(v_labeling_interval), "y+L\"Vert Disp(m)\""]);
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon, y=lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
