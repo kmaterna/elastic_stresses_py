@@ -117,14 +117,13 @@ def read_latloninDEF(gps_filename):
     """
     Read gps station locations from static1d inputs (latlon.inDEF) into a disp_points object.
     """
-    print("Reading file %s" % gps_filename);
     disp_points = [];
     [lat, lon] = np.loadtxt(gps_filename, skiprows=1, unpack=True);
     for i in range(len(lon)):
         disp_point = cc.Displacement_points(lon=lon, lat=lat, dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
                                             Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="");
         disp_points.append(disp_point);
-    print("Returning %d lat/lon pairs " % len(disp_points));
+    print("Reading file %s... %d lat/lon pairs" % (gps_filename, len(disp_points)));
     return disp_points;
 
 
@@ -132,7 +131,6 @@ def read_disp_points_from_static1d(filename):
     """
     Read gps station locations from static1d inputs into a disp_points object.
     """
-    print("Reading file %s" % filename);
     disp_points = [];
     ifile = open(filename, 'r');
     for line in ifile:
@@ -142,8 +140,7 @@ def read_disp_points_from_static1d(filename):
                                                 Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="");
             disp_points.append(disp_point);
     ifile.close();
-
-    print("Returning %d lat/lon pairs " % len(disp_points));
+    print("Reading file %s... %d lat/lon pairs" % (filename, len(disp_points)));
     return disp_points;
 
 
@@ -174,7 +171,6 @@ def read_static1D_output_file(output_filename, gps_input_filename):
     Read the displacements from the output of a Static-1D calculation into a disp_points object.
     Returns displacements in m.
     """
-    print("Reading file %s " % output_filename);
     ifile = open(output_filename);
     xdisp, ydisp, zdisp, modeled_disp_points = [], [], [], [];
     for line in ifile:
@@ -188,6 +184,7 @@ def read_static1D_output_file(output_filename, gps_input_filename):
                                                     dE_obs=xdisp[i], dN_obs=ydisp[i], dU_obs=zdisp[i], Se_obs=np.nan,
                                                     Sn_obs=np.nan, Su_obs=np.nan, name="");
         modeled_disp_points.append(modeled_disp_point);
+    print("Reading file %s... %d points" % (output_filename, len(modeled_disp_points)));
     return modeled_disp_points;
 
 
