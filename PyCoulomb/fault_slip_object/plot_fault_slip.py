@@ -50,7 +50,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                   background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
     for item in fault_dict_list:
         lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
-        fig.plot(x=lons, y=lats, Z=str(item["slip"]), pen="thick,black", color="+z", cmap="mycpt.cpt");
+        fig.plot(x=lons, y=lats, zvalue=str(item["slip"]), pen="thick,black", color="+z", cmap="mycpt.cpt");
         fig.plot(x=lons[0:2], y=lats[0:2], pen="thickest,black", color="+z", cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="g-124.75/40.2+c1.5+w50");
 
@@ -97,7 +97,8 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
     point_size = 0.2  # for vertical symbol
     numrows, numcols = 1, 3;
     with fig.subplot(nrows=numrows, ncols=numcols, figsize=("12i", "12i"), frame="lrtb"):
-        with fig.set_panel(panel=0):  # Data
+        # Data
+        with fig.set_panel(panel=0):
             fig.basemap(region=region, projection=proj, frame=["WeSn", "2.0"]);
             fig.coast(region=region, projection=proj, borders='2', shorelines='1.0p,black', water='lightblue');
             [lon, lat, disp_x, disp_y, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(disp_points);
@@ -120,8 +121,8 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
             fig.text(x=[region[0]+0.85], y=[region[2]+0.25], projection=proj, text=scale_arrow[2]+' data');  # label
 
-
-        with fig.set_panel(panel=1):  # Model
+        # Model
+        with fig.set_panel(panel=1):
             fig.basemap(region=region, projection=proj, frame=["WeSn", "2.0"]);
             fig.coast(region=region, projection=proj, borders='2', shorelines='1.0p,black', water='lightblue');
             [lon, lat, disp_x, disp_y, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(model_disp_points);
@@ -143,8 +144,8 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
             fig.text(x=[region[0]+0.95], y=[region[2]+0.25], projection=proj, text=scale_arrow[2]+' model');  # label
 
-
-        with fig.set_panel(panel=2):  # Residual
+        # Residual
+        with fig.set_panel(panel=2):
             fig.basemap(region=region, projection=proj, frame=["WeSn", "2.0"]);
             fig.coast(region=region, projection=proj, borders='2', shorelines='1.0p,black', water='lightblue');
             [lon, lat, disp_x, disp_y, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(resid_disp_points);
@@ -152,7 +153,8 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
                 fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
                          cmap='vert.cpt', pen="thin,black");
-                fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", projection=proj, cmap="vert.cpt", truncate=str(vmin_v) + "/" + str(vmax_v),
+                fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", projection=proj, cmap="vert.cpt",
+                             truncate=str(vmin_v) + "/" + str(vmax_v),
                              frame=["x" + str(v_labeling_interval), "y+L\"Vert Disp(m)\""]);
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
@@ -164,7 +166,7 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             fig.text(x=[region[0]+0.85], y=[region[2]+0.25], projection=proj, text=scale_arrow[2]+' res');  # label
             if rms:
                 fig.text(x=[region[0] + 1.20], y=[region[2] + 0.65], projection=proj,
-                         text='rms='+str(np.round(rms,2)) + ' mm');  # label
+                         text='rms='+str(np.round(rms, 2)) + ' mm');  # label
 
     fig.savefig(outfile);
     return;

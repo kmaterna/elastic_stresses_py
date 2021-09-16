@@ -8,7 +8,7 @@ from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 
 def subtract_disp_points(disp_points1, disp_points2):
     """
-    Subtract two objects (1 minus 2) for the residuals
+    Subtract two lists of objects (1 minus 2) for the residuals
     """
     residuals = [];
     for i in range(len(disp_points1)):
@@ -19,6 +19,21 @@ def subtract_disp_points(disp_points1, disp_points2):
                                       Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="");
         residuals.append(res1);
     return residuals;
+
+
+def add_disp_points(disp_points1, disp_points2):
+    """
+    add two lists of objects (1 plus 2)
+    """
+    sum_disp_points = [];
+    for i in range(len(disp_points1)):
+        res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
+                                      dE_obs=disp_points1[i].dE_obs + disp_points2[i].dE_obs,
+                                      dN_obs=disp_points1[i].dN_obs + disp_points2[i].dN_obs,
+                                      dU_obs=disp_points1[i].dU_obs + disp_points2[i].dU_obs,
+                                      Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="");
+        sum_disp_points.append(res1);
+    return sum_disp_points;
 
 
 def station_vel_object_to_disp_points(velfield):
