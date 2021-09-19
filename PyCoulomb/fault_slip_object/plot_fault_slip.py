@@ -66,6 +66,9 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             vmin_v = np.nanmin(disp_z_vert);
             vmax_v = np.nanmax(disp_z_vert);
             total_interval = vmax_v - vmin_v;
+            if total_interval == 0:
+                total_interval = 0.010
+                vmin_v, vmax_v = -0.005, 0.005;
             pygmt.makecpt(cmap="roma", series=str(vmin_v-(total_interval*0.07))+"/" +
                                               str(vmax_v+(total_interval*0.07))+"/" +
                                               str(total_interval/100), background="o", output="vert.cpt");
