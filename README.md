@@ -10,9 +10,15 @@ This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/
 ### Installation and Usage: 
 To install, you can clone this library onto your computer into a location that is on your $PYTHONPATH (in other words, the parent directory holding Elastic_stresses_py/ must be on your $PYTHONPATH).  For convenience, it is nice (but not required) to put the full path to Elastic_stresses_py/PyCoulomb/bin on your regular system $PATH so the main executable ```elastic_stresses_driver.py``` can be found.   
 
-Most of the behavior of the program is controlled by a config text file. An example config file is provided in examples/. The elastic parameters mu and lamda, as well as your input/output options, are set in config file. You call the program by 
+Most of the behavior of the program is controlled by a config text file.  From an experiment directory on your system, you can generate a default config file in the current working directory (.) with: 
 ```bash
-elastic_stresses_driver.py config.txt
+elastic_stresses_config_writer.py .
+```
+You should change the parameters to your own experiment needs.  An example config file is provided in examples/. The elastic parameters mu and lamda, as well as your input/output options, are set in config file. 
+
+Then, you call the program by passing the config file into the main executable: 
+```bash
+elastic_stresses_driver.py my_config.txt
 ```
 
 ### Capabilities: 

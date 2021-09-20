@@ -50,6 +50,7 @@ def configure_stress_calculation(config_file):
 
 def write_valid_config_file(directory):
     configobj = configparser.ConfigParser()
+    configobj.optionxform = str   # case-sensitive config options
     configobj["io-config"] = {};
     ioconfig = configobj["io-config"];
     ioconfig["exp_name"] = 'my_experiment';
