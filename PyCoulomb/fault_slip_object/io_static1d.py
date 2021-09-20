@@ -115,12 +115,12 @@ def read_static1d_disp_points(filename1, filename2):
 
 def read_latloninDEF(gps_filename):
     """
-    Read gps station locations from static1d inputs (latlon.inDEF) into a disp_points object.
+    Read gps station locations from static1d inputs (latlon.inDEF) into a list of disp_points objects.
     """
     disp_points = [];
     [lat, lon] = np.loadtxt(gps_filename, skiprows=1, unpack=True);
     for i in range(len(lon)):
-        disp_point = cc.Displacement_points(lon=lon, lat=lat, dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
+        disp_point = cc.Displacement_points(lon=lon[i], lat=lat[i], dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
                                             Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="");
         disp_points.append(disp_point);
     print("Reading file %s... %d lat/lon pairs" % (gps_filename, len(disp_points)));

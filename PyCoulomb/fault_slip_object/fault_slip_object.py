@@ -91,3 +91,21 @@ def add_two_fault_dict_lists(list1, list2):
                     "rake": rake_total };
         new_list.append(new_item);
     return new_list;
+
+
+def change_fault_slip(fault_dict_list, new_slip):
+    """Change the fault slip to something different."""
+    new_list = [];
+    for item in fault_dict_list:
+        new_obj = {"strike": item["strike"],
+                   "dip": item["dip"],
+                   "length": item["length"],
+                   "width": item["width"],
+                   "lon": item["lon"],
+                   "lat": item["lat"],
+                   "depth": item["depth"],
+                   "tensile": item["tensile"],
+                   "slip": new_slip,
+                   "rake": item["rake"]};
+        new_list.append(new_obj);
+    return new_list;

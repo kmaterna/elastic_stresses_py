@@ -45,6 +45,25 @@ def add_disp_points(disp_points1, disp_points2):
     return sum_disp_points;
 
 
+def mult_minus_one(disp_points1):
+    """
+    Flip list of disp_points
+    The metadata for object 1 will be retained.
+    """
+    residuals = [];
+    for i in range(len(disp_points1)):
+        res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
+                                      dE_obs=-disp_points1[i].dE_obs,
+                                      dN_obs=-disp_points1[i].dN_obs,
+                                      dU_obs=-disp_points1[i].dU_obs,
+                                      Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="",
+                                      starttime=disp_points1[i].starttime,
+                                      endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
+                                      meas_type=disp_points1[i].meas_type);
+        residuals.append(res1);
+    return residuals;
+
+
 def station_vel_object_to_disp_points(velfield):
     """
     Convert from StationVel objects from GNSS Python library into disp_points

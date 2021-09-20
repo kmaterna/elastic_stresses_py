@@ -170,7 +170,7 @@ def compute_ll_def(params, inputs, disp_points):
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat);
         u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, xi, yi);
         model_point = cc.Displacement_points(lon=point.lon, lat=point.lat, dE_obs=u_disp[0], dN_obs=v_disp[0],
-                                             dU_obs=w_disp[0], Se_obs=(), Sn_obs=(), Su_obs=(), name=());
+                                             dU_obs=w_disp[0], Se_obs=0, Sn_obs=0, Su_obs=0, name="");
         model_disp_points.append(model_point);
     return model_disp_points;
 

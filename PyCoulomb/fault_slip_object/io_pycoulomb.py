@@ -12,7 +12,7 @@ Format intxt:
     updip_corner_lon
     updip_corner_lat
     updip_corner_dep(km)
-    slip
+    slip(m)
 """
 
 from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc

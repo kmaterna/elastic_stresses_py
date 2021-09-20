@@ -48,7 +48,9 @@ def read_disp_points(infile):
             dE_obs, dN_obs, dU_obs = np.nan, np.nan, np.nan;
             Se_obs, Sn_obs, Su_obs = np.nan, np.nan, np.nan;
             name = "";
-            if len(temp) >= 8:  # if we have longer GPS format with uncertainties
+            if len(temp) == 5:  # if we have no uncertainties listed in the file
+                dE_obs, dN_obs, dU_obs = float(temp[2]), float(temp[3]), float(temp[4]);
+            elif len(temp) >= 8:  # if we have longer GPS format with uncertainties
                 name = temp[-1];
                 dE_obs, dN_obs, dU_obs = float(temp[2]), float(temp[3]), float(temp[4]);
                 Se_obs, Sn_obs, Su_obs = float(temp[5]), float(temp[6]), float(temp[7]);
