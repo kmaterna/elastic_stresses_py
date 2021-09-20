@@ -146,8 +146,8 @@ def compute_ll_strain(params, inputs, strain_points):
     if not strain_points:
         return [];
     x, y = [], [];
-    for i in range(len(strain_points.lon)):
-        [xi, yi] = fault_vector_functions.latlon2xy(strain_points.lon[i], strain_points.lat[i], inputs.zerolon,
+    for i in range(len(strain_points)):
+        [xi, yi] = fault_vector_functions.latlon2xy(strain_points[i].lon, strain_points[i].lat, inputs.zerolon,
                                                     inputs.zerolat);
         x.append(xi);
         y.append(yi);

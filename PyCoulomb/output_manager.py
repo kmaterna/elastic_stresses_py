@@ -106,7 +106,8 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     default vmin,vmax are in KPa
     Plots of fault patches in cartesian space, colored by the magnitude of the stress component.
     """
-    print("Making plot of %s stress on receiver fault patches. " % stress_type);
+    print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
+                                                                        'Stresses_' + stress_type + '.eps'));
 
     if stress_type == 'shear':
         stress_component = out_object.receiver_shear;
@@ -172,7 +173,9 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     default vmin,vmax are in KPa
     Vertical plots of fault patches in cartesian space, colored by the magnitude of the stress component.
     """
-    print("Making vertical plot of %s stress on receiver fault patches. " % stress_type);
+    print("Making vertical plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
+                                                                                 'Stresses_cross_section_' +
+                                                                                 stress_type + '.eps'));
 
     if stress_type == 'shear':
         stress_component = out_object.receiver_shear;

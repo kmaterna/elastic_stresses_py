@@ -35,17 +35,18 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     largest_stress = 1;  # units: KPa
 
     # Make cpt
-    pygmt.makecpt(C="jet", T=str(smallest_stress - 0.1) + "/" + str(largest_stress + 0.1) + "/0.05", H="mycpt.cpt",
-                  D=True);
+    pygmt.makecpt(cmap="jet", series=str(smallest_stress - 0.1) + "/" + str(largest_stress + 0.1) + "/0.05",
+                  output="mycpt.cpt", background=True);
 
     # Make Map
     region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
     proj = "M7i"
     fig = pygmt.Figure()
     title = "+t\"" + stress_component + " stress\"";  # must put escaped quotations around the title.
-    fig.basemap(region=region, projection=proj, B=title);
-    fig.coast(shorelines="1.0p,black", region=region, N="1", projection=proj, B="1.0");  # the boundary.
-    fig.coast(region=region, projection=proj, N='2', W='0.5p,black', S='white', L="g-125.5/39.6+c1.5+w50");
+    fig.basemap(region=region, projection=proj, frame=title);
+    fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame="1.0");  # the boundary.
+    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='white',
+              map_scale="g-125.5/39.6+c1.5+w50");
 
     # Draw each source
     eq_lon, eq_lat = [], [];
@@ -59,26 +60,27 @@ def map_stress_plot(params, inputs, out_object, stress_component):
         if not source.potency:
             fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
         else:
-            fig.plot(x=lons, y=lats, style='s0.3c', G="purple", pen="thin,black");  # in case of point sources
+            fig.plot(x=lons, y=lats, style='s0.3c', color="purple", pen="thin,black");  # in case of point sources
     # Annotate with earthquake location.
-    fig.plot(eq_lon, eq_lat, style='s0.3c', G="purple", pen="thin,black");
+    fig.plot(eq_lon, eq_lat, style='s0.3c', color="purple", pen="thin,black");
 
     # Draw each receiver, with associated data
     for i in range(len(out_object.receiver_object)):
         rec = out_object.receiver_object[i];
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(rec);
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        fig.plot(x=lons, y=lats, Z=str(plotting_stress[i]), pen="thick,black", G="+z", C="mycpt.cpt");  # color = stress
+        fig.plot(x=lons, y=lats, zvalue=str(plotting_stress[i]), pen="thick,black", color="+z", cmap="mycpt.cpt");
+        # color = stress
 
     # Colorbar annotation
     fig.coast(shorelines="1.0p,black", region=region, projection=proj);  # the boundary.
-    fig.colorbar(D="jBr+w3.5i/0.2i+o2.5c/1.5c+h", C="mycpt.cpt", I="0.8",
-                 G=str(smallest_stress) + "/" + str(largest_stress - 0.1), B=["x" + str(0.2), "y+L\"KPa\""]);
+    fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", shading="0.8",
+                 truncate=str(smallest_stress) + "/" + str(largest_stress - 0.1), frame=["x" + str(0.2), "y+L\"KPa\""]);
 
     # Annotate with aftershock locations
     if params.aftershocks:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
+        fig.plot(lon, lat, style='c0.1c', color='black', pen="thin,black");
 
     fig.savefig(params.outdir + label + '_map.png');
     return;
@@ -108,15 +110,15 @@ def map_vertical_def(params, inputs, filename, outfile):
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
-    pygmt.makecpt(C="roma", T="-0.045/0.045/0.001", D="o", H="mycpt.cpt");
-    fig.basemap(region=region, projection=proj, B="+t\"Vertical Displacement\"");
-    fig.grdimage(filename, region=region, C="mycpt.cpt");
-    fig.coast(region=region, projection=proj, N='1', W='1.0p,black', S='lightblue',
-              L="n0.23/0.06+c" + str(region[2]) + "+w20", B="1.0");
+    pygmt.makecpt(cmap="roma", series="-0.045/0.045/0.001", background="o", output="mycpt.cpt");
+    fig.basemap(region=region, projection=proj, frame="+t\"Vertical Displacement\"");
+    fig.grdimage(filename, region=region, cmap="mycpt.cpt");
+    fig.coast(region=region, projection=proj, borders='1', shoreliens='1.0p,black', water='lightblue',
+              map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0");
     # Annotate with aftershock locations
     if params.aftershocks:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
+        fig.plot(lon, lat, style='c0.1c', color='black', pen="thin,black");
 
     # Draw each source
     eq_lon, eq_lat = [], [];
@@ -130,10 +132,11 @@ def map_vertical_def(params, inputs, filename, outfile):
         if not source.potency:
             fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
         else:
-            fig.plot(x=lons, y=lats, style='s0.3c', G="purple", pen="thin,black");  # in case of point sources
+            fig.plot(x=lons, y=lats, style='s0.3c', color="purple", pen="thin,black");  # in case of point sources
     # Annotate with earthquake location.
-    fig.plot(eq_lon, eq_lat, style='s0.05c', G="purple", pen="thin,black");
-    fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="mycpt.cpt", G="-0.045/0.045", B=["x0.01", "y+L\"Disp(m)\""]);
+    fig.plot(eq_lon, eq_lat, style='s0.05c', color="purple", pen="thin,black");
+    fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate="-0.045/0.045",
+                 frame=["x0.01", "y+L\"Disp(m)\""]);
     fig.savefig(outfile);
     return;
 
@@ -160,14 +163,15 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
     if not vmin:
         vmin = np.min(model_dU);
         vmax = np.max(model_dU);
-    pygmt.makecpt(C="roma", T=str(vmin)+"/"+str(vmax)+"/"+str((vmax-vmin)/100), D="o", H="mycpt.cpt");
+    pygmt.makecpt(cmap="roma", series=str(vmin)+"/"+str(vmax)+"/"+str((vmax-vmin)/100), background="o",
+                  output="mycpt.cpt");
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
-    fig.basemap(region=region, projection=proj, B="+t\"Coseismic Displacements\"");
-    fig.coast(region=region, projection=proj, N='1', W='1.0p,black', S='lightblue',
-              L="n0.4/0.06+c" + str(region[2]) + "+w20", B="1.0");
-    fig.plot(model_lon, model_lat, style='c0.3c', color=model_dU, C='mycpt.cpt', pen="thin,black");
+    fig.basemap(region=region, projection=proj, frame="+t\"Coseismic Displacements\"");
+    fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
+              map_scale="n0.4/0.06+c" + str(region[2]) + "+w20", frame="1.0");
+    fig.plot(model_lon, model_lat, style='c0.3c', color=model_dU, cmap='mycpt.cpt', pen="thin,black");
 
     # Draw vectors and vector scale bar
     scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
@@ -200,16 +204,16 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
         if not source.potency:
             fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
         else:
-            fig.plot(x=lons, y=lats, style='s0.3c', G="purple", pen="thin,black");  # in case of point sources
-    fig.plot(eq_lon, eq_lat, style='s0.3c', G="purple", pen="thin,black");
+            fig.plot(x=lons, y=lats, style='s0.3c', color="purple", pen="thin,black");  # in case of point sources
+    fig.plot(eq_lon, eq_lat, style='s0.3c', color="purple", pen="thin,black");
 
     # Annotate with aftershock locations
     if params.aftershocks:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.1c', G='black', pen="thin,black");
+        fig.plot(lon, lat, style='c0.1c', color='black', pen="thin,black");
 
     labeling_interval = np.round(np.abs(vmax-vmin)/8, 5);
-    fig.colorbar(D="JCR+w4.0i+v+o0.7i/0i", C="mycpt.cpt", G=str(vmin)+"/"+str(vmax), B=["x"+str(labeling_interval),
-                                                                                        "y+L\"Vert Disp(m)\""]);
+    fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(vmin)+"/"+str(vmax),
+                 frame=["x"+str(labeling_interval), "y+L\"Vert Disp(m)\""]);
     fig.savefig(outfile);
     return;

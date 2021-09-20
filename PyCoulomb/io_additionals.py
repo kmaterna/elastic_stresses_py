@@ -80,9 +80,9 @@ def write_strain_results(obs_strain_points, strains, outfile):
     if obs_strain_points:
         ofile = open(outfile, 'w');
         ofile.write("# Format: lon lat strain_tensor (microstrain)\n")
-        for i in range(len(obs_strain_points.lon)):
+        for i in range(len(obs_strain_points)):
             eij = np.multiply(strains[i], 1e6);  # microstrain
-            ofile.write("%f %f\n" % (obs_strain_points.lon[i], obs_strain_points.lat[i]));
+            ofile.write("%f %f\n" % (obs_strain_points[i].lon, obs_strain_points[i].lat));
             ofile.write("%f %f %f\n" % (eij[0][0], eij[0][1], eij[0][2]));
             ofile.write("%f %f %f\n" % (eij[1][0], eij[1][1], eij[1][2]));
             ofile.write("%f %f %f\n" % (eij[2][0], eij[2][1], eij[2][2]));
