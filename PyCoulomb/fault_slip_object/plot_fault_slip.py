@@ -52,7 +52,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
         fig.plot(x=lons, y=lats, zvalue=str(item["slip"]), pen="thick,black", color="+z", cmap="mycpt.cpt");
         fig.plot(x=lons[0:2], y=lats[0:2], pen="thickest,black", color="+z", cmap="mycpt.cpt");
-    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="g-124.75/40.2+c1.5+w50");
+    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="g-126.5/38.4+c1.5+w50");
 
     # Optional lines you can draw on the plot
     if fault_traces:
@@ -78,13 +78,15 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon, y=lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[disp_x, disp_y], pen="thin,black");
-            fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
+            fig.plot(x=[region[0]+0.30], y=[region[2]+1.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
-            fig.text(x=[region[0]+0.45], y=[region[2]+0.15], text=scale_arrow[2]+' model');  # scale label
+            fig.text(x=[region[0]+0.45], y=[region[2]+1.15], text=scale_arrow[2],
+                     font='14p,Helvetica,black');  # scale label
 
-    fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
-                 truncate=str(vmin) + "/" + str(vmax),
-                 frame=["x" + str(range_of_slip/10), "y+L\"Slip(m)\""]);
+    if fault_dict_list:
+        fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+                     truncate=str(vmin) + "/" + str(vmax),
+                     frame=["x" + str(range_of_slip/10), "y+L\"Slip(m)\""]);
     fig.savefig(outfile);
     return;
 
@@ -119,10 +121,12 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon, y=lat, projection=proj, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[disp_x, disp_y], pen="thin,black");
-            fig.plot(x=[region[0]+0.30], y=[region[2]+0.05], projection=proj,
+            fig.plot(x=[region[0]+0.30], y=[region[2]+1.05], projection=proj,
                      style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
-            fig.text(x=[region[0]+0.85], y=[region[2]+0.25], projection=proj, text=scale_arrow[2]+' data');  # label
+            fig.text(x=[region[0]+0.85], y=[region[2]+1.25], projection=proj, text=scale_arrow[2]+' data');  # label
+            fig.text(position="TL", projection=proj, font="18p,Helvetica,black", fill="white", offset='j0.1/0.1',
+                     text='A) Data');
 
         # Model
         with fig.set_panel(panel=1):
@@ -142,12 +146,14 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon, y=lat, projection=proj, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[disp_x, disp_y], pen="thin,black");
-            fig.plot(x=[region[0]+0.30], y=[region[2]+0.05], projection=proj,
+            fig.plot(x=[region[0]+0.30], y=[region[2]+1.05], projection=proj,
                      style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
-            fig.text(x=[region[0]+0.95], y=[region[2]+0.25], projection=proj, text=scale_arrow[2]+' model');  # label
+            fig.text(x=[region[0]+0.95], y=[region[2]+1.25], projection=proj, text=scale_arrow[2]+' model');  # label
+            fig.text(position="TL", projection=proj, font="18p,Helvetica,black", fill="white", offset='j0.1/0.1',
+                     text='B) Model');
 
-        # Residual
+            # Residual
         with fig.set_panel(panel=2):
             fig.basemap(region=region, projection=proj, frame=["WeSn", "2.0"]);
             fig.coast(region=region, projection=proj, borders='2', shorelines='1.0p,black', water='lightblue');
@@ -163,10 +169,12 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon, y=lat, projection=proj, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[disp_x, disp_y], pen="thin,black");
-            fig.plot(x=[region[0]+0.30], y=[region[2]+0.05], projection=proj,
+            fig.plot(x=[region[0]+0.30], y=[region[2]+1.05], projection=proj,
                      style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
-            fig.text(x=[region[0]+0.85], y=[region[2]+0.25], projection=proj, text=scale_arrow[2]+' res');  # label
+            fig.text(x=[region[0]+0.85], y=[region[2]+1.25], projection=proj, text=scale_arrow[2]+' res');  # label
+            fig.text(position="TL", projection=proj, font="18p,Helvetica,black", fill="white", offset='j0.1/0.1',
+                     text='C) Residual');
             if rms:
                 fig.text(x=[region[0] + 1.20], y=[region[2] + 0.65], projection=proj,
                          text='rms='+str(np.round(rms, 2)) + ' mm');  # label
