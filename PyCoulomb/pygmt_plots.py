@@ -4,7 +4,7 @@ import numpy as np
 import pygmt
 from subprocess import call
 from . import conversion_math
-from . import io_additionals
+from . import io_additionals, utilities
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -26,16 +26,12 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     if not out_object.receiver_object:
         return;
 
-    # Make stress bounds for map.
-    stress_bounds = [abs(np.min(plotting_stress)), abs(np.max(plotting_stress))];
-    stress_bound = np.max(stress_bounds);  # setting the scale to symmetric about zero
-    # smallest_stress = -stress_bound;  # units: KPa
-    # largest_stress = stress_bound;  # units: KPa
-    smallest_stress = -1;  # units: KPa
-    largest_stress = 1;  # units: KPa
+    # Make stress bounds for color map.
+    vmin, vmax = -1, 1;
+    [cmap_opts, cbar_opts] = utilities.define_colorbar_series(plotting_stress, vmin=vmin, vmax=vmax);
 
     # Make cpt
-    pygmt.makecpt(cmap="jet", series=str(smallest_stress - 0.1) + "/" + str(largest_stress + 0.1) + "/0.05",
+    pygmt.makecpt(cmap="jet", series=str(cmap_opts[0]) + "/" + str(cmap_opts[1]) + "/"+str(cmap_opts[2]),
                   output="mycpt.cpt", background=True);
 
     # Make Map
@@ -75,7 +71,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     # Colorbar annotation
     fig.coast(shorelines="1.0p,black", region=region, projection=proj);  # the boundary.
     fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", shading="0.8",
-                 truncate=str(smallest_stress) + "/" + str(largest_stress - 0.1), frame=["x" + str(0.2), "y+L\"KPa\""]);
+                 truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]), frame=["x" + str(0.2), "y+L\"KPa\""]);
 
     # Annotate with aftershock locations
     if params.aftershocks:
@@ -160,10 +156,8 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
     model_lat = np.array([x.lat for x in out_object.model_disp_points]);
 
     # Make modeled vertical displacement color map
-    if not vmin:
-        vmin = np.min(model_dU);
-        vmax = np.max(model_dU);
-    pygmt.makecpt(cmap="roma", series=str(vmin)+"/"+str(vmax)+"/"+str((vmax-vmin)/100), background="o",
+    [cmap_opts, cbar_opts] = utilities.define_colorbar_series(model_dU, vmin, vmax);
+    pygmt.makecpt(cmap="roma", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]), background="o",
                   output="mycpt.cpt");
 
     # Build a PyGMT plot
@@ -212,8 +206,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
         fig.plot(lon, lat, style='c0.1c', color='black', pen="thin,black");
 
-    labeling_interval = np.round(np.abs(vmax-vmin)/8, 5);
-    fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(vmin)+"/"+str(vmax),
-                 frame=["x"+str(labeling_interval), "y+L\"Vert Disp(m)\""]);
+    fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(cbar_opts[0])+"/"+str(cbar_opts[1]),
+                 frame=["x"+str(cbar_opts[2]), "y+L\"Vert Disp(m)\""]);
     fig.savefig(outfile);
     return;

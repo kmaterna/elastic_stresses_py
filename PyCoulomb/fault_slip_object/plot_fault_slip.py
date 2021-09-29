@@ -3,6 +3,8 @@
 import numpy as np
 import pygmt
 from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
+from .. import utilities
+
 
 def unpack_disp_points(disp_points):
     lon = np.array([x.lon for x in disp_points]);
@@ -17,7 +19,7 @@ def unpack_disp_points(disp_points):
 
 
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
-                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=0.005, fault_traces=None,
+                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=None, fault_traces=None,
                                  title=""):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
@@ -37,22 +39,19 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
 
     # Drawing fault slip with a color scale.
     fault_colors = [_i["slip"] for _i in fault_dict_list];
+    [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors);
     if len(fault_colors) > 0:
-        range_of_slip = np.max(fault_colors) - np.min(fault_colors);
-    else:
-        fault_colors = [0];  # some default arguments in case of empty fault_dict_list
-        range_of_slip = 0;
-    if range_of_slip == 0:
-        range_of_slip = 0.010;  # very small slip.
-    vmin = np.min(fault_colors) - (0.1*range_of_slip+0.001);
-    vmax = np.max(fault_colors) + (0.1*range_of_slip+0.001);
-    pygmt.makecpt(cmap="devon", series=str(vmin)+"/"+str(vmax)+"/"+str((vmax-vmin)/100), truncate="0/1",
-                  background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
+        pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
+                      truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
     for item in fault_dict_list:
         lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
         fig.plot(x=lons, y=lats, zvalue=str(item["slip"]), pen="thick,black", color="+z", cmap="mycpt.cpt");
         fig.plot(x=lons[0:2], y=lats[0:2], pen="thickest,black", color="+z", cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="g-126.5/38.4+c1.5+w50");
+    if fault_dict_list:
+        fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+                     truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
+                     frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""]);
 
     # Optional lines you can draw on the plot
     if fault_traces:
@@ -63,18 +62,14 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         [lon, lat, disp_x, disp_y, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(disp_points);
         fig.plot(x=lon, y=lat, style='s0.07i', color='blue', pen="thin,black");
         if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
-            vmin_v = np.nanmin(disp_z_vert);
-            vmax_v = np.nanmax(disp_z_vert);
-            total_interval = vmax_v - vmin_v;
-            if total_interval <= 0.005:
-                total_interval = 0.010
-                vmin_v, vmax_v = -0.005, 0.005;
-            pygmt.makecpt(cmap="roma", series=str(vmin_v-(total_interval*0.07))+"/" +
-                                              str(vmax_v+(total_interval*0.07))+"/" +
-                                              str(total_interval/100), background="o", output="vert.cpt");
+            [v_cmap_opts, v_cbar_opts] = utilities.define_colorbar_series(disp_z_vert, tol=0.0001,
+                                                                          v_labeling_interval=v_labeling_interval);
+            pygmt.makecpt(cmap="roma", series=str(v_cmap_opts[0])+"/" + str(v_cmap_opts[1]) + "/" +
+                                              str(v_cmap_opts[2]), background="o", output="vert.cpt");
             fig.plot(lon_vert, lat_vert, style='c0.3c', color=disp_z_vert, cmap='vert.cpt', pen="thin,black");
-            fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="vert.cpt", truncate=str(vmin_v)+"/"+str(vmax_v),
-                         frame=["x"+str(v_labeling_interval), "y+L\"Vert Disp(m)\""]);
+            fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="vert.cpt", truncate=str(v_cbar_opts[0]) + "/" +
+                                                                                    str(v_cbar_opts[1]),
+                         frame=["x"+str(v_cbar_opts[2]), "y+L\"Vert Disp(m)\""]);
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon, y=lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[disp_x, disp_y], pen="thin,black");
@@ -83,16 +78,12 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             fig.text(x=[region[0]+0.45], y=[region[2]+1.15], text=scale_arrow[2],
                      font='14p,Helvetica,black');  # scale label
 
-    if fault_dict_list:
-        fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
-                     truncate=str(vmin) + "/" + str(vmax),
-                     frame=["x" + str(range_of_slip/10), "y+L\"Slip(m)\""]);
     fig.savefig(outfile);
     return;
 
 
 def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp_points, region,
-                             scale_arrow, v_labeling_interval=0.005, fault_dict_list=(), rms=None):
+                             scale_arrow, fault_dict_list=(), v_labeling_interval=None, rms=None):
     """
     Plot data, model, residual vectors
     """
@@ -109,12 +100,11 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             [lon, lat, disp_x, disp_y, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(disp_points);
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
-                vmin_v = np.nanmin(disp_z_vert);
-                vmax_v = np.nanmax(disp_z_vert);
-                total_interval = vmax_v - vmin_v;
-                pygmt.makecpt(cmap="roma", series=str(vmin_v - (total_interval * 0.07)) + "/" +
-                                                  str(vmax_v + (total_interval * 0.07)) + "/" +
-                                                  str(total_interval / 100), background="o", output="vert.cpt");
+                [cmap_opts, cbar_opts] = utilities.define_colorbar_series(disp_z_vert,
+                                                                          v_labeling_interval=v_labeling_interval);
+                pygmt.makecpt(cmap="roma", series=str(cmap_opts[0]) + "/" +
+                                                  str(cmap_opts[1]) + "/" +
+                                                  str(cmap_opts[2]), background="o", output="vert.cpt");
                 fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
                          cmap='vert.cpt', pen="thin,black");
 
@@ -163,8 +153,8 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                 fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
                          cmap='vert.cpt', pen="thin,black");
                 fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", projection=proj, cmap="vert.cpt",
-                             truncate=str(vmin_v) + "/" + str(vmax_v),
-                             frame=["x" + str(v_labeling_interval), "y+L\"Vert Disp(m)\""]);
+                             truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
+                             frame=["x" + str(cbar_opts[2]), "y+L\"Vert Disp(m)\""]);
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon, y=lat, projection=proj, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
