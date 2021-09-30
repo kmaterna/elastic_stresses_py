@@ -1,5 +1,6 @@
 
 import numpy as np
+from subprocess import call
 
 
 def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_labeling_interval=None):
@@ -60,3 +61,17 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
             cbar_options = [np.nanmin(plotting_array)-bumper/2, np.nanmax(plotting_array)+bumper/2, label_int];
 
     return [cmap_options, cbar_options];
+
+
+def call_gmt_surface(xyzfile, outfile, region, inc):
+    """
+    Create a grd file from an xyz text file
+    :param xyzfile: string
+    :param outfile: string
+    :param region: list of 4 floats
+    :param inc: float
+    """
+    call(['gmt', 'surface', xyzfile, '-G' + outfile,
+          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
+          '-r'], shell=False);
+    return;

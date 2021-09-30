@@ -2,7 +2,6 @@
 
 import numpy as np
 import pygmt
-from subprocess import call
 from . import conversion_math
 from . import io_additionals, utilities
 from Tectonic_Utils.geodesy import fault_vector_functions
@@ -82,33 +81,25 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     return;
 
 
-def map_vertical_def(params, inputs, filename, outfile):
+def map_vertical_def(params, inputs, outfile):
     """Simple map of grdfile with subsampled vertical deformation.
     Currently mess, but a proof of concept!
-    Takes a grd file created by gmt surface from the xyz file written in this software. """
-    print("Mapping file %s " % filename);
+    Makes a grd file created by gmt surface from the xyz file written in this software. """
+    print("Mapping vertical deformation in %s " % params.outdir);
 
     proj = 'M4i'
     region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
 
     # First make surfaces of east/north/up deformation for later plotting
-    outdir = params.outdir;
-    inc = 0.0005;
-    call(['gmt', 'surface', outdir + '/xyz_model.txt', '-G' + outdir + '/vert.grd',
-          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
-          '-r'], shell=False);
-    call(['gmt', 'surface', outdir + '/xyu_model.txt', '-G' + outdir + '/east.grd',
-          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
-          '-r'], shell=False);
-    call(['gmt', 'surface', outdir + '/xyv_model.txt', '-G' + outdir + '/north.grd',
-          '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
-         '-r'], shell=False);
+    utilities.call_gmt_surface(params.outdir+'/xyz_model.txt', params.outdir+'/vert.grd', region, inc=0.0005);
+    utilities.call_gmt_surface(params.outdir+'/xyu_model.txt', params.outdir+'/east.grd', region, inc=0.0005);
+    utilities.call_gmt_surface(params.outdir+'/xyv_model.txt', params.outdir+'/north.grd', region, inc=0.0005);
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
     pygmt.makecpt(cmap="roma", series="-0.045/0.045/0.001", background="o", output="mycpt.cpt");
     fig.basemap(region=region, projection=proj, frame="+t\"Vertical Displacement\"");
-    fig.grdimage(filename, region=region, cmap="mycpt.cpt");
+    fig.grdimage(params.outdir+'/vert.grd', region=region, cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='1', shoreliens='1.0p,black', water='lightblue',
               map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0");
     # Annotate with aftershock locations
