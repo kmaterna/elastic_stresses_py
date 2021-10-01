@@ -241,7 +241,7 @@ def read_stat2C_geometry(infile):
                 upper_corner_along_strike = fault_vector_functions.add_vector_to_point(0, 0, vector_mag, strike - 90);
                 upper_corner_back_edge = fault_vector_functions.add_vector_to_point(upper_corner_along_strike[0],
                                                                                     upper_corner_along_strike[1],
-                                                                                    length, -strike);
+                                                                                    length, strike+180);
                 fault_lon, fault_lat = fault_vector_functions.xy2lonlat_single(upper_corner_back_edge[0],
                                                                                upper_corner_back_edge[1],
                                                                                lower_lon_corner,
