@@ -1,14 +1,18 @@
 """
 The functions in this package convert between formats of faults/ slip distributions
+For all other formats, make sure you build read/write conversion functions into the internal format and test functions.
 
-* Format 1: json format for Slippy
-* Format 2: slip distribution format for Slippy
-* Format 3: .intxt, Kathryn Materna's format for Elastic_stresses_py.  USE ELASTIC_STRESSES_PY TO READ THAT FORMAT.
-* Format 4: static1d, Fred Pollitz's STATIC1D code. USE ELASTIC_STRESSES_PY TO READ THAT FORMAT.
-* ANY OTHER FORMATS: make sure you build a conversion function into the internal format.
+Written file formats:
+    * Format: geojson format for Slippy input faults
+    * Format: slippy format, output format for Elastic_stresses_py and Slippy
+    * Format: static1d/visco1d, Fred Pollitz's STATIC1D code.
+    * Format: four-corners, used for Wei et al. 2015
+Computer memory formats:
+    * Format: fault_dict dictionary with all the elements for a slip distribution (INTERNAL FORMAT FOR THIS LIBRARY)
+    * Format: slip distribution format for Slippy
 
 The internal format here is a dictionary containing:
-Utility_Dict:
+Fault_Dict:
 {
     strike(deg),
     dip(deg),
@@ -78,7 +82,7 @@ def add_two_fault_dict_lists(list1, list2):
         ss_total = ss_1 + ss_2;  # rtlat
         ds_total = ds_1 + ds_2;  # reverse
         slip_total = fault_vector_functions.get_total_slip(ss_total, ds_total);
-        rake_total = fault_vector_functions.get_rake(ss_total, ds_total);
+        rake_total = fault_vector_functions.get_rake(rtlat_strike_slip=ss_total, dip_slip=ds_total);
         new_item = {"strike": item1["strike"],
                     "dip": item1["dip"],
                     "length": item1["length"],
@@ -93,10 +97,19 @@ def add_two_fault_dict_lists(list1, list2):
     return new_list;
 
 
-def change_fault_slip(fault_dict_list, new_slip):
-    """Change the fault slip to something different."""
+def change_fault_slip(fault_dict_list, new_slip, new_rake=None):
+    """
+    Set the fault slip on a list of fault_slip_dictionaries to something different.
+    Can optionally also set the rake on all fault patches to a constant value; otherwise, leave rake unchanged.
+    :param fault_dict_list: list of fault_slip_dictionaries
+    :param new_slip: float, in meters
+    :param new_rake: float, in degrees
+    :returns new_list: a list of fault_slip_dictionaries
+    """
     new_list = [];
     for item in fault_dict_list:
+        if new_rake is None:
+            new_rake = item["rake"];
         new_obj = {"strike": item["strike"],
                    "dip": item["dip"],
                    "length": item["length"],
@@ -106,13 +119,15 @@ def change_fault_slip(fault_dict_list, new_slip):
                    "depth": item["depth"],
                    "tensile": item["tensile"],
                    "slip": new_slip,
-                   "rake": item["rake"]};
+                   "rake": new_rake};
         new_list.append(new_obj);
     return new_list;
 
 
 def write_gmt_fault_file(fault_dict_list, outfile):
-    """Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT"""
+    """
+    Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT
+    """
     print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
     for fault in fault_dict_list:

@@ -39,12 +39,14 @@ def read_faults_json(infile):
         one_fault["slip"] = 0;
         one_fault["tensile"] = 0;
         fault_list.append(one_fault);
+    config_file.close();
     return fault_list;
 
 
 def write_faults_json(faults_list, outfile):
     """
     Writes faults to json as receivers with zero slip
+    position is lon/lat/depth in meters (negative means below surface)
 
     :param faults_list: list of fault dictionaries
     :type faults_list: list
@@ -52,31 +54,27 @@ def write_faults_json(faults_list, outfile):
     :type outfile: string
     """
     output = {};
-    faults = {};
-    count = 0;
-    for fault in faults_list:
+    for k, fault in enumerate(faults_list):
         # Convert the fault (which has top left corner) into a fault with top center coordinate
+        label = "fault" + str(k)
+        newfault = {};
+
         corner_lon = fault["lon"]
         corner_lat = fault["lat"]
         x_center, y_center = fault_vector_functions.add_vector_to_point(0, 0, fault["length"] / 2, fault["strike"]);
         center_lon, center_lat = fault_vector_functions.xy2lonlat(x_center, y_center, corner_lon, corner_lat);
 
-        count = count + 1;
-        label = "fault" + str(count)
-        fault["length"] = fault["length"] * 1000;
-        fault["width"] = fault["width"] * 1000;
-        fault["basis1"] = [1, 0, 0];
-        fault["basis2"] = None;
-        fault["Nlength"] = 1;
-        fault["Nwidth"] = 1;
-        fault["penalty"] = 1;
-        fault["position"] = [center_lon, center_lat, fault["depth"]];
-        fault.pop("lon");
-        fault.pop("lat");
-        fault.pop("depth");
-        faults[label] = fault;
-    output["faults"] = faults;
-    output["plotter"] = "gmt";
+        newfault["strike"] = fault["strike"];
+        newfault["dip"] = fault["dip"];
+        newfault["length"] = fault["length"] * 1000;
+        newfault["width"] = fault["width"] * 1000;
+        newfault["basis1"] = [1, 0, 0];
+        newfault["basis2"] = None;
+        newfault["Nlength"] = 1;
+        newfault["Nwidth"] = 1;
+        newfault["penalty"] = 1;
+        newfault["position"] = [center_lon, center_lat, -fault["depth"]*1000];
+        output[label] = newfault;
     with open(outfile, 'w') as ofile:
         json.dump(output, ofile, indent=4);
     return;

@@ -42,7 +42,7 @@ def read_slippy_distribution(infile, desired_segment=-1):
             corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);
             one_fault["lon"] = corner_lon;
             one_fault["lat"] = corner_lat;
-            one_fault["rake"] = fault_vector_functions.get_rake(ll_slip[i], thrust_slip[i]);
+            one_fault["rake"] = fault_vector_functions.get_rake(rtlat_strike_slip=-ll_slip[i], dip_slip=thrust_slip[i]);
             one_fault["slip"] = fault_vector_functions.get_total_slip(ll_slip[i], thrust_slip[i]);
             one_fault["tensile"] = 0;
             fault_list.append(one_fault);
@@ -66,7 +66,7 @@ def write_slippy_distribution(faults_list, outfile):
         tensile_slip = 0;
         ofile.write("%f %f %f " % (center_lon, center_lat, item["depth"]*-1000) );
         ofile.write("%f %f %f %f %f %f %f 0 \n" % (item["strike"], item["dip"], item["length"]*1000,
-                                                   item["width"]*1000, -1*rtlat_slip, -1*dip_slip, tensile_slip) );
+                                                   item["width"]*1000, -1*rtlat_slip, dip_slip, tensile_slip) );
     ofile.close();
     return;
 

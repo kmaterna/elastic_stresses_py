@@ -76,11 +76,11 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
     rake = float(line.split()[4]);  # in degrees
     slip = float(line.split()[5]);  # in cm
     downdip_width = fault_vector_functions.get_downdip_width(upper_depth, lower_depth, dip);
-    vector_mag = downdip_width * np.cos(np.deg2rad(dip));  # how far the bottom edge is displaced
+    vector_mag = downdip_width * np.cos(np.deg2rad(dip));  # how far bottom edge is displaced from top edge
     upper_corner_along_strike = fault_vector_functions.add_vector_to_point(0, 0, vector_mag, strike - 90);
     upper_corner_back_edge = fault_vector_functions.add_vector_to_point(upper_corner_along_strike[0],
                                                                         upper_corner_along_strike[1],
-                                                                        length, -strike);
+                                                                        length, strike+180);
     fault_lon, fault_lat = fault_vector_functions.xy2lonlat_single(upper_corner_back_edge[0],
                                                                    upper_corner_back_edge[1], lower_lon_corner,
                                                                    lower_lat_corner);

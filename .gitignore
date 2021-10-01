@@ -2,3 +2,4 @@
 Outputs/*
 PyCoulomb/__pycache__/*
 .idea*
+test/example_*.txt

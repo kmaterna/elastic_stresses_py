@@ -47,7 +47,7 @@ def read_inp(input_file, fixed_rake):
                 if slip > 0.0000001:  # Here we have a source fault
                     [xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom,
                      comment] = read_fault_line(line);
-                    rake = fault_vector_functions.get_rake(rtlat, reverse);
+                    rake = fault_vector_functions.get_rake(rtlat_strike_slip=rtlat, dip_slip=reverse);
                     one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
                                                          Kode=Kode, rtlat=rtlat, reverse=reverse, tensile=0, potency=[],
                                                          strike=strike, dipangle=dipangle, rake=rake, top=top,
