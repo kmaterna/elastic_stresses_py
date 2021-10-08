@@ -45,6 +45,16 @@ def get_four_corners_lon_lat(fault_dict_object):
     return lons, lats;
 
 
+def get_updip_corners_lon_lat(fault_dict_object):
+    """
+    Return the lon/lat of 2 shallow corners of a fault_dict_object
+    """
+    [source] = fault_dict_to_coulomb_fault([fault_dict_object]);
+    [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+    lons, lats = fault_vector_functions.xy2lonlat(x_updip, y_updip, source.zerolon, source.zerolat);
+    return lons, lats;
+
+
 def get_total_moment(fault_dict_object_list, mu=30e9):
     """
     Return the total moment of a list of slip objects, in fault_dict_object
@@ -145,37 +155,42 @@ def write_gmt_vertical_fault_file(fault_dict_list, outfile):
     """
     Write the vertical coordinates of planar fault patches (length and depth, in local coords instead of lon/lat)
     and associated slip values into a multi-segment file for plotting in GMT.
-    Good for vertical faults.
+    Good for vertical faults.  Plots with depth as a negative number.
+    Works for only one planar fault segment.
     """
     print("Writing file %s " % outfile);
 
-    # Get the origin: the extremal patch at the top
+    # Get origin: extremal patch at the top. First, find bounding box for top points
     depth_array = [x["depth"] for x in fault_dict_list];
     top_row_patches = [x for x in fault_dict_list if x['depth'] == np.nanmin(depth_array)];
-    top_row_x, top_row_y = [], [];
-    temp_origin = [top_row_patches[0]["lon"], top_row_patches[0]["lat"]];
+    top_row_lon, top_row_lat = [], [];
     for patch in top_row_patches:
-        [source] = fault_dict_to_coulomb_fault([patch], zerolon_system=temp_origin[0], zerolat_system=temp_origin[1]);
-        [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
-        top_row_x = top_row_x + x_updip;
-        top_row_y = top_row_y + y_updip;
-    toplons, toplats = fault_vector_functions.xy2lonlat(top_row_x, top_row_y, temp_origin[0], temp_origin[1]);
+        lon_updip, lat_updip = get_updip_corners_lon_lat(patch);
+        top_row_lon = top_row_lon + lon_updip;
+        top_row_lat = top_row_lat + lat_updip;  # joining two lists
+    bbox = [np.nanmin(top_row_lon), np.nanmax(top_row_lon), np.nanmin(top_row_lat), np.nanmax(top_row_lat)];
 
-    origin_ll = [np.min(toplons), np.min(toplats)];  # the extremal point.  THIS WILL BREAK IN GENERAL.
+    # Find fault corner coordinates that are candidates for extremal points on fault. Choose one for origin.
+    origin_ll = [np.nan, np.nan];
+    for lon, lat in zip(top_row_lon, top_row_lat):
+        if lon in bbox and lat in bbox:
+            origin_ll = [lon, lat];  # this should be guaranteed to happen twice, once for each end.
+            break;
 
     ofile = open(outfile, 'w');
     for fault in fault_dict_list:
         [source] = fault_dict_to_coulomb_fault([fault], zerolon_system=origin_ll[0], zerolat_system=origin_ll[1]);
         [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
         deeper_offset = fault["width"]*np.sin(np.deg2rad(fault["dip"]));
-        start_x = fault_vector_functions.get_vector_magnitude([x_updip[0], y_updip[0]]);
-        finish_x = fault_vector_functions.get_vector_magnitude([x_updip[1], y_updip[1]]);
+        [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+fault["strike"]);
+        start_x = xprime[0];
+        finish_x = xprime[1];
         ofile.write("> -Z"+str(fault['slip'])+"\n");
-        ofile.write("%f %f\n" % (start_x, fault["depth"]));
-        ofile.write("%f %f\n" % (finish_x, fault["depth"]));
-        ofile.write("%f %f\n" % (finish_x, fault["depth"]+deeper_offset));
-        ofile.write("%f %f\n" % (start_x, fault["depth"]+deeper_offset));
-        ofile.write("%f %f\n" % (start_x, fault["depth"]));
+        ofile.write("%f %f\n" % (start_x, -fault["depth"]));
+        ofile.write("%f %f\n" % (finish_x, -fault["depth"]));
+        ofile.write("%f %f\n" % (finish_x, -fault["depth"]-deeper_offset));
+        ofile.write("%f %f\n" % (start_x, -fault["depth"]-deeper_offset));
+        ofile.write("%f %f\n" % (start_x, -fault["depth"]));
 
     ofile.close();
     return;

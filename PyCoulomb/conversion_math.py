@@ -152,8 +152,19 @@ def get_fault_slip_moment(fault_object, mu):
     return seismic_moment, moment_magnitude;
 
 def rotate_points(x, y, degrees):
+    """Rotate cartesian points into a new orthogonal coordinate system. Implements a rotation matrix. """
     rot_matrix = np.array([[np.cos(np.deg2rad(degrees)), -np.sin(np.deg2rad(degrees))],
                            [np.sin(np.deg2rad(degrees)), np.cos(np.deg2rad(degrees))]]);
     unprimed_vector = np.array([[x], [y]])
     xprime, yprime = np.dot(rot_matrix, unprimed_vector);
     return xprime, yprime;
+
+
+def rotate_list_of_points(xlist, ylist, degrees):
+    """Calls rotation matrix on a 1d list of points"""
+    xprime_list, yprime_list = [], [];
+    for x, y in zip(xlist, ylist):
+        xprime, yprime = rotate_points(x, y, degrees);
+        xprime_list.append(xprime);
+        yprime_list.append(yprime);
+    return xprime_list, yprime_list;
