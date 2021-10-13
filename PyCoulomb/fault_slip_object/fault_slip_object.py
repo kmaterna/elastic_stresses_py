@@ -185,7 +185,8 @@ def write_gmt_vertical_fault_file(fault_dict_list, outfile):
         [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+fault["strike"]);
         start_x = xprime[0];
         finish_x = xprime[1];
-        ofile.write("> -Z"+str(fault['slip'])+"\n");
+        [rtlat, _dipslip] = fault_vector_functions.get_rtlat_dip_slip(fault['slip'], fault['rake']);   # decision point
+        ofile.write("> -Z"+str(-rtlat)+"\n");  # currently writing left-lateral slip as positive
         ofile.write("%f %f\n" % (start_x, -fault["depth"]));
         ofile.write("%f %f\n" % (finish_x, -fault["depth"]));
         ofile.write("%f %f\n" % (finish_x, -fault["depth"]-deeper_offset));
