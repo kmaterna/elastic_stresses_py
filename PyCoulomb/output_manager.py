@@ -14,10 +14,12 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 
 def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object):
     call(['mkdir', '-p', params.outdir], shell=False);
-    call(['cp', params.config_file, params.outdir], shell=False);
-    call(['cp', params.input_file, params.outdir], shell=False);
-    write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
+    if params.config_file:
+        call(['cp', params.config_file, params.outdir], shell=False);
+    if params.input_file:
+        call(['cp', params.input_file, params.outdir], shell=False);
     write_output_files(params, out_object, obs_strain_points);
+    write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
     surface_def_plot(params, out_object);  # a grid of synthetic points
     # stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
     # stress_plot(params, out_object, 'normal');

@@ -142,10 +142,14 @@ def compute_grid_def(params, inputs):
 
 
 def compute_ll_strain(params, inputs, strain_points):
-    """Loop through a list of lon/lat and compute their strains due to all sources put together."""
+    """
+    Loop through a list of lon/lat and compute their strains due to all sources put together.
+    Only uses params for alpha
+    """
     if not strain_points:
         return [];
     x, y = [], [];
+    print("Number of strain_points:", len(strain_points));
     for i in range(len(strain_points)):
         [xi, yi] = fault_vector_functions.latlon2xy(strain_points[i].lon, strain_points[i].lat, inputs.zerolon,
                                                     inputs.zerolat);
@@ -162,10 +166,14 @@ def compute_ll_strain(params, inputs, strain_points):
 
 
 def compute_ll_def(params, inputs, disp_points):
-    """Loop through a list of lon/lat and compute their displacements due to all sources put together."""
+    """
+    Loop through a list of lon/lat and compute their displacements due to all sources put together.
+    Only uses params for alpha.
+    """
     if not disp_points:
         return [];
     model_disp_points = [];
+    print("Number of disp_points:", len(disp_points));
     for point in disp_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat);
         u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, xi, yi);
@@ -179,7 +187,8 @@ def compute_surface_disp_point(params, inputs, x, y):
     """
     A major compute loop for each source object at one x/y point.
     x/y in the same coordinate system as the fault object.
-    Computes displacement and strain tensor
+    Computes displacement and strain tensor.
+    Only uses params for alpha.
     """
     u_disp, v_disp, w_disp = 0, 0, 0;
     strain_tensor_total = np.zeros((3, 3));
@@ -249,6 +258,7 @@ def compute_strains_stresses_from_one_fault(source, x, y, z, params):
     The main math of DC3D
     Operates on a source object (e.g., fault),
     and an xyz position in the same cartesian reference frame.
+    Only uses params for alpha.
     """
     L = fault_vector_functions.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
     W = fault_vector_functions.get_downdip_width(source.top, source.bottom, source.dipangle);

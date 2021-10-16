@@ -48,6 +48,37 @@ def configure_stress_calculation(config_file):
     return MyParams;
 
 
+def configure_default_displacement_params(outdir='output/'):
+    """
+    Build a default Params object used for displacement-only calculations.
+    Displacement from Okada only uses alpha.  Stress uses alpha, mu, lame1, and B.
+    Sends the output to an outdir directory.
+    """
+    MyParams = cc.Params(config_file=None, input_file=None, aftershocks=None,
+                         disp_points_file=None, strain_file=None,
+                         strike_num_receivers=1, fixed_rake=0,
+                         dip_num_receivers=1, mu=30e9, lame1=30e9, B=0,
+                         alpha=2/3, outdir=outdir);
+    return MyParams;
+
+
+def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20):
+    """
+    Build a default Input object for displacement-only calculations.
+    Unused parameters get default values or None.
+    domainsize: in km. default is 20.
+    bbox: [w, e, s, n]
+    """
+    inputs = cc.Input_object(PR1=0.25, FRIC=0.4, depth=0,
+                             start_gridx=-domainsize, finish_gridx=domainsize,
+                             start_gridy=-domainsize, finish_gridy=domainsize,
+                             xinc=domainsize/20, yinc=domainsize/20,
+                             minlon=bbox[0], maxlon=bbox[1], zerolon=zerolon,
+                             minlat=bbox[2], maxlat=bbox[3], zerolat=zerolat,
+                             source_object=source_object, receiver_object=[]);
+    return inputs;
+
+
 def write_valid_config_file(directory):
     configobj = configparser.ConfigParser()
     configobj.optionxform = str   # case-sensitive config options
