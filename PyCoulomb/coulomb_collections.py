@@ -3,7 +3,8 @@
 import collections
 
 Params = collections.namedtuple('Params', [
-    'config_file', 'input_file', 'aftershocks', 'disp_points_file', 'strain_file',
+    'config_file', 'input_file', 'aftershocks',
+    'disp_points_file', 'strain_file',
     'strike_num_receivers',
     'dip_num_receivers',
     'fixed_rake',
@@ -28,7 +29,10 @@ Input_object = collections.namedtuple('Input_object', [
     'minlat', 'maxlat',
     'zerolat',
     'source_object',
-    'receiver_object'])
+    'receiver_object', 'receiver_horiz_profile'])
+
+Receiver_Horiz_Profile = collections.namedtuple('Receiver_Horiz_Profile', [
+    'depth_km', 'strike', 'dip', 'rake', 'centerlon', 'centerlat', 'lon1d', 'lat1d', 'shape'])
 
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',
@@ -36,7 +40,7 @@ Out_object = collections.namedtuple('Out_object', [
     'zerolon', 'zerolat',
     'model_disp_points', 'strains',
     'source_object', 'receiver_object',
-    'receiver_normal', 'receiver_shear', 'receiver_coulomb']);
+    'receiver_normal', 'receiver_shear', 'receiver_coulomb', 'receiver_profile']);
 
 Displacement_points = collections.namedtuple('Disp_Points', [
     'lon', 'lat',

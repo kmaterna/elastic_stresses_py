@@ -20,22 +20,26 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         call(['cp', params.input_file, params.outdir], shell=False);
     write_output_files(params, out_object, obs_strain_points);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
-    surface_def_plot(params, out_object);  # a grid of synthetic points
-    # stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
-    # stress_plot(params, out_object, 'normal');
+    stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
+    stress_plot(params, out_object, 'normal');
     stress_plot(params, out_object, 'coulomb');
     stress_cross_section_cartesian(params, out_object, 'coulomb');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
-    # pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
-    # pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
+    pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
+    pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
+    surface_def_plot(params, out_object);  # a grid of synthetic points
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object, params.outdir+"vector_plot.png")
-    # pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
+    pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
+    if out_object.receiver_profile:
+        write_horiz_profile(params, inputs.receiver_horiz_profile, out_object.receiver_profile);
+        map_horiz_profile(params, inputs.receiver_horiz_profile, out_object.receiver_profile);
     return;
 
 
 def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
     """
     Determine boundaries of a symmetric colormap object (like stress change), coding all the edge-case logic here
+    plotting_array: 1d array or None.
     """
     if not plotting_array:
         return -1, 1;
@@ -57,7 +61,7 @@ def write_subfaulted_inp(inputs, out_object, outfile):
                                         xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon, maxlon=inputs.maxlon,
                                         zerolon=inputs.zerolon, minlat=inputs.minlat, maxlat=inputs.maxlat,
                                         zerolat=inputs.zerolat, source_object=out_object.source_object,
-                                        receiver_object=out_object.receiver_object);
+                                        receiver_object=out_object.receiver_object, receiver_horiz_profile=None);
     # write an inp for the subfaulted configuration.
     io_inp.write_inp(subfaulted_inputs, outfile);
     return;
@@ -232,6 +236,28 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     plt.close();
     return;
 
+def map_horiz_profile(params, horiz_profile, profile_results):
+    """Display a small map of a horizontal profile of stresses. Default colors for now."""
+
+    X = np.reshape(horiz_profile.lon1d, horiz_profile.shape);
+    Y = np.reshape(horiz_profile.lat1d, horiz_profile.shape);
+    _normal_stress = np.reshape(profile_results[0], horiz_profile.shape);
+    _shear_stress = np.reshape(profile_results[1], horiz_profile.shape);
+    coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape);
+
+    # Figure of stresses.
+    plt.figure(figsize=(17, 8));
+    plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r');
+    plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', '+
+              str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km));
+
+    cb = plt.colorbar();
+    cb.set_label('Kilopascals', fontsize=22);
+    for label in cb.ax.yaxis.get_ticklabels():
+        label.set_size(18)
+    plt.savefig(params.outdir+'horizontal_profile_stresses.png');
+    return;
+
 
 def write_synthetic_grid_triplets(x, y, x2d, y2d, zerolon, zerolat, u, v, w, outdir):
     """
@@ -284,4 +310,14 @@ def write_output_files(params, out_object, obs_strain_points):
     # Write output files for GPS displacements and strains at specific lon/lat points (if used)
     io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");
     io_additionals.write_strain_results(obs_strain_points, out_object.strains, params.outdir+'ll_strains.txt');
+    return;
+
+def write_horiz_profile(params, horiz_profile, profile_results):
+    print("Writing %s " % params.outdir+"stresses_horiz_profile.txt");
+    ofile = open(params.outdir+"stresses_horiz_profile.txt", 'w');
+    ofile.write("# lon lat depth_km normal_Pa shear_Pa coulomb_Pa\n");
+    ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake) );
+    for i in range(len(horiz_profile.lon1d)):
+        ofile.write("%f %f %f %f %f %f\n" % (horiz_profile.lon1d[i], horiz_profile.lat1d[i], horiz_profile.depth_km,
+                                             profile_results[0][i], profile_results[1][i], profile_results[2][i]) );
     return;

@@ -75,7 +75,8 @@ def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, 
                              xinc=domainsize/20, yinc=domainsize/20,
                              minlon=bbox[0], maxlon=bbox[1], zerolon=zerolon,
                              minlat=bbox[2], maxlat=bbox[3], zerolat=zerolat,
-                             source_object=source_object, receiver_object=[]);
+                             source_object=source_object, receiver_object=[],
+                             receiver_horiz_profile=None);
     return inputs;
 
 

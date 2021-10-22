@@ -70,7 +70,7 @@ def read_inp(input_file, fixed_rake):
     input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx, finish_gridx=finish_gridx,
                                 start_gridy=start_gridy, finish_gridy=finish_gridy, xinc=xinc, yinc=yinc, minlon=minlon,
                                 maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
-                                receiver_object=receivers, source_object=sources);
+                                receiver_object=receivers, source_object=sources, receiver_horiz_profile=None);
 
     return input_obj;
 

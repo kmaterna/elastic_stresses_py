@@ -14,24 +14,24 @@ def do_stress_computation(params, inputs, disp_points, strain_points):
     * Step 2. Resolve stresses on receiver faults
     """
 
-    print("Beginning stress calcultaion.");
+    print("Beginning stress calculation.");
     print("Number of sources: %d " % len(inputs.source_object));
     print("Number of receivers: %d " % len(inputs.receiver_object));
     subfaulted_inputs = split_subfault_receivers(params, inputs);
 
-    # Refactoring here.
-    [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements] = compute_grid_def(params, subfaulted_inputs);
-    model_disp_points = compute_ll_def(params, subfaulted_inputs, disp_points);
-    strain_tensor_results = compute_ll_strain(params, subfaulted_inputs, strain_points);
+    # Computes here.
+    [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params.alpha);
+    model_disp_points = compute_ll_def(subfaulted_inputs, params.alpha, disp_points);
+    strain_tensor_results = compute_ll_strain(subfaulted_inputs, params.alpha, strain_points);
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
+    receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs);
 
-    MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_displacements, v_disp=v_displacements,
-                                w_disp=w_displacements,
+    MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_disps, v_disp=v_disps, w_disp=w_disps,
                                 strains=strain_tensor_results, model_disp_points=model_disp_points,
                                 zerolon=inputs.zerolon, zerolat=inputs.zerolat,
                                 source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object,
                                 receiver_normal=receiver_normal, receiver_shear=receiver_shear,
-                                receiver_coulomb=receiver_coulomb);
+                                receiver_coulomb=receiver_coulomb, receiver_profile=receiver_profile_results);
     return MyOutObject;
 
 
@@ -85,7 +85,8 @@ def split_subfault_receivers(params, inputs):
                                          xinc=inputs.xinc, yinc=inputs.yinc, minlon=inputs.minlon, maxlon=inputs.maxlon,
                                          zerolon=inputs.zerolon, minlat=inputs.minlat, maxlat=inputs.maxlat,
                                          zerolat=inputs.zerolat, source_object=inputs.source_object,
-                                         receiver_object=subfaulted_receivers);
+                                         receiver_object=subfaulted_receivers,
+                                         receiver_horiz_profile=inputs.receiver_horiz_profile);
 
     return subfaulted_objects;
 
@@ -120,8 +121,10 @@ def get_split_z_array(top, bottom, dip_split):
     return zsplit_array;
 
 
-def compute_grid_def(params, inputs):
-    """Loop through a grid and compute the displacements at each point from all sources put together."""
+def compute_grid_def(inputs, alpha):
+    """
+    Loop through a grid and compute the displacements at each point from all sources put together.
+    """
     x = np.linspace(inputs.start_gridx, inputs.finish_gridx,
                     int((inputs.finish_gridx - inputs.start_gridx) / inputs.xinc));
     y = np.linspace(inputs.start_gridy, inputs.finish_gridy,
@@ -134,17 +137,16 @@ def compute_grid_def(params, inputs):
     numcols = np.shape(u_displacements)[1]
     for ky in range(numrows):
         for kx in range(numcols):
-            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, x2d[ky][kx], y2d[ky][kx]);
+            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs, alpha, x2d[ky][kx], y2d[ky][kx]);
             u_displacements[ky][kx] = u_disp;
             v_displacements[ky][kx] = v_disp;
             w_displacements[ky][kx] = w_disp;
     return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
 
 
-def compute_ll_strain(params, inputs, strain_points):
+def compute_ll_strain(inputs, alpha, strain_points):
     """
     Loop through a list of lon/lat and compute their strains due to all sources put together.
-    Only uses params for alpha
     """
     if not strain_points:
         return [];
@@ -159,16 +161,15 @@ def compute_ll_strain(params, inputs, strain_points):
     strain_tensor_results = [];
     # For each coordinate requested.
     for k in range(len(x)):
-        _, _, _, strain_tensor = compute_surface_disp_point(params, inputs, x[k], y[k]);
+        _, _, _, strain_tensor = compute_surface_disp_point(inputs, alpha, x[k], y[k]);
         strain_tensor_results.append(strain_tensor);
 
     return strain_tensor_results;
 
 
-def compute_ll_def(params, inputs, disp_points):
+def compute_ll_def(inputs, alpha, disp_points):
     """
     Loop through a list of lon/lat and compute their displacements due to all sources put together.
-    Only uses params for alpha.
     """
     if not disp_points:
         return [];
@@ -176,19 +177,18 @@ def compute_ll_def(params, inputs, disp_points):
     print("Number of disp_points:", len(disp_points));
     for point in disp_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat);
-        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(params, inputs, xi, yi);
+        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs, alpha, xi, yi);
         model_point = cc.Displacement_points(lon=point.lon, lat=point.lat, dE_obs=u_disp[0], dN_obs=v_disp[0],
                                              dU_obs=w_disp[0], Se_obs=0, Sn_obs=0, Su_obs=0, name="");
         model_disp_points.append(model_point);
     return model_disp_points;
 
 
-def compute_surface_disp_point(params, inputs, x, y):
+def compute_surface_disp_point(inputs, alpha, x, y):
     """
     A major compute loop for each source object at one x/y point.
     x/y in the same coordinate system as the fault object.
     Computes displacement and strain tensor.
-    Only uses params for alpha.
     """
     u_disp, v_disp, w_disp = 0, 0, 0;
     strain_tensor_total = np.zeros((3, 3));
@@ -197,7 +197,7 @@ def compute_surface_disp_point(params, inputs, x, y):
     for fault in inputs.source_object:
 
         desired_coords_grad_u, desired_coords_u = compute_strains_stresses_from_one_fault(fault, x, y,
-                                                                                          computation_depth, params);
+                                                                                          computation_depth, alpha);
 
         # Strain tensor math
         strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u);
@@ -209,6 +209,46 @@ def compute_surface_disp_point(params, inputs, x, y):
         w_disp = w_disp + desired_coords_u[2];  # vertical
 
     return u_disp, v_disp, w_disp, strain_tensor_total;
+
+
+def compute_stresses_horiz_profile(params, inputs):
+    """
+    Pseudocode: Create a grid of points, and compute all stresses on them, given specified strike/dip/rake.
+    horiz_profile = [depth_km, strike, dip, rake, centerlon, centerlat, length_km, width_km, inc_km];
+    """
+    if not inputs.receiver_horiz_profile:
+        return None;
+
+    # Build a regular grid and iterate through.
+    print("Resolving stresses on a horizontal profile.")
+    profile = inputs.receiver_horiz_profile;
+    receiver_normal, receiver_shear, receiver_coulomb = [], [], [];
+    for i in range(len(inputs.receiver_horiz_profile.lon1d)):
+        [xi, yi] = fault_vector_functions.latlon2xy(profile.lon1d[i], profile.lat1d[i], inputs.zerolon, inputs.zerolat);
+        normal_sum, shear_sum, coulomb_sum = 0, 0, 0;
+        for source in inputs.source_object:
+            # A major compute loop for each source object.
+
+            desired_coords_grad_u, _ = compute_strains_stresses_from_one_fault(source, xi, yi, profile.depth_km,
+                                                                               params.alpha);
+
+            # Then rotate again into receiver coordinates.
+            strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u);
+            stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu);
+
+            # Then compute shear, normal, and coulomb stresses.
+            [normal, shear, coulomb] = conversion_math.get_coulomb_stresses(stress_tensor, profile.strike,
+                                                                            profile.rake, profile.dip,
+                                                                            inputs.FRIC, params.B);
+            normal_sum = normal_sum + normal;
+            shear_sum = shear_sum + shear;
+            coulomb_sum = coulomb_sum + coulomb;
+
+        receiver_normal.append(normal_sum);
+        receiver_shear.append(shear_sum);
+        receiver_coulomb.append(coulomb_sum);
+
+    return receiver_normal, receiver_shear, receiver_coulomb;
 
 
 def compute_strains_stresses(params, inputs):
@@ -231,7 +271,7 @@ def compute_strains_stresses(params, inputs):
             # A major compute loop for each source object.
 
             desired_coords_grad_u, _ = compute_strains_stresses_from_one_fault(source, centercoords[0], centercoords[1],
-                                                                               centercoords[2], params);
+                                                                               centercoords[2], params.alpha);
 
             # Then rotate again into receiver coordinates.
             strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u);
@@ -253,12 +293,11 @@ def compute_strains_stresses(params, inputs):
     return [receiver_normal, receiver_shear, receiver_coulomb];
 
 
-def compute_strains_stresses_from_one_fault(source, x, y, z, params):
+def compute_strains_stresses_from_one_fault(source, x, y, z, alpha):
     """
     The main math of DC3D
     Operates on a source object (e.g., fault),
     and an xyz position in the same cartesian reference frame.
-    Only uses params for alpha.
     """
     L = fault_vector_functions.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
     W = fault_vector_functions.get_downdip_width(source.top, source.bottom, source.dipangle);
@@ -279,13 +318,13 @@ def compute_strains_stresses_from_one_fault(source, x, y, z, params):
         [[x - source.xstart], [y - source.ystart], [-z]]);
     xyz = R.dot(translated_pos);
     if source.potency:
-        success, u, grad_u = dc3d0wrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip,
+        success, u, grad_u = dc3d0wrapper(alpha, [xyz[0], xyz[1], xyz[2]], depth, dip,
                                           [source.potency[0], source.potency[1], source.potency[2],
                                            source.potency[3]]);
         grad_u = grad_u * 1e-9;  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
         u = u * 1e-6;  # Unit correction: potency from N-m results in displacements in microns.
     else:
-        success, u, grad_u = dc3dwrapper(params.alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
+        success, u, grad_u = dc3dwrapper(alpha, [xyz[0], xyz[1], xyz[2]], depth, dip, [0, L], [-W, 0],
                                          [strike_slip, dip_slip, source.tensile]);
         grad_u = grad_u * 1e-3;  # DC3D Unit correction.
     # Solve for displacement gradients at certain xyz position

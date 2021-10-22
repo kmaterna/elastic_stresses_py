@@ -13,6 +13,7 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 def read_intxt(input_file):
     print("Reading source and receiver fault information from file %s " % input_file);
     sources, receivers = [], [];
+    receiver_horiz_profile = None;
     [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = get_general_compute_params(input_file);
     [start_x, end_x, start_y, end_y, xinc, yinc] = compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolat);
     ifile = open(input_file, 'r');
@@ -34,13 +35,16 @@ def read_intxt(input_file):
             if temp[0] == 'Receiver:':  # receiver fault
                 one_receiver_object = get_receiver_fault(line, zerolon, zerolat);
                 receivers.append(one_receiver_object);
+            if temp[0] == 'Receiver_Horizontal_Profile:':
+                receiver_horiz_profile = get_receiver_profile(line);
     ifile.close();
 
     # Wrapping up the inputs.
     input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_x, finish_gridx=end_x,
                                 start_gridy=start_y, finish_gridy=end_y, xinc=xinc, yinc=yinc, minlon=minlon,
                                 maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
-                                receiver_object=receivers, source_object=sources);
+                                receiver_object=receivers, source_object=sources,
+                                receiver_horiz_profile=receiver_horiz_profile);
     return input_obj;
 
 
@@ -164,6 +168,25 @@ def get_MT_source(line, zerolon, zerolat):
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
+
+def get_receiver_profile(line):
+    """
+    Create a horizontal profile based on the provided params.
+    'Receiver_Horizontal_Profile: depth strike dip rake centerlon centerlat length_km width_km inc_km'
+    """
+    [depth, strike, dip, rake, centerlon, centerlat, length, width, inc] = [float(i) for i in line.split()[1:10]];
+    startlon = fault_vector_functions.xy2lonlat(-length, 0, centerlon, centerlat)[0];
+    endlon = fault_vector_functions.xy2lonlat(length, 0, centerlon, centerlat)[0];
+    startlat = fault_vector_functions.xy2lonlat(0, -width, centerlon, centerlat)[1];
+    endlat = fault_vector_functions.xy2lonlat(0, width, centerlon, centerlat)[1];
+    lonpts = np.arange(startlon, endlon, inc/111.00);
+    latpts = np.arange(startlat, endlat, inc/111.00);
+    X, Y = np.meshgrid(lonpts, latpts);
+    lon1d = np.reshape(X, (np.size(X),));
+    lat1d = np.reshape(Y, (np.size(X),));
+    horiz_profile = cc.Receiver_Horiz_Profile(depth_km=depth, strike=strike, dip=dip, rake=rake, centerlon=centerlon,
+                                              centerlat=centerlat, lon1d=lon1d, lat1d=lat1d, shape=np.shape(X));
+    return horiz_profile;
 
 
 def defensive_programming_faults(onefault):

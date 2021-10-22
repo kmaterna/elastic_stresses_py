@@ -43,7 +43,7 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
 * **General Format:** Describes coordinate system and domain setup. Required.  
     * "General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero" 
 * **Receiver Format:** Describes receiver faults 
-    * "Receiver: strike rake dip length_km width_km lon lat depth_km
+    * "Receiver: strike rake dip length_km width_km lon lat depth_km"
 * **Slip Format:** For slip distributions and fault patches. 
     * "Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m (opt: tensile_m)"
 * **WC Format:** For catalogs using Wells and Coppersmith (1994) 
@@ -52,6 +52,8 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
     * "Source_FM: strike rake dip lon lat depth_km magnitude mu lambda" 
 * **MT Format:** * For full moment tensors, although only double-couple part works right now 
     * "Source_MT: Mrr Mtt Mpp Mrt Mrp Mtp strike rake dip lon lat depth_km mu lambda"
+* **Horizontal Profile Format:** Specify an orientation and compute stresses on that plane/orientation over an area. Like a horizontal cross-section.
+    * "Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km" 
     
 
 For all finite sources (i.e., Patch, WC), lon/lat/depth refer to the back updip corner of the fault plane, the corner where one looks along the strike direction to see the fault's upper edge (start_x and start_y in the Aki and Richards (1980) diagram in Coulomb's documentation). 
