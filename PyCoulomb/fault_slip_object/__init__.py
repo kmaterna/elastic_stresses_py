@@ -5,3 +5,4 @@ from . import io_four_corners
 from . import io_slippy
 from . import plot_fault_slip
 from . import disp_points_object
+from . import fault_slip_object
