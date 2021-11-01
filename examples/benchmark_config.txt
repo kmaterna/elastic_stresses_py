@@ -1,0 +1,20 @@
+### A benchmark test completed on November 1, 2021 against the same input file in Coulomb3.4 and PyCoulomb
+### The Coulomb results are stored in example_inputs
+####################
+[io-config]
+exp_name = M6.5_Benchmark
+aftershocks = 
+input_file = examples/example_inputs/simple_receiver_bm.inp
+gps_disp_points = 
+strain_file = 
+output_dir = Outputs/
+
+####################
+### mu=32 and lame1=32 is same as E=8e5bars, v=0.25 (Coulomb defaults)
+[compute-config]
+mu = 32e9   
+lame1 = 32e9  
+B = 0
+fixed_rake = 135
+strike_num_receivers = 1
+dip_num_receivers = 1

@@ -63,7 +63,7 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
     # The shear that we want (in the rake direction).
     rake_rad = np.deg2rad(rake);
     R = np.array([[np.cos(rake_rad), -np.sin(rake_rad)], [np.sin(rake_rad), np.cos(rake_rad)]]);
-    shear_vector = [-shear_rtlat, shear_reverse];  # minus sign here defines right lateral as positive.
+    shear_vector = [shear_rtlat, shear_reverse];
     rotated_shear = np.dot(R, shear_vector);
     shear_in_rake_dir = rotated_shear[0];
 

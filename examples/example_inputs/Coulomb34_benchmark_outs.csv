@@ -1,0 +1,6 @@
+Fault,X-center,Y-center,Z-center,length,strike,dip,lat-slip,dip-slip,sig-right,sig_reverse,normal,coul-right,coul-reverse,opt-rake,opt-coul,spec-rake,spec-coul,element-rake,el-rake-coul
+#,(km),(km),(km),(km),(km),(deg),(m),(m),(bar),(bar),(bar),(bar),(bar),(deg),(bar),(deg),(bar),(deg),(bar)
+       1.000000,       0.000000,      -0.800870,      15.000000,      20.000000,      90.000000,      80.900002,       1.000000,       1.000000,     -23.769761,     -27.437198,       0.217354,     -23.682820,     -27.350257,     -49.100000,      36.388476,     135.000000,     -36.121847,     135.000000,     -36.121847
+       2.000000,       0.000000,     -10.223661,       5.500000,       2.000000,      90.000000,      65.900002,       0.000000,       0.000000,       0.268395,      -0.479979,      -5.390370,      -1.887753,      -2.636127,    -119.200000,      -1.606225,     135.000000,      -2.305760,     135.000000,      -2.305760
+ 
+opt-rake and opt-coul are found using grid search method of 0.1 deg increment.

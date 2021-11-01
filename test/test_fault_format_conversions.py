@@ -1,4 +1,4 @@
-# Testing code
+# Test the conversion between four different formats for slip distributions and fault geometry.
 
 import unittest
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso

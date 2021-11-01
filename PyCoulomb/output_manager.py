@@ -248,7 +248,7 @@ def map_horiz_profile(params, horiz_profile, profile_results):
     # Figure of stresses.
     plt.figure(figsize=(17, 8));
     plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r');
-    plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', '+
+    plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
               str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km));
 
     cb = plt.colorbar();
@@ -302,8 +302,9 @@ def write_output_files(params, out_object, obs_strain_points):
     # Write output file for stresses.
     if out_object.receiver_object:
         fault_dict_list = fault_slip_object.io_pycoulomb.coulomb_fault_to_fault_dict(out_object.receiver_object);
-        fault_slip_object.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_normal,
+        fault_slip_object.io_slippy.write_stress_results_slippy_format(fault_dict_list,
                                                                        out_object.receiver_shear,
+                                                                       out_object.receiver_normal,
                                                                        out_object.receiver_coulomb,
                                                                        params.outdir+'stresses_full.txt');
 
