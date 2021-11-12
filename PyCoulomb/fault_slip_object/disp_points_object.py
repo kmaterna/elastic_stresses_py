@@ -10,7 +10,7 @@ from Tectonic_Utils.geodesy import euler_pole
 def subtract_disp_points(disp_points1, disp_points2):
     """
     Subtract two lists of objects (1 minus 2) for the residuals
-    The metadata for object 1 will be retained.
+    The metadata and uncertainties for object 1 will be retained.
     """
     residuals = [];
     for i in range(len(disp_points1)):
@@ -18,7 +18,8 @@ def subtract_disp_points(disp_points1, disp_points2):
                                       dE_obs=disp_points1[i].dE_obs - disp_points2[i].dE_obs,
                                       dN_obs=disp_points1[i].dN_obs - disp_points2[i].dN_obs,
                                       dU_obs=disp_points1[i].dU_obs - disp_points2[i].dU_obs,
-                                      Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="",
+                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
+                                      Su_obs=disp_points1[i].Su_obs, name="",
                                       starttime=disp_points1[i].starttime,
                                       endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
                                       meas_type=disp_points1[i].meas_type);
@@ -29,7 +30,7 @@ def subtract_disp_points(disp_points1, disp_points2):
 def add_disp_points(disp_points1, disp_points2):
     """
     add two lists of objects (1 plus 2).
-    The metadata for object 1 will be retained.
+    The metadata and uncertainties for object 1 will be retained.
     """
     sum_disp_points = [];
     for i in range(len(disp_points1)):
@@ -37,7 +38,8 @@ def add_disp_points(disp_points1, disp_points2):
                                       dE_obs=disp_points1[i].dE_obs + disp_points2[i].dE_obs,
                                       dN_obs=disp_points1[i].dN_obs + disp_points2[i].dN_obs,
                                       dU_obs=disp_points1[i].dU_obs + disp_points2[i].dU_obs,
-                                      Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="",
+                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
+                                      Su_obs=disp_points1[i].Su_obs, name="",
                                       starttime=disp_points1[i].starttime,
                                       endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
                                       meas_type=disp_points1[i].meas_type);
@@ -48,7 +50,7 @@ def add_disp_points(disp_points1, disp_points2):
 def mult_minus_one(disp_points1):
     """
     Flip list of disp_points
-    The metadata for object 1 will be retained.
+    The metadata and uncertainties for object 1 will be retained.
     """
     residuals = [];
     for i in range(len(disp_points1)):
@@ -56,7 +58,8 @@ def mult_minus_one(disp_points1):
                                       dE_obs=-disp_points1[i].dE_obs,
                                       dN_obs=-disp_points1[i].dN_obs,
                                       dU_obs=-disp_points1[i].dU_obs,
-                                      Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="",
+                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
+                                      Su_obs=disp_points1[i].Su_obs, name="",
                                       starttime=disp_points1[i].starttime,
                                       endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
                                       meas_type=disp_points1[i].meas_type);
