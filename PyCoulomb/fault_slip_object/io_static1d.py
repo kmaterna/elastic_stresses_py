@@ -91,13 +91,14 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
 
 def write_fault_slip_line_static1d_visco1d(one_fault):
     """
-    write a line of fred's format of faults from my fault_dictionary
+    write a line of Fred's format of faults from internal fault_dictionary
     """
     lons, lats = fault_slip_object.get_four_corners_lon_lat(one_fault);
     fault_lon = lons[2];
     fault_lat = lats[2];  # the deeper edge towards the strike direction
     writestring = (" %f %f %.2f %.2f %.2f %.2f \n" % (fault_lat, fault_lon, one_fault["length"], one_fault["strike"],
                                                       one_fault["rake"], one_fault["slip"]*100) );  # lon/lat etc
+    # Slip written in cm
     return writestring;
 
 
@@ -207,6 +208,7 @@ def write_visco1D_source_file(fault_dict_list, filename):
     ofile.write("1900. 1900. 2000. 1000. 500.0\n");  # Hard coding for simplicity:
     # earthquake cycle begins at 1900,
     # sample at year 1990 to 2000, the periodicity is 500 years.
+    # 1000 is parameter vmult.  Value of 1000 is arbitrarily high, representing the high-viscosity limit.
     ofile.write("%d \n" % len(fault_dict_list) );
     for fault in fault_dict_list:
         line = write_fault_slip_line_static1d_visco1d(fault);
@@ -219,7 +221,8 @@ def write_visco1D_source_file(fault_dict_list, filename):
 
 def read_stat2C_geometry(infile):
     """
-    Reading a fault geometry file used for stat2c.f, specifically for the Cascadia subduction zone
+    Reading a fault geometry file used for stat2c.f, specifically for the Cascadia subduction zone.
+    Returns a list of fault dictionaries in the internal format.
     """
     faultlist = [];
     with open(infile, 'r') as ifile:

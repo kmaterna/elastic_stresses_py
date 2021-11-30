@@ -7,17 +7,22 @@ from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 from Tectonic_Utils.geodesy import euler_pole
 
 
-def subtract_disp_points(disp_points1, disp_points2):
+def subtract_disp_points(disp_points1, disp_points2, target='all'):
     """
     Subtract two lists of objects (1 minus 2) for the residuals
     The metadata and uncertainties for object 1 will be retained.
+    If target=='all', a 3-component correction is used.
+    If target=='horizontal', only horizontal correction will be applied (disp_points2.dU is treated like 0).
     """
     residuals = [];
+    vert_multiplier = 1;
+    if target == 'horizontal':
+        vert_multiplier = 0;
     for i in range(len(disp_points1)):
         res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
                                       dE_obs=disp_points1[i].dE_obs - disp_points2[i].dE_obs,
                                       dN_obs=disp_points1[i].dN_obs - disp_points2[i].dN_obs,
-                                      dU_obs=disp_points1[i].dU_obs - disp_points2[i].dU_obs,
+                                      dU_obs=disp_points1[i].dU_obs - vert_multiplier*disp_points2[i].dU_obs,
                                       Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
                                       Su_obs=disp_points1[i].Su_obs, name="",
                                       starttime=disp_points1[i].starttime,
