@@ -48,7 +48,10 @@ def read_disp_points(infile):
             dE_obs, dN_obs, dU_obs = np.nan, np.nan, np.nan;
             Se_obs, Sn_obs, Su_obs = np.nan, np.nan, np.nan;
             name = "";
-            if len(temp) == 5:  # if we have no uncertainties listed in the file
+            # Ultimately it might be better to have a different way of determining formats, but for now...
+            if len(temp) == 3:  # if file is: lon, lat, name
+                name = temp[2];
+            elif len(temp) == 5:  # if file is: lon, lat, de, dn, du: we have no uncertainties listed in file
                 dE_obs, dN_obs, dU_obs = float(temp[2]), float(temp[3]), float(temp[4]);
             elif len(temp) >= 8:  # if we have longer GPS format with uncertainties
                 name = temp[-1];
@@ -70,7 +73,10 @@ def write_disp_points_results(disp_points, outfile):
         ofile = open(outfile, 'w');
         ofile.write("# Format: lon lat u v w (m)\n");
         for point in disp_points:
-            ofile.write("%f %f %f %f %f\n" % (point.lon, point.lat, point.dE_obs, point.dN_obs, point.dU_obs));
+            ofile.write("%f %f %f %f %f" % (point.lon, point.lat, point.dE_obs, point.dN_obs, point.dU_obs));
+            if point.name != "":
+                ofile.write(" %s" % point.name);
+            ofile.write("\n");
         ofile.close();
     return;
 

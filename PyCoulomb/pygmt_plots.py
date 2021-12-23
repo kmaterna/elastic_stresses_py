@@ -75,7 +75,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     # Annotate with aftershock locations
     if params.aftershocks:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.1c', color='black', pen="thin,black");
+        fig.plot(lon, lat, style='c0.02c', color='black', pen="0.1p,black");
 
     fig.savefig(params.outdir + label + '_map.png');
     return;
@@ -102,10 +102,6 @@ def map_vertical_def(params, inputs, outfile):
     fig.grdimage(params.outdir+'/vert.grd', region=region, cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
               map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0");
-    # Annotate with aftershock locations
-    if params.aftershocks:
-        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.1c', color='black', pen="thin,black");
 
     # Draw each source
     eq_lon, eq_lat = [], [];
@@ -122,6 +118,12 @@ def map_vertical_def(params, inputs, outfile):
             fig.plot(x=lons, y=lats, style='s0.3c', color="purple", pen="thin,black");  # in case of point sources
     # Annotate with earthquake location.
     fig.plot(eq_lon, eq_lat, style='s0.05c', color="purple", pen="thin,black");
+
+    # Annotate with aftershock locations
+    if params.aftershocks:
+        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
+        fig.plot(lon, lat, style='c0.02c', color='black', pen="0.1p,black");
+
     fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate="-0.045/0.045",
                  frame=["x0.01", "y+L\"Disp(m)\""]);
     fig.savefig(outfile);
@@ -159,8 +161,9 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
     fig.plot(model_lon, model_lat, style='c0.3c', color=model_dU, cmap='mycpt.cpt', pen="thin,black");
 
     # Draw vectors and vector scale bar
-    scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
+    # scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
     # scale_factor = 100; scale_arrow = 0.010;  vectext = "10 mm";  # 10 mm, small vectors
+    scale_factor = 1000; scale_arrow = 0.002; vectext = "2 mm";  # 1 mm, extra small vectors
 
     scale = (np.max(np.abs(model_dE)) * scale_factor / 0.012);  # empirical scaling, convenient display
     fig.plot(x=model_lon, y=model_lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
@@ -195,7 +198,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
     # Annotate with aftershock locations
     if params.aftershocks:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.1c', color='black', pen="thin,black");
+        fig.plot(lon, lat, style='c0.02c', color='black', pen="0.1p,black");
 
     fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(cbar_opts[0])+"/"+str(cbar_opts[1]),
                  frame=["x"+str(cbar_opts[2]), "y+L\"Vert Disp(m)\""]);

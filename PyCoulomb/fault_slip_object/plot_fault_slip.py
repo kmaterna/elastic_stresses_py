@@ -90,7 +90,7 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
     print("Plotting outfile %s " % outfile);
     fig = pygmt.Figure();
     proj = 'M3.2i'
-    point_size = 0.2  # for vertical symbol
+    point_size = 0.15  # for vertical symbol
     numrows, numcols = 1, 3;
     with fig.subplot(nrows=numrows, ncols=numcols, figsize=("12i", "12i"), frame="lrtb"):
         # Data
@@ -106,11 +106,11 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                                                   str(cmap_opts[1]) + "/" +
                                                   str(cmap_opts[2]), background="o", output="vert.cpt");
                 fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
-                         cmap='vert.cpt', pen="thin,black");
+                         cmap='vert.cpt', pen="0.1p,black");
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
-            fig.plot(x=lon, y=lat, projection=proj, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
-                     direction=[disp_x, disp_y], pen="thin,black");
+            fig.plot(x=lon, y=lat, projection=proj, style='v0.12c+e+gblack+h0+p0.1p,black+z'+str(scale),
+                     direction=[disp_x, disp_y], pen="0.1p,black");
             fig.plot(x=[region[0]+0.30], y=[region[2]+1.05], projection=proj,
                      style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
@@ -131,11 +131,11 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
                 fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
-                         cmap='vert.cpt', pen="thin,black");
+                         cmap='vert.cpt', pen="0.1p,black");
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
-            fig.plot(x=lon, y=lat, projection=proj, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
-                     direction=[disp_x, disp_y], pen="thin,black");
+            fig.plot(x=lon, y=lat, projection=proj, style='v0.12c+e+gblack+h0+p0.1p,black+z'+str(scale),
+                     direction=[disp_x, disp_y], pen="0.1p,black");
             fig.plot(x=[region[0]+0.30], y=[region[2]+1.05], projection=proj,
                      style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
@@ -151,14 +151,14 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
                 fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
-                         cmap='vert.cpt', pen="thin,black");
-                fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", projection=proj, cmap="vert.cpt",
+                         cmap='vert.cpt', pen="0.1p,black");
+                fig.colorbar(position="JCR+w4.0i+v+o0.4i/0i", projection=proj, cmap="vert.cpt",
                              truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
                              frame=["x" + str(cbar_opts[2]), "y+L\"Vert Disp(m)\""]);
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
-            fig.plot(x=lon, y=lat, projection=proj, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
-                     direction=[disp_x, disp_y], pen="thin,black");
+            fig.plot(x=lon, y=lat, projection=proj, style='v0.12c+e+gblack+h0+p0.1p,black+z'+str(scale),
+                     direction=[disp_x, disp_y], pen="0.1p,black");
             fig.plot(x=[region[0]+0.30], y=[region[2]+1.05], projection=proj,
                      style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
