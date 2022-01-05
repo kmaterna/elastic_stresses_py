@@ -7,8 +7,7 @@ import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from subprocess import call
 from . import coulomb_collections as cc
-from . import conversion_math, io_inp, pygmt_plots, io_additionals
-from . import fault_slip_object
+from . import conversion_math, io_inp, pygmt_plots, io_additionals, fault_slip_object
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -24,6 +23,8 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     stress_plot(params, out_object, 'normal');
     stress_plot(params, out_object, 'coulomb');
     stress_cross_section_cartesian(params, out_object, 'coulomb');
+    stress_cross_section_cartesian(params, out_object, 'normal');
+    stress_cross_section_cartesian(params, out_object, 'shear');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
     pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
@@ -189,6 +190,8 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
         stress_component = out_object.receiver_normal;
     else:
         stress_component = out_object.receiver_coulomb;
+    max_depth_array = [x.bottom for x in out_object.receiver_object];
+    min_depth_array = [x.top for x in out_object.receiver_object];
 
     # Select boundaries of color map, usually forcing even distribution around 0
     vmin, vmax = produce_vmin_vmax_symmetric(stress_component, vmin, vmax);
@@ -229,7 +232,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     plt.xlim([out_object.x.min(), out_object.x.max()])
     plt.xlabel('Distance (km)', fontsize=18);
     plt.ylabel('Depth (km)', fontsize=18);
-    plt.ylim([0, 10]);
+    plt.ylim([min(min_depth_array), max(max_depth_array)]);
     plt.gca().invert_yaxis();
     plt.gca().invert_xaxis();
     plt.savefig(params.outdir + 'Stresses_cross_section_' + stress_type + '.eps');
