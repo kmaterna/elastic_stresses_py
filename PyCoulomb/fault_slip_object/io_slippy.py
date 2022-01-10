@@ -97,7 +97,7 @@ def read_stress_slippy_format(infile):
     """
     Read stress results from CFS calculation
     :param infile: text file in full-stress format
-    :returns: fault_list (internal dictionary format). shear, normal, and coulomb are lists in KPa
+    :returns: fault_list (internal dictionary format). shear, normal, and coulomb are matching lists in KPa
     """
     print("Reading file %s " % infile);
     fault_list = [];

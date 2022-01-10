@@ -1,6 +1,6 @@
 """
-The functions in this package convert between formats of faults/ slip distributions
-For all other formats, make sure you build read/write conversion functions into the internal format and test functions.
+The functions in this package operate on an internal format of faults/ slip distributions
+For all other formats, make sure you build read/write conversion AND TEST functions into internal format.
 
 Written file formats:
     * Format: geojson format for Slippy input faults
@@ -9,7 +9,7 @@ Written file formats:
     * Format: four-corners, used for Wei et al. 2015
 Computer memory formats:
     * Format: fault_dict dictionary with all the elements for a slip distribution (INTERNAL FORMAT FOR THIS LIBRARY)
-    * Format: slip distribution format for Slippy
+    * Format: PyCoulomb format, a named tuple (For Elastic_stresses_py.PyCoulomb)
 
 The internal format here is a dictionary containing:
 Fault_Dict:
