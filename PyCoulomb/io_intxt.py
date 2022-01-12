@@ -336,6 +336,18 @@ def get_DC_potency(rake, momentmagnitude, mu):
     p4 = 0;
     return [p1, p2, p3, p4];
 
+def get_mag_from_dc_potency(potency, mu, rake):
+    """
+    The opposite of the function above.
+    Potency is a four-vector in newton-meters
+    Mu in Pascals
+    """
+    ss_moment = np.abs(potency[0]) * mu;
+    strike_slip_fraction, _ = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
+    dc_moment = ss_moment / strike_slip_fraction;
+    Mw = moment_calculations.mw_from_moment(dc_moment);
+    return Mw;
+
 def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1):
     """ Given information about point sources from moment tensors,
     Return the right components that get packaged into input_obj. """

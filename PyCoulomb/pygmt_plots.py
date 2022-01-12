@@ -3,7 +3,7 @@
 import numpy as np
 import pygmt
 from . import conversion_math
-from . import io_additionals, utilities
+from . import io_additionals, utilities, io_intxt
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -43,21 +43,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='white',
               map_scale="g-125.5/39.6+c1.5+w50");
 
-    # Draw each source
-    eq_lon, eq_lat = [], [];
-    for source in out_object.source_object:
-        source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
-                                                                  inputs.zerolat);
-        eq_lon.append(source_lon);
-        eq_lat.append(source_lat);
-        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
-        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        if not source.potency:
-            fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
-        else:
-            fig.plot(x=lons, y=lats, style='s0.3c', color="purple", pen="thin,black");  # in case of point sources
-    # Annotate with earthquake location.
-    fig.plot(eq_lon, eq_lat, style='s0.3c', color="purple", pen="thin,black");
+    fig = annotate_figure_with_sources(fig, inputs, params);
 
     # Draw each receiver, with associated data
     for i in range(len(out_object.receiver_object)):
@@ -73,9 +59,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
                  truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]), frame=["x" + str(0.2), "y+L\"KPa\""]);
 
     # Annotate with aftershock locations
-    if params.aftershocks:
-        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.02c', color='black', pen="0.1p,black");
+    fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c');
 
     fig.savefig(params.outdir + label + '_map.png');
     return;
@@ -103,26 +87,8 @@ def map_vertical_def(params, inputs, outfile):
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
               map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0");
 
-    # Draw each source
-    eq_lon, eq_lat = [], [];
-    for source in inputs.source_object:
-        source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
-                                                                  inputs.zerolat);
-        eq_lon.append(source_lon);
-        eq_lat.append(source_lat);
-        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
-        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        if not source.potency:
-            fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
-        else:
-            fig.plot(x=lons, y=lats, style='s0.3c', color="purple", pen="thin,black");  # in case of point sources
-    # Annotate with earthquake location.
-    fig.plot(eq_lon, eq_lat, style='s0.05c', color="purple", pen="thin,black");
-
-    # Annotate with aftershock locations
-    if params.aftershocks:
-        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.02c', color='black', pen="0.1p,black");
+    fig = annotate_figure_with_sources(fig, inputs, params, dotstyle='s0.05c');
+    fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c');
 
     fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate="-0.045/0.045",
                  frame=["x0.01", "y+L\"Disp(m)\""]);
@@ -162,10 +128,10 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
 
     # Draw vectors and vector scale bar
     # scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
-    # scale_factor = 100; scale_arrow = 0.010;  vectext = "10 mm";  # 10 mm, small vectors
-    scale_factor = 1000; scale_arrow = 0.002; vectext = "2 mm";  # 1 mm, extra small vectors
+    scale_factor = 100; scale_arrow = 0.010;  vectext = "10 mm";  # 10 mm, small vectors
+    # scale_factor = 1000; scale_arrow = 0.002; vectext = "2 mm";  # 1 mm, extra small vectors
 
-    scale = (np.max(np.abs(model_dE)) * scale_factor / 0.012);  # empirical scaling, convenient display
+    scale = (np.max(np.abs(model_dE)) * scale_factor / 0.004);  # empirical scaling, convenient display
     fig.plot(x=model_lon, y=model_lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
              direction=[model_dE, model_dN], pen="thin,black");
     fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
@@ -181,26 +147,48 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
                  direction=[[scale_arrow], [0]],  pen="thin,red");  # scale vector
         fig.text(x=[region[0]+0.50], y=[region[2]+0.45], text=vectext+' obs');  # scale label
 
-    # Draw each source
-    eq_lon, eq_lat = [], [];
-    for source in inputs.source_object:
-        srclon, srclat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon, inputs.zerolat);
-        eq_lon.append(srclon);
-        eq_lat.append(srclat);
-        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
-        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        if not source.potency:
-            fig.plot(x=lons, y=lats, pen="thick,black");  # in case of area sources, outline them.
-        else:
-            fig.plot(x=lons, y=lats, style='s0.3c', color="purple", pen="thin,black");  # in case of point sources
-    fig.plot(eq_lon, eq_lat, style='s0.3c', color="purple", pen="thin,black");
-
-    # Annotate with aftershock locations
-    if params.aftershocks:
-        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(params.aftershocks);
-        fig.plot(lon, lat, style='c0.02c', color='black', pen="0.1p,black");
+    fig = annotate_figure_with_sources(fig, inputs, params);
+    fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks);
 
     fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(cbar_opts[0])+"/"+str(cbar_opts[1]),
                  frame=["x"+str(cbar_opts[2]), "y+L\"Vert Disp(m)\""]);
     fig.savefig(outfile);
     return;
+
+
+def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="s0.3c"):
+    """
+    Draw each source in inputs.source_object, a list of sources
+    Inputs and Params provide additional information about the calcuation.
+    dotstyle is for source dots
+    fmscale is for focal mechanism size
+    """
+    # Draw dots for EQ sources
+    eq_lon, eq_lat = [], [];
+    for source in inputs.source_object:
+        source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
+                                                                  inputs.zerolat);
+        eq_lon.append(source_lon);
+        eq_lat.append(source_lat);
+    fig.plot(eq_lon, eq_lat, style=dotstyle, color="purple", pen="thin,black");
+
+    for source in inputs.source_object:
+        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
+        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
+        if not source.potency:  # in case of area sources, outline the fault patches
+            fig.plot(x=lons, y=lats, pen="thick,black");
+        else:  # in case of point sources, draw focal mechanisms
+            mag = io_intxt.get_mag_from_dc_potency(source.potency, params.mu, source.rake);
+            focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
+            fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top);
+    return fig;
+
+
+def annotate_figure_with_aftershocks(fig, aftershocks_file=None, style='c0.02c', pen="0.1p,black", color="black"):
+    """
+    Annotate a figure with aftershock locations
+    """
+    if aftershocks_file:
+        [lon, lat, _, _, _] = io_additionals.read_aftershock_table(aftershocks_file);
+        fig.plot(lon, lat, style=style, color=color, pen=pen);
+    return fig;
