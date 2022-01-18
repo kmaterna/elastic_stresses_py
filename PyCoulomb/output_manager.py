@@ -19,15 +19,16 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         call(['cp', params.input_file, params.outdir], shell=False);
     write_output_files(params, out_object, obs_strain_points);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
-    stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
-    stress_plot(params, out_object, 'normal');
-    stress_plot(params, out_object, 'coulomb');
-    stress_cross_section_cartesian(params, out_object, 'coulomb');
-    stress_cross_section_cartesian(params, out_object, 'normal');
-    stress_cross_section_cartesian(params, out_object, 'shear');
-    pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
-    pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
-    pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
+    if params.write_stress:
+        stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
+        stress_plot(params, out_object, 'normal');
+        stress_plot(params, out_object, 'coulomb');
+        stress_cross_section_cartesian(params, out_object, 'coulomb');
+        stress_cross_section_cartesian(params, out_object, 'normal');
+        stress_cross_section_cartesian(params, out_object, 'shear');
+        pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
+        pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
+        pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
     surface_def_plot(params, out_object);  # a grid of synthetic points
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object, params.outdir+"vector_plot.png")
     pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");

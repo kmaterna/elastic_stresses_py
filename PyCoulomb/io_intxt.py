@@ -344,7 +344,7 @@ def get_mag_from_dc_potency(potency, mu, rake):
     """
     ss_moment = np.abs(potency[0]) * mu;
     strike_slip_fraction, _ = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
-    dc_moment = ss_moment / strike_slip_fraction;
+    dc_moment = ss_moment / abs(strike_slip_fraction);
     Mw = moment_calculations.mw_from_moment(dc_moment);
     return Mw;
 

@@ -2,8 +2,7 @@
 
 import numpy as np
 import pygmt
-from . import conversion_math
-from . import io_additionals, utilities, io_intxt
+from . import io_additionals, utilities, io_intxt, conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -130,8 +129,9 @@ def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfil
     # scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
     scale_factor = 100; scale_arrow = 0.010;  vectext = "10 mm";  # 10 mm, small vectors
     # scale_factor = 1000; scale_arrow = 0.002; vectext = "2 mm";  # 1 mm, extra small vectors
+    max_disp = np.max(np.sqrt(np.square(model_dN) + np.square(model_dE)));
 
-    scale = (np.max(np.abs(model_dE)) * scale_factor / 0.004);  # empirical scaling, convenient display
+    scale = (max_disp * scale_factor / 0.003);  # empirical scaling, convenient display
     fig.plot(x=model_lon, y=model_lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
              direction=[model_dE, model_dN], pen="thin,black");
     fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
