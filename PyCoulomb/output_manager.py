@@ -19,7 +19,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         call(['cp', params.input_file, params.outdir], shell=False);
     write_output_files(params, out_object, obs_strain_points);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
-    if params.write_stress:
+    if params.plot_stress:
         stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
         stress_plot(params, out_object, 'normal');
         stress_plot(params, out_object, 'coulomb');
@@ -202,6 +202,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     # Figure of stresses.
     plt.figure(figsize=(17, 8));
 
+    total_y_array = [];
     for i in range(len(stress_component)):
         xcoords = [out_object.receiver_object[i].xstart, out_object.receiver_object[i].xstart,
                    out_object.receiver_object[i].xfinish, out_object.receiver_object[i].xfinish];
@@ -215,6 +216,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
         x3, y3 = conversion_math.rotate_points(xcoords[2], ycoords[2], fault_strike);
         x4, y4 = conversion_math.rotate_points(xcoords[3], ycoords[3], fault_strike);
         ycoords = [y1, y2, y3, y4];
+        total_y_array = total_y_array + ycoords;
         fault_vertices = np.column_stack((ycoords, zcoords));
         patch_color = custom_cmap.to_rgba(stress_component[i]);
 
@@ -230,8 +232,8 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     plt.grid();
     plt.gca().tick_params(axis='both', which='major', labelsize=18)
     plt.title(stress_type + ' stress from source faults', fontsize=22)
-    plt.xlim([out_object.x.min(), out_object.x.max()])
-    plt.xlabel('Distance (km)', fontsize=18);
+    plt.xlim([np.min(total_y_array)-1, np.max(total_y_array)+1]);
+    plt.xlabel('Distance along fault profile (km)', fontsize=18);
     plt.ylabel('Depth (km)', fontsize=18);
     plt.ylim([min(min_depth_array), max(max_depth_array)]);
     plt.gca().invert_yaxis();

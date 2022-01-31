@@ -23,8 +23,8 @@ def configure_stress_calculation(config_file):
     strain_file = configobj.get('io-config', 'strain_file') \
         if configobj.has_option('io-config', 'strain_file') else None;
     output_dir = output_dir + exp_name + '/';
-    write_stress = configobj.getint('io-config', 'write_stress') \
-        if configobj.has_option('io-config', 'write_stress') else 1;
+    plot_stress = configobj.getint('io-config', 'plot_stress') \
+        if configobj.has_option('io-config', 'plot_stress') else 1;
 
     # Computation parameters
     strike_num_receivers = configobj.getint('compute-config', 'strike_num_receivers');
@@ -44,7 +44,7 @@ def configure_stress_calculation(config_file):
                          disp_points_file=gps_file, strain_file=strain_file,
                          strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
                          dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
-                         alpha=alpha, write_stress=write_stress, outdir=output_dir);
+                         alpha=alpha, plot_stress=plot_stress, outdir=output_dir);
     print(MyParams);
     return MyParams;
 
@@ -59,7 +59,7 @@ def configure_default_displacement_params(outdir='output/'):
                          disp_points_file=None, strain_file=None,
                          strike_num_receivers=1, fixed_rake=0,
                          dip_num_receivers=1, mu=30e9, lame1=30e9, B=0,
-                         alpha=2/3, write_stress=1, outdir=outdir);
+                         alpha=2/3, plot_stress=1, outdir=outdir);
     return MyParams;
 
 
@@ -92,7 +92,7 @@ def write_valid_config_file(directory):
     ioconfig["aftershocks"] = '[optional]';
     ioconfig["gps_disp_points"] = '[optional]';
     ioconfig["strain_file"] = '[optional]';
-    ioconfig["write_stress"] = '1'
+    ioconfig["plot_stress"] = '1'
     configobj["compute-config"] = {};
     computeconfig = configobj["compute-config"];
     computeconfig["strike_num_receivers"] = '10';

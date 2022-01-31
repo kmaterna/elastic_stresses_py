@@ -9,7 +9,7 @@ Params = collections.namedtuple('Params', [
     'dip_num_receivers',
     'fixed_rake',
     'mu', 'lame1', 'B', 'alpha',
-    'write_stress', 'outdir']);
+    'plot_stress', 'outdir']);
 
 Faults_object = collections.namedtuple('Faults_object', [
     'xstart', 'xfinish',
