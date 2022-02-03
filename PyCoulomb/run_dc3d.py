@@ -7,7 +7,7 @@ from . import conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def do_stress_computation(params, inputs, disp_points, strain_points):
+def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     """
     * Step 0. Split receiver fault into many sub-faults if necessary
     * Step 1. Compute strains and displacements

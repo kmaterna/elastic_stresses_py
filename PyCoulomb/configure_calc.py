@@ -49,7 +49,7 @@ def configure_stress_calculation(config_file):
     return MyParams;
 
 
-def configure_default_displacement_params(outdir='output/'):
+def configure_default_displacement_params(outdir='output/', plot_stress=1):
     """
     Build a default Params object used for displacement-only calculations.
     Displacement from Okada only uses alpha.  Stress uses alpha, mu, lame1, and B.
@@ -59,7 +59,7 @@ def configure_default_displacement_params(outdir='output/'):
                          disp_points_file=None, strain_file=None,
                          strike_num_receivers=1, fixed_rake=0,
                          dip_num_receivers=1, mu=30e9, lame1=30e9, B=0,
-                         alpha=2/3, plot_stress=1, outdir=outdir);
+                         alpha=2/3, plot_stress=plot_stress, outdir=outdir);
     return MyParams;
 
 

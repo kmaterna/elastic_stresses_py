@@ -58,16 +58,11 @@ def mult_minus_one(disp_points1):
     The metadata and uncertainties for object 1 will be retained.
     """
     residuals = [];
-    for i in range(len(disp_points1)):
-        res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
-                                      dE_obs=-disp_points1[i].dE_obs,
-                                      dN_obs=-disp_points1[i].dN_obs,
-                                      dU_obs=-disp_points1[i].dU_obs,
-                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
-                                      Su_obs=disp_points1[i].Su_obs, name="",
-                                      starttime=disp_points1[i].starttime,
-                                      endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
-                                      meas_type=disp_points1[i].meas_type);
+    for item in disp_points1:
+        res1 = cc.Displacement_points(lon=item.lon, lat=item.lat, dE_obs=-item.dE_obs, dN_obs=-item.dN_obs,
+                                      dU_obs=-item.dU_obs, Se_obs=item.Se_obs, Sn_obs=item.Sn_obs, Su_obs=item.Su_obs,
+                                      name=item.name, starttime=item.starttime, endtime=item.endtime,
+                                      refframe=item.refframe, meas_type=item.meas_type);
         residuals.append(res1);
     return residuals;
 
@@ -107,3 +102,27 @@ def translate_by_euler_pole(disp_points_list, euler_pole_components):
                                       meas_type=item.meas_type);
         new_disp_points_list.append(res1);
     return new_disp_points_list;
+
+
+def obs_vs_model_L1_misfit(obs_disp_points, model_disp_points):
+    """Implementing one definition of model misfit: L1 norm"""
+    all_misfits_m = [];
+    all_misfits_norm = [];
+    horiz_misfits_m = [];
+    horiz_misfits_norm = [];
+    for i in range(len(obs_disp_points)):
+        E_misfit = abs(obs_disp_points[i].dE_obs - model_disp_points[i].dE_obs)
+        N_misfit = abs(obs_disp_points[i].dN_obs - model_disp_points[i].dN_obs)
+        U_misfit = abs(obs_disp_points[i].dU_obs - model_disp_points[i].dU_obs)
+        norm_E = E_misfit / obs_disp_points[i].Se_obs
+        norm_N = N_misfit / obs_disp_points[i].Sn_obs
+        norm_U = U_misfit / obs_disp_points[i].Su_obs
+        all_misfits_m = all_misfits_m + [E_misfit, N_misfit, U_misfit];
+        all_misfits_norm = all_misfits_norm + [norm_E, norm_N, norm_U];
+        horiz_misfits_m = horiz_misfits_m + [E_misfit, N_misfit];
+        horiz_misfits_norm = horiz_misfits_norm + [norm_E, norm_N];
+    avg_misfit_m = np.nanmean(all_misfits_m)
+    avg_misfit_norm = np.nanmean(all_misfits_norm)
+    avg_horiz_m = np.nanmean(horiz_misfits_m)
+    avg_horiz_norm = np.nanmean(horiz_misfits_norm);
+    return avg_misfit_m, avg_misfit_norm, avg_horiz_m, avg_horiz_norm;
