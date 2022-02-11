@@ -32,9 +32,9 @@ def read_disp_points(infile):
     If the observed displacements are given in the additional columns,
     then we add them to the object so we can plot them against the model later.
     A slightly flexible-format read for:
-    # lon lat
-    or
-    # lon lat de dn du se sn su name
+    - "lon lat"
+    - "lon lat de dn du se sn su name"
+    - "lon lat de dn du name"
     """
     print("Reading displacement points from file %s " % infile);
     disp_points_list = [];
@@ -51,7 +51,8 @@ def read_disp_points(infile):
             # Ultimately it might be better to have a different way of determining formats, but for now...
             if len(temp) == 3:  # if file is: lon, lat, name
                 name = temp[2];
-            elif len(temp) == 5:  # if file is: lon, lat, de, dn, du: we have no uncertainties listed in file
+            elif len(temp) == 5 or len(temp) == 6:  # if file is: lon, lat, de, dn, du [name]:
+                # i.e., we have no uncertainties listed in file
                 dE_obs, dN_obs, dU_obs = float(temp[2]), float(temp[3]), float(temp[4]);
             elif len(temp) >= 8:  # if we have longer GPS format with uncertainties
                 name = temp[-1];
@@ -66,7 +67,7 @@ def read_disp_points(infile):
 
 def write_disp_points_results(disp_points, outfile):
     """
-    Write the contents of disp_points (dE_obs etc.)
+    Write the contents of disp_points (dE_obs etc.) into a file.  Mirrors the function read_disp_points().
     """
     print("Writing %s " % outfile);
     if len(disp_points) > 0:
@@ -79,6 +80,7 @@ def write_disp_points_results(disp_points, outfile):
             ofile.write("\n");
         ofile.close();
     return;
+
 
 def write_strain_results(obs_strain_points, strains, outfile):
     """

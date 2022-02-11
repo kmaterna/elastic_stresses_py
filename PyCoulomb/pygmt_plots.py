@@ -95,23 +95,23 @@ def map_vertical_def(params, inputs, outfile):
     return;
 
 
-def map_displacement_vectors(params, inputs, obs_disp_points, out_object, outfile, vmin=None, vmax=None):
+def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points, outfile, vmin=None, vmax=None):
     """
     Make a plot of modeled vector displacement from model_disp_points
-    obs_disp_points is an object that can be used to also plot observations at the same points.
+    obs_disp_points is a list of disp_points objects that can be used to also plot observations at the same points.
     """
-    if len(out_object.model_disp_points) == 0:
+    if len(model_disp_points) == 0:
         return;
 
     proj = 'M4i'
     region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
 
     # Unpack
-    model_dE = np.array([x.dE_obs for x in out_object.model_disp_points]);
-    model_dN = np.array([x.dN_obs for x in out_object.model_disp_points]);
-    model_dU = np.array([x.dU_obs for x in out_object.model_disp_points]);
-    model_lon = np.array([x.lon for x in out_object.model_disp_points]);
-    model_lat = np.array([x.lat for x in out_object.model_disp_points]);
+    model_dE = np.array([x.dE_obs for x in model_disp_points]);
+    model_dN = np.array([x.dN_obs for x in model_disp_points]);
+    model_dU = np.array([x.dU_obs for x in model_disp_points]);
+    model_lon = np.array([x.lon for x in model_disp_points]);
+    model_lat = np.array([x.lat for x in model_disp_points]);
 
     # Make modeled vertical displacement color map
     [cmap_opts, cbar_opts] = utilities.define_colorbar_series(model_dU, vmin, vmax);
@@ -163,6 +163,9 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
     dotstyle is for source dots
     fmscale is for focal mechanism size
     """
+    if len(inputs.source_object) == 0:
+        return fig;
+
     # Draw dots for EQ sources
     eq_lon, eq_lat = [], [];
     for source in inputs.source_object:

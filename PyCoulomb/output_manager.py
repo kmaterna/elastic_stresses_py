@@ -30,7 +30,8 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
         pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
     surface_def_plot(params, out_object);  # a grid of synthetic points
-    pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object, params.outdir+"vector_plot.png")
+    pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
+                                         params.outdir+"vector_plot.png")
     pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
     if out_object.receiver_profile:
         write_horiz_profile(params, inputs.receiver_horiz_profile, out_object.receiver_profile);

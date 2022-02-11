@@ -23,8 +23,12 @@ def configure_stress_calculation(config_file):
     strain_file = configobj.get('io-config', 'strain_file') \
         if configobj.has_option('io-config', 'strain_file') else None;
     output_dir = output_dir + exp_name + '/';
-    plot_stress = configobj.getint('io-config', 'plot_stress') \
-        if configobj.has_option('io-config', 'plot_stress') else 1;
+    if configobj.has_option('io-config', 'write_stress'):  # can take 'write_stress' or 'plot_stress' arguments
+        plot_stress = configobj.getint('io-config', 'write_stress');
+    elif configobj.has_option('io-config', 'plot_stress'):
+        plot_stress = configobj.getint('io-config', 'plot_stress');
+    else:
+        plot_stress = 1;
 
     # Computation parameters
     strike_num_receivers = configobj.getint('compute-config', 'strike_num_receivers');
@@ -92,7 +96,7 @@ def write_valid_config_file(directory):
     ioconfig["aftershocks"] = '[optional]';
     ioconfig["gps_disp_points"] = '[optional]';
     ioconfig["strain_file"] = '[optional]';
-    ioconfig["plot_stress"] = '1'
+    ioconfig["write_stress"] = '1'
     configobj["compute-config"] = {};
     computeconfig = configobj["compute-config"];
     computeconfig["strike_num_receivers"] = '10';

@@ -48,4 +48,4 @@ Displacement_points = collections.namedtuple('Disp_Points', [
     'Se_obs', 'Sn_obs', 'Su_obs',
     'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
 # Disp_points are now lists of individual disp_point elements
-# Usually displacements here are in meters
+# Displacements in meters

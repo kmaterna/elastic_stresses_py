@@ -1,8 +1,17 @@
 """
 The functions in this package operate on cc.disp_points objects
+Coulomb collections Displacement_points:
+Displacement_points = collections.namedtuple('Disp_Points', [
+    'lon', 'lat',
+    'dE_obs', 'dN_obs', 'dU_obs',
+    'Se_obs', 'Sn_obs', 'Su_obs',
+    'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
+Disp_points are now lists of individual disp_point elements
+Displacements are in meters
 """
 
 import numpy as np
+import matplotlib.path
 from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 from Tectonic_Utils.geodesy import euler_pole
 
@@ -67,6 +76,59 @@ def mult_minus_one(disp_points1):
     return residuals;
 
 
+def filter_to_meas_type(obs_points, meas_type='continuous'):
+    """Filter a list of disp_points into a list of disp_points with a certain value of meas_type"""
+    keep_obs_points = [];
+    for item in obs_points:
+        if item.meas_type == meas_type:
+            keep_obs_points.append(item);
+    return keep_obs_points;
+
+
+def filter_to_meas_type_by_second_table(obs_points, second_table_obs_points, meas_type='continuous'):
+    """Keep points on first table if they are a certain meas_type in second table"""
+    keep_obs_points = [];
+    for i, item in enumerate(second_table_obs_points):
+        if item.meas_type == meas_type:
+            keep_obs_points.append(obs_points[i]);
+    return keep_obs_points;
+
+
+def filter_to_remove_near_fault(obs_points, fault_points, radius_km=5):
+    """
+    Filter a list of disp_points to remove those that are very close to a fault, such as a creeping fault
+
+    :param obs_points: list of disp_point objects
+    :param fault_points: list of 2-tuples, lon-lat vertices of fault trace in creeping section
+    :param radius_km: float, radius around fault trace, in km.  Ex: 5 km on each side of the fault.
+    """
+    far_field_points = [];
+    newpath = matplotlib.path.Path(vertices=fault_points);
+    radius_deg = 2 * radius_km * (1 / 111.000);  # 2x because we're taking 'radius' km on each side
+    for item in obs_points:
+        if newpath.contains_point((item.lon, item.lat), radius=radius_deg):
+            continue;
+        else:
+            far_field_points.append(item);
+    print("Filtering creep: Returning %d of %d points " % (len(far_field_points), len(obs_points)));
+    return far_field_points;
+
+
+def filter_by_bounding_box(obs_points, bbox):
+    """
+    Filter a set of points by bounding box
+
+    :param obs_points: list of disp_points
+    :param bbox: list [W, E, S, N]
+    """
+    keep_obs_points = [];
+    for item in obs_points:
+        if bbox[0] < item.lon < bbox[1]:
+            if bbox[2] < item.lat < bbox[3]:
+                keep_obs_points.append(item);
+    return keep_obs_points;
+
+
 def station_vel_object_to_disp_points(velfield):
     """
     Convert from StationVel objects from GNSS Python library into disp_points
@@ -106,10 +168,8 @@ def translate_by_euler_pole(disp_points_list, euler_pole_components):
 
 def obs_vs_model_L1_misfit(obs_disp_points, model_disp_points):
     """Implementing one definition of model misfit: L1 norm"""
-    all_misfits_m = [];
-    all_misfits_norm = [];
-    horiz_misfits_m = [];
-    horiz_misfits_norm = [];
+    all_misfits_m, all_misfits_norm = [], [];
+    horiz_misfits_m, horiz_misfits_norm = [], [];
     for i in range(len(obs_disp_points)):
         E_misfit = abs(obs_disp_points[i].dE_obs - model_disp_points[i].dE_obs)
         N_misfit = abs(obs_disp_points[i].dN_obs - model_disp_points[i].dN_obs)
