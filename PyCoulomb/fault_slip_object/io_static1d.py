@@ -5,6 +5,7 @@ import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
 from . import fault_slip_object
 from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
+import matplotlib.pyplot as plt
 
 
 def write_static1D_source_file(fault_dict_list, disp_points, filename):
@@ -255,3 +256,48 @@ def read_stat2C_geometry(infile):
                 faultlist.append(new_fault);
 
     return faultlist;
+
+
+def read_earth_model(infile):
+    """Earth model file: Radius_inner, Radius_outer, density[g/cm^3], K[xe10Pa], G[xe10Pa], viscosity[xe18Pas]"""
+    [radius_inner, radius_outer, density, K, G, nu] = np.loadtxt(infile, unpack=True, skiprows=1);
+    return [radius_inner, radius_outer, density, K, G, nu];
+
+
+def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile):
+    """Currently plotting the shallow subsurface viscosity only"""
+    nu = [x * 1e18 for x in nu];   # convert from input units to Pascal-seconds
+    nu = [np.log10(x) for x in nu];   # display as log of viscosity
+    depth_outer = [x-radius_outer[-1] for x in radius_outer];
+    depth_inner = [x - radius_outer[-1] for x in radius_inner];
+    fontsize = 18;
+    f, axarr = plt.subplots(1, 2, figsize=(10, 10), dpi=300);
+    for i in range(len(radius_inner)-1):
+        if i == 1:
+            label1 = 'Viscosity';
+        else:
+            label1 = '_nolabel_';
+        axarr[0].plot([nu[i], nu[i]], [depth_inner[i], depth_outer[i]], color='blue', label=label1);
+        axarr[0].plot([nu[i], nu[i+1]], [depth_outer[i], depth_outer[i]], color='blue');
+    axarr[0].set_xlabel('Log Viscosity (Pa-s)', fontsize=fontsize);
+    axarr[0].set_ylabel('Depth (km)', fontsize=fontsize);
+    axarr[0].legend(fontsize=fontsize);
+    axarr[0].grid(True)
+    axarr[0].set_ylim([-150, 0]);
+    axarr[0].tick_params(labelsize=fontsize)
+    for i in range(len(radius_inner)-1):
+        if i == 1:
+            label1, label2 = 'Shear', 'Bulk';
+        else:
+            label1, label2 = '_nolabel_', '_nolabel_';
+        axarr[1].plot([G[i], G[i]], [depth_inner[i], depth_outer[i]], color='red');
+        axarr[1].plot([G[i], G[i+1]], [depth_outer[i], depth_outer[i]], color='red', label=label1);
+        axarr[1].plot([K[i], K[i]], [depth_inner[i], depth_outer[i]], color='black');
+        axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2);
+    axarr[1].set_xlabel('Elastic Moduli (x10^10Pa)', fontsize=fontsize);
+    axarr[1].legend(fontsize=fontsize);
+    axarr[1].tick_params(labelsize=fontsize)
+    axarr[1].grid(True);
+    axarr[1].set_ylim([-150, 0]);
+    f.savefig(outfile);
+    return;
