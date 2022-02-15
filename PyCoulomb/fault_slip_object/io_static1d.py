@@ -259,14 +259,33 @@ def read_stat2C_geometry(infile):
 
 
 def read_earth_model(infile):
-    """Earth model file: Radius_inner, Radius_outer, density[g/cm^3], K[xe10Pa], G[xe10Pa], viscosity[xe18Pas]"""
-    [radius_inner, radius_outer, density, K, G, nu] = np.loadtxt(infile, unpack=True, skiprows=1);
+    """
+    Earth model file: Radius_inner, Radius_outer, density[g/cm^3], K[xe10Pa], G[xe10Pa], viscosity[xe18Pas]
+    some lines have 3 extra columns... not sure yet what they are.
+    """
+    radius_inner, radius_outer, density, K, G, nu = [], [], [], [], [], [];
+    ifile = open(infile, 'r');
+    for line in ifile:
+        temp = line.split();
+        if len(temp) == 4:
+            continue;
+        else:
+            radius_inner.append(float(temp[0]))
+            radius_outer.append(float(temp[1]))
+            density.append(float(temp[2]))
+            K.append(10*float(temp[3]));   # in GPa
+            G.append(10*float(temp[4]));   # in GPa
+        if len(temp) == 6:
+            nu.append(1e18 * float(temp[5]));  # in Pa-S
+        else:   # a longer line format...
+            nu.append(1e18 * float(temp[6]));  # in Pa-S
+
+    ifile.close();
     return [radius_inner, radius_outer, density, K, G, nu];
 
 
-def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile):
+def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mindepth=0, maxdepth=140):
     """Currently plotting the shallow subsurface viscosity only"""
-    nu = [x * 1e18 for x in nu];   # convert from input units to Pascal-seconds
     nu = [np.log10(x) for x in nu];   # display as log of viscosity
     depth_outer = [x-radius_outer[-1] for x in radius_outer];
     depth_inner = [x - radius_outer[-1] for x in radius_inner];
@@ -279,11 +298,11 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile):
             label1 = '_nolabel_';
         axarr[0].plot([nu[i], nu[i]], [depth_inner[i], depth_outer[i]], color='blue', label=label1);
         axarr[0].plot([nu[i], nu[i+1]], [depth_outer[i], depth_outer[i]], color='blue');
-    axarr[0].set_xlabel('Log Viscosity (Pa-s)', fontsize=fontsize);
+    axarr[0].set_xlabel('Log10 of Viscosity (Pa-s)', fontsize=fontsize);
     axarr[0].set_ylabel('Depth (km)', fontsize=fontsize);
     axarr[0].legend(fontsize=fontsize);
     axarr[0].grid(True)
-    axarr[0].set_ylim([-150, 0]);
+    axarr[0].set_ylim([-maxdepth, mindepth]);
     axarr[0].tick_params(labelsize=fontsize)
     for i in range(len(radius_inner)-1):
         if i == 1:
@@ -294,10 +313,10 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile):
         axarr[1].plot([G[i], G[i+1]], [depth_outer[i], depth_outer[i]], color='red', label=label1);
         axarr[1].plot([K[i], K[i]], [depth_inner[i], depth_outer[i]], color='black');
         axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2);
-    axarr[1].set_xlabel('Elastic Moduli (x10^10Pa)', fontsize=fontsize);
+    axarr[1].set_xlabel('Elastic Moduli (GPa)', fontsize=fontsize);
     axarr[1].legend(fontsize=fontsize);
     axarr[1].tick_params(labelsize=fontsize)
     axarr[1].grid(True);
-    axarr[1].set_ylim([-150, 0]);
+    axarr[1].set_ylim([-maxdepth, mindepth]);
     f.savefig(outfile);
     return;
