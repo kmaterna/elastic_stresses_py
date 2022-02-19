@@ -23,7 +23,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
         stress_plot(params, out_object, 'normal');
         stress_plot(params, out_object, 'coulomb');
-        stress_cross_section_cartesian(params, out_object, 'coulomb');
+        stress_cross_section_cartesian(params, out_object, 'coulomb', writefile=params.outdir+'coulomb_xsection.txt');
         stress_cross_section_cartesian(params, out_object, 'normal');
         stress_cross_section_cartesian(params, out_object, 'shear');
         pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
@@ -177,14 +177,14 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     return;
 
 
-def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, vmax=None):
+def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, vmax=None, writefile=None):
     """
     default vmin,vmax are in KPa
     Vertical plots of fault patches in cartesian space, colored by the magnitude of the stress component.
     """
-    print("Making vertical plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
-                                                                                 'Stresses_cross_section_' +
-                                                                                 stress_type + '.eps'));
+    print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
+                                                                        'Stresses_cross_section_' +
+                                                                        stress_type + '.eps'));
 
     if stress_type == 'shear':
         stress_component = out_object.receiver_shear;
@@ -202,6 +202,10 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 
     # Figure of stresses.
     plt.figure(figsize=(17, 8));
+    if writefile:
+        print("Writing file %s" % writefile);
+        ofile = open(writefile, 'w');
+        ofile.close();
 
     total_y_array = [];
     for i in range(len(stress_component)):
@@ -223,6 +227,16 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 
         mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0);
         plt.gca().add_patch(mypolygon);
+
+        if writefile:   # the x-axis here is an arbitrary position along the orientation of the receiver fault
+            ofile = open(writefile, 'a');
+            ofile.write("> -Z%f\n" % stress_component[i] );
+            ofile.write("%f %f \n" % (-y1, zcoords[0]))
+            ofile.write("%f %f \n" % (-y2, zcoords[1]))
+            ofile.write("%f %f \n" % (-y3, zcoords[2]))
+            ofile.write("%f %f \n" % (-y4, zcoords[3]))
+            ofile.write("%f %f \n" % (-y1, zcoords[0]))
+            ofile.close();
 
     custom_cmap.set_array(np.arange(vmin, vmax, 100));
     cb = plt.colorbar(custom_cmap);
@@ -318,6 +332,7 @@ def write_output_files(params, out_object, obs_strain_points):
     # Write output files for GPS displacements and strains at specific lon/lat points (if used)
     io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");
     io_additionals.write_strain_results(obs_strain_points, out_object.strains, params.outdir+'ll_strains.txt');
+    io_additionals.write_receiver_traces_gmt(out_object.receiver_object, params.outdir+"receiver_traces.txt");
     return;
 
 def write_horiz_profile(params, horiz_profile, profile_results):

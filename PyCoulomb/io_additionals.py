@@ -3,6 +3,7 @@ Reading aftershock tables and GPS lon/lat pairs
 """
 
 from . import coulomb_collections as cc
+from . import conversion_math
 import numpy as np
 
 
@@ -63,6 +64,19 @@ def read_disp_points(infile):
             disp_points_list.append(new_disp_point);
     ifile.close();
     return disp_points_list;
+
+
+def write_receiver_traces_gmt(receiver_object, outfile):
+    """Write the top edge of each receiver fault in GMT map coordinates"""
+    print("Writing %s" % outfile);
+    ofile = open(outfile, 'w');
+    for fault in receiver_object:
+        [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(fault, coords='geographic');
+        ofile.write("> \n");
+        ofile.write("%f %f\n" % (x_updip[0], y_updip[0]));
+        ofile.write("%f %f\n" % (x_updip[1], y_updip[1]));
+    ofile.close();
+    return;
 
 
 def write_disp_points_results(disp_points, outfile):
