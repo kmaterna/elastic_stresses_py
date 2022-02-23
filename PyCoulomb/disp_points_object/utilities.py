@@ -16,7 +16,7 @@ from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 from Tectonic_Utils.geodesy import euler_pole
 
 
-def subtract_disp_points(disp_points1, disp_points2, target='all'):
+def subtract_disp_points(disp_points1, disp_points2, target='all', tol=0.001):
     """
     Subtract two lists of objects (1 minus 2) for the residuals
     The metadata and uncertainties for object 1 will be retained.
@@ -28,6 +28,10 @@ def subtract_disp_points(disp_points1, disp_points2, target='all'):
     if target == 'horizontal':
         vert_multiplier = 0;
     for i in range(len(disp_points1)):
+        if abs(disp_points1[i].lon - disp_points2[i].lon) > tol:
+            raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
+        if abs(disp_points1[i].lat - disp_points2[i].lat) > tol:
+            raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
         res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
                                       dE_obs=disp_points1[i].dE_obs - disp_points2[i].dE_obs,
                                       dN_obs=disp_points1[i].dN_obs - disp_points2[i].dN_obs,
@@ -41,13 +45,17 @@ def subtract_disp_points(disp_points1, disp_points2, target='all'):
     return residuals;
 
 
-def add_disp_points(disp_points1, disp_points2):
+def add_disp_points(disp_points1, disp_points2, tol=0.001):
     """
     add two lists of objects (1 plus 2).
     The metadata and uncertainties for object 1 will be retained.
     """
     sum_disp_points = [];
     for i in range(len(disp_points1)):
+        if abs(disp_points1[i].lon - disp_points2[i].lon) > tol:
+            raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
+        if abs(disp_points1[i].lat - disp_points2[i].lat) > tol:
+            raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
         res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
                                       dE_obs=disp_points1[i].dE_obs + disp_points2[i].dE_obs,
                                       dN_obs=disp_points1[i].dN_obs + disp_points2[i].dN_obs,
@@ -61,15 +69,17 @@ def add_disp_points(disp_points1, disp_points2):
     return sum_disp_points;
 
 
-def mult_minus_one(disp_points1):
+def mult_disp_points_by(disp_points1, multiplier=-1):
     """
     Flip list of disp_points
     The metadata and uncertainties for object 1 will be retained.
     """
     residuals = [];
     for item in disp_points1:
-        res1 = cc.Displacement_points(lon=item.lon, lat=item.lat, dE_obs=-item.dE_obs, dN_obs=-item.dN_obs,
-                                      dU_obs=-item.dU_obs, Se_obs=item.Se_obs, Sn_obs=item.Sn_obs, Su_obs=item.Su_obs,
+        res1 = cc.Displacement_points(lon=item.lon, lat=item.lat,
+                                      dE_obs=multiplier*item.dE_obs, dN_obs=multiplier*item.dN_obs,
+                                      dU_obs=multiplier*item.dU_obs, Se_obs=item.Se_obs, Sn_obs=item.Sn_obs,
+                                      Su_obs=item.Su_obs,
                                       name=item.name, starttime=item.starttime, endtime=item.endtime,
                                       refframe=item.refframe, meas_type=item.meas_type);
         residuals.append(res1);
