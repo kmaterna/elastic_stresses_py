@@ -138,6 +138,37 @@ def filter_by_bounding_box(obs_points, bbox):
                 keep_obs_points.append(item);
     return keep_obs_points;
 
+def filter_by_bounding_box(obs_points, bbox):
+    """
+    Filter a set of points by bounding box
+
+    :param obs_points: list of disp_points
+    :param bbox: list [W, E, S, N]
+    """
+    keep_obs_points = [];
+    for item in obs_points:
+        if bbox[0] < item.lon < bbox[1]:
+            if bbox[2] < item.lat < bbox[3]:
+                keep_obs_points.append(item);
+    return keep_obs_points;
+
+
+def filter_to_exclude_bounding_box(obs_points, bbox):
+    """
+    Filter a set of points to exculde a particular bounding box (such as removing a small volcanic area)
+
+    :param obs_points: list of disp_points
+    :param bbox: list [W, E, S, N]
+    """
+    keep_obs_points = [];
+    for item in obs_points:
+        if bbox[0] < item.lon < bbox[1] and bbox[2] < item.lat < bbox[3]:
+            continue;   # station is within exculded box. Ignore it.
+        else:
+            keep_obs_points.append(item);
+    print("Filtering to exculde bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
+    return keep_obs_points;
+
 
 def station_vel_object_to_disp_points(velfield):
     """
