@@ -69,6 +69,31 @@ def add_disp_points(disp_points1, disp_points2, tol=0.001):
     return sum_disp_points;
 
 
+def subtract_reference_from_disp_points(disp_points1, reference_disp_point, target='all'):
+    """
+    Subtract reference point from each disp_point in list.
+    The metadata and uncertainties for object 1 will be retained.
+    If target=='all', a 3-component correction is used.
+    If target=='horizontal', only horizontal correction will be applied (disp_points2.dU is treated like 0).
+    """
+    new_station_vels = [];
+    vert_multiplier = 1;
+    if target == 'horizontal':
+        vert_multiplier = 0;
+    for i in range(len(disp_points1)):
+        res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
+                                      dE_obs=disp_points1[i].dE_obs - reference_disp_point.dE_obs,
+                                      dN_obs=disp_points1[i].dN_obs - reference_disp_point.dN_obs,
+                                      dU_obs=disp_points1[i].dU_obs - vert_multiplier*reference_disp_point.dU_obs,
+                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
+                                      Su_obs=disp_points1[i].Su_obs, name="",
+                                      starttime=disp_points1[i].starttime,
+                                      endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
+                                      meas_type=disp_points1[i].meas_type);
+        new_station_vels.append(res1);
+    return new_station_vels;
+
+
 def mult_disp_points_by(disp_points1, multiplier=-1):
     """
     Flip list of disp_points
@@ -136,20 +161,7 @@ def filter_by_bounding_box(obs_points, bbox):
         if bbox[0] < item.lon < bbox[1]:
             if bbox[2] < item.lat < bbox[3]:
                 keep_obs_points.append(item);
-    return keep_obs_points;
-
-def filter_by_bounding_box(obs_points, bbox):
-    """
-    Filter a set of points by bounding box
-
-    :param obs_points: list of disp_points
-    :param bbox: list [W, E, S, N]
-    """
-    keep_obs_points = [];
-    for item in obs_points:
-        if bbox[0] < item.lon < bbox[1]:
-            if bbox[2] < item.lat < bbox[3]:
-                keep_obs_points.append(item);
+    print("Filtering to within a bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
     return keep_obs_points;
 
 
@@ -168,6 +180,23 @@ def filter_to_exclude_bounding_box(obs_points, bbox):
             keep_obs_points.append(item);
     print("Filtering to exculde bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
     return keep_obs_points;
+
+
+def extract_particular_station_from_list(disp_points_list, station_lon, station_lat, tol=0.001):
+    """Pull one particular station out of a list of stations, with error handling"""
+    possible_reference_stations = [];
+    for item in disp_points_list:
+        if abs(item.lon-station_lon) < tol and abs(item.lat-station_lat) < tol:
+            possible_reference_stations.append(item);
+    if len(possible_reference_stations) == 1:
+        return possible_reference_stations[0];   # return just one item
+    if len(possible_reference_stations) > 1:
+        print(len(possible_reference_stations));
+        print([x.lat for x in possible_reference_stations]);
+        raise ValueError("Error in referencing this array!  More than 1 station found at the reference location.");
+        # in future, we might want to return just one of these possible matches.
+    if len(possible_reference_stations) == 0:
+        raise ValueError("Error in referencing this array!  Zero stations found at the reference location.");
 
 
 def station_vel_object_to_disp_points(velfield):
