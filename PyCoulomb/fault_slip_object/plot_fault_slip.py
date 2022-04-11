@@ -79,7 +79,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                                                                           v_labeling_interval=v_labeling_interval);
             series_str = str(v_cmap_opts[0])+"/" + str(v_cmap_opts[1]) + "/" + str(v_cmap_opts[2])
             pygmt.makecpt(cmap="roma", series=series_str, background="o", output="vert.cpt");
-            fig.plot(lon_vert, lat_vert, style='c0.3c', color=disp_z_vert, cmap='vert.cpt', pen="thin,black");
+            fig.plot(x=lon_vert, y=lat_vert, style='c0.3c', color=disp_z_vert, cmap='vert.cpt', pen="thin,black");
             truncate_str = str(v_cbar_opts[0]) + "/" + str(v_cbar_opts[1]),
             fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="vert.cpt", truncate=truncate_str,
                          frame=["x"+str(v_cbar_opts[2]), "y+L\"Vert Disp(m)\""]);
@@ -119,7 +119,7 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                                                                           v_labeling_interval=v_labeling_interval);
                 series_str = str(cmap_opts[0]) + "/" + str(cmap_opts[1]) + "/" + str(cmap_opts[2]);
                 pygmt.makecpt(cmap="roma", series=series_str, background="o", output="vert.cpt");
-                fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
+                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
                          cmap='vert.cpt', pen="0.1p,black");
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
@@ -145,7 +145,7 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                 fig.plot(x=lons[0:2], y=lats[0:2], projection=proj, pen="thickest,black", color="white");
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
-                fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
+                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
                          cmap='vert.cpt', pen="0.1p,black");
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
@@ -166,7 +166,7 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             [lon_horiz, lat_horiz, dispx_horiz, dispy_horiz] = unpack_horiz_disp_points_for_vectors(resid_disp_points);
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
-                fig.plot(lon_vert, lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
+                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
                          cmap='vert.cpt', pen="0.1p,black");
                 fig.colorbar(position="JCR+w4.0i+v+o0.4i/0i", projection=proj, cmap="vert.cpt",
                              truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),

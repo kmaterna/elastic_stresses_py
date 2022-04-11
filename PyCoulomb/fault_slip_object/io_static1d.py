@@ -258,6 +258,13 @@ def read_stat2C_geometry(infile):
     return faultlist;
 
 
+def plot_earth_model_wrapper(infile, outfile):
+    """ simple wrapper for reading velocity/viscosity model and plotting it"""
+    [radius_inner, radius_outer, density, K, G, nu] = read_earth_model(infile);
+    plot_earth_model(radius_inner, radius_outer, density, K, G, nu, outfile);
+    return;
+
+
 def read_earth_model(infile):
     """
     Earth model file: Radius_inner, Radius_outer, density[g/cm^3], K[xe10Pa], G[xe10Pa], viscosity[xe18Pas]
@@ -286,6 +293,7 @@ def read_earth_model(infile):
 
 def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mindepth=0, maxdepth=140):
     """Currently plotting the shallow subsurface viscosity only"""
+    print("Plotting earth model as %s" % outfile);
     nu = [np.log10(x) for x in nu];   # display as log of viscosity
     depth_outer = [x-radius_outer[-1] for x in radius_outer];
     depth_inner = [x - radius_outer[-1] for x in radius_inner];
