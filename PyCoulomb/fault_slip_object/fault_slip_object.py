@@ -134,20 +134,40 @@ def change_fault_slip(fault_dict_list, new_slip, new_rake=None):
     return new_list;
 
 
-def write_gmt_fault_file(fault_dict_list, outfile):
+def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip'):
     """
     Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT
+    By default, colors patches by slip on fault segment.
+    Can color patches by their depth.
     """
     print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
     for fault in fault_dict_list:
         lons, lats = get_four_corners_lon_lat(fault);
-        ofile.write("> -Z"+str(fault['slip'])+"\n");
+        if colorcode == 'depth':
+            color_string = str(fault['depth']);
+        else:
+            color_string = str(fault['slip'])
+        ofile.write("> -Z"+color_string+"\n");
         ofile.write("%f %f\n" % (lons[0], lats[0]));
         ofile.write("%f %f\n" % (lons[1], lats[1]));
         ofile.write("%f %f\n" % (lons[2], lats[2]));
         ofile.write("%f %f\n" % (lons[3], lats[3]));
         ofile.write("%f %f\n" % (lons[0], lats[0]));
+    ofile.close();
+    return;
+
+def write_gmt_surface_trace(fault_dict_list, outfile):
+    """
+    Write the 2 updip corners of a fault into a multi-segment file for plotting in GMT
+    """
+    print("Writing file %s " % outfile);
+    ofile = open(outfile, 'w');
+    for fault in fault_dict_list:
+        lons, lats = get_four_corners_lon_lat(fault);
+        ofile.write("> -Z\n");
+        ofile.write("%f %f\n" % (lons[0], lats[0]));
+        ofile.write("%f %f\n" % (lons[1], lats[1]));
     ofile.close();
     return;
 
