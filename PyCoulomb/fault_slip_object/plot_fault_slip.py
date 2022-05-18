@@ -21,6 +21,7 @@ def unpack_disp_points(disp_points):
     disp_z_vert = np.array([x.dU_obs for x in disp_points if ~np.isnan(x.dU_obs)]);
     return [lon, lat, disp_x, disp_y, disp_z, lon_vert, lat_vert, disp_z_vert];
 
+
 def unpack_horiz_disp_points_for_vectors(disp_points):
     """Unpack any displacement points that have horizontal data; will be plotted as vectors"""
     lon_horiz = np.array([x.lon for x in disp_points if ~np.isnan(x.dE_obs)]);
@@ -32,10 +33,21 @@ def unpack_horiz_disp_points_for_vectors(disp_points):
 
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
                                  scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=None, fault_traces=None,
-                                 title=""):
+                                 fault_traces_from_dict=None, title="", plot_slip_colorbar=True):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
     In order to use this function with other formats, like intxt or slippy, convert to the internal fault dict first.
+
+    :param fault_dict_list: list of fault_dict objects
+    :param outfile: string, name of file
+    :param disp_points: list of disp_point objects
+    :param region: tuple of 4 numbers, (W, E, S, N)
+    :param scale_arrow: tuple of 3 numbers
+    :param v_labeling_interval: float
+    :param fault_traces: list of [lons, lats] for plotting fault trace
+    :param fault_traces_from_dict: a list of fault_dict objects that will be used for updip fault traces
+    :param title: string
+    :param plot_slip_colorbar: bool, whether to show a color bar for fault slip
     """
     print("Plotting outfile %s " % outfile);
     proj = "M7i"
@@ -61,14 +73,10 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         fig.plot(x=lons[0:2], y=lats[0:2], pen="thickest,black", color="+z", cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="g-126.5/38.4+c1.5+w50");
     if fault_dict_list:
-        fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
-                     truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
-                     frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""]);
-
-    # Optional lines you can draw on the plot
-    if fault_traces:
-        for item in fault_traces:
-            fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
+        if plot_slip_colorbar:
+            fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+                         truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
+                         frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""]);
 
     if len(disp_points) > 0:
         [lon, lat, _, _, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(disp_points);
@@ -91,6 +99,17 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                      direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
             fig.text(x=[region[0]+0.45], y=[region[2]+1.15], text=scale_arrow[2],
                      font='14p,Helvetica,black');  # scale label
+
+    # Optional lines you can draw on the plot
+    if fault_traces:
+        for item in fault_traces:
+            fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
+
+    # Draw the updip trace of each fault segment
+    if fault_traces_from_dict:
+        for item in fault_dict_list:
+            lons, lats = fault_slip_object.get_updip_corners_lon_lat(item);
+            fig.plot(x=lons, y=lats, pen="thickest,darkred");
 
     fig.savefig(outfile);
     return;

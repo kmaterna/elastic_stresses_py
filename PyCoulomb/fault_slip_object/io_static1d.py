@@ -297,7 +297,7 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mi
     nu = [np.log10(x) for x in nu];   # display as log of viscosity
     depth_outer = [x-radius_outer[-1] for x in radius_outer];
     depth_inner = [x - radius_outer[-1] for x in radius_inner];
-    fontsize = 18;
+    fontsize = 20;
     f, axarr = plt.subplots(1, 2, figsize=(10, 10), dpi=300);
     for i in range(len(radius_inner)-1):
         if i == 1:
@@ -323,7 +323,8 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mi
         axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2);
     axarr[1].set_xlabel('Elastic Moduli (GPa)', fontsize=fontsize);
     axarr[1].legend(fontsize=fontsize);
-    axarr[1].tick_params(labelsize=fontsize)
+    axarr[1].tick_params(labelsize=fontsize);
+    axarr[1].yaxis.set_ticklabels([])
     axarr[1].grid(True);
     axarr[1].set_ylim([-maxdepth, mindepth]);
     f.savefig(outfile);
