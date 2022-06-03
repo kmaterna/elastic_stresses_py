@@ -133,6 +133,20 @@ def change_fault_slip(fault_dict_list, new_slip, new_rake=None):
         new_list.append(new_obj);
     return new_list;
 
+def filter_by_depth(fault_dict_list, upper_depth, lower_depth):
+    """
+    Filter a list of fault_dicts to only those that fall within the depth range [upper_depth, lower_depth]
+    :param fault_dict_list: list of fault_slip_dictionaries
+    :param upper_depth: float, km
+    :param lower_depth: float, km
+    :returns new_list: a list of fault_slip_dictionaries
+    """
+    new_list = [];
+    for item in fault_dict_list:
+        if upper_depth <= item['depth'] <= lower_depth:
+            new_list.append(item);
+    return new_list;
+
 
 def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip'):
     """
