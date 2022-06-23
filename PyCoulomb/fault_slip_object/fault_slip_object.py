@@ -31,7 +31,7 @@ If the fault is a receiver fault, we put slip = 0
 from .io_pycoulomb import fault_dict_to_coulomb_fault
 from Tectonic_Utils.geodesy import fault_vector_functions
 from Tectonic_Utils.seismo import moment_calculations
-from Elastic_stresses_py.PyCoulomb import conversion_math
+from .. import conversion_math
 import numpy as np
 
 

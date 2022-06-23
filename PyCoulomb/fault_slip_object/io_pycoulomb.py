@@ -15,7 +15,7 @@ Format intxt:
     slip(m)
 """
 
-from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
+from .. import coulomb_collections as cc
 from Tectonic_Utils.geodesy import fault_vector_functions
 import numpy as np
 

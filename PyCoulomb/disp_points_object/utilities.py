@@ -12,7 +12,7 @@ Displacements are in meters
 
 import numpy as np
 import matplotlib.path
-from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
+from .. import coulomb_collections as cc
 from Tectonic_Utils.geodesy import euler_pole
 
 

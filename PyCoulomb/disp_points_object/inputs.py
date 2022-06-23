@@ -4,7 +4,7 @@ More specific than the basic ones listed in io_additionals.py
 """
 
 import numpy as np
-from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
+from .. import coulomb_collections as cc
 
 def read_USGS_file(filename):
     """Read a list of offsets produced by USGS's Jerry Svarc"""

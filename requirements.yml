@@ -1,0 +1,19 @@
+# create environment : conda env create -f requirements.yml
+# update dependencies: conda env update -f requirements.yml
+# remove environment : conda env remove -n elastic_py
+# enter  environment : conda activate elastic_py
+# exit   environment : conda deactivate
+name: elastic_py
+channels:
+ - conda-forge
+ - anaconda
+ - defaults
+dependencies:
+ - python>=3
+ - matplotlib
+ - numpy
+ - scipy
+ - xarray
+ - gmt
+ - pygmt
+ - pip

@@ -7,7 +7,9 @@ import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from subprocess import call
 from . import coulomb_collections as cc
-from . import conversion_math, io_inp, pygmt_plots, io_additionals, fault_slip_object
+from . import conversion_math, io_inp, pygmt_plots, io_additionals
+from .fault_slip_object import io_pycoulomb
+from .fault_slip_object import io_slippy
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -322,12 +324,10 @@ def write_output_files(params, out_object, obs_strain_points):
 
     # Write output file for stresses.
     if out_object.receiver_object:
-        fault_dict_list = fault_slip_object.io_pycoulomb.coulomb_fault_to_fault_dict(out_object.receiver_object);
-        fault_slip_object.io_slippy.write_stress_results_slippy_format(fault_dict_list,
-                                                                       out_object.receiver_shear,
-                                                                       out_object.receiver_normal,
-                                                                       out_object.receiver_coulomb,
-                                                                       params.outdir+'stresses_full.txt');
+        fault_dict_list = io_pycoulomb.coulomb_fault_to_fault_dict(out_object.receiver_object);
+        io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
+                                                     out_object.receiver_normal, out_object.receiver_coulomb,
+                                                     params.outdir+'stresses_full.txt');
 
     # Write output files for GPS displacements and strains at specific lon/lat points (if used)
     io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");

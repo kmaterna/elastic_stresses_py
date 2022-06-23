@@ -12,7 +12,7 @@ It only calculates stress on faults, not cross sections.
 """
 
 import argparse
-from Elastic_stresses_py import PyCoulomb
+import PyCoulomb
 
 
 def welcome_and_parse_runstring():

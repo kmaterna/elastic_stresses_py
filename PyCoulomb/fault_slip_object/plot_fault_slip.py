@@ -2,7 +2,7 @@
 
 import numpy as np
 import pygmt
-from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
+from ..fault_slip_object import fault_slip_object
 from .. import utilities
 
 

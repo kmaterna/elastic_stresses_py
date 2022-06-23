@@ -4,7 +4,7 @@ Functions to read and write STATIC1D input files for fault slip and displacement
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
 from . import fault_slip_object
-from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
+from .. import coulomb_collections as cc
 import matplotlib.pyplot as plt
 
 
