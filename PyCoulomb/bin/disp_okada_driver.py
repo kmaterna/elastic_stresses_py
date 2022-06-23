@@ -2,9 +2,9 @@
 # An example pseudo-driver for elastic calculation. 
 # To forward-model displacements from a slip distribution at known locations
 
-from PyCoulomb.fault_slip_object import io_slippy
-from PyCoulomb.fault_slip_object import fault_slip_object as fso
-from PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals
+from Elastic_stresses_py.PyCoulomb.fault_slip_object import io_slippy
+from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object as fso
+from Elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals
 
 filedict = {
     'datafile': 'lon_lat_points.txt',

@@ -8,7 +8,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import os
 import re
-from setuptools import find_packages, setup
+from setuptools import setup
 
 # Parameter defs
 CWD = os.getcwd()
@@ -27,10 +27,8 @@ setup(
     version=get_version(),
     description='This is the Elastic_stresses_py package',
     package_dir={
-        'PyCoulomb': 'PyCoulomb',
-        '': 'PyCoulomb'
+        'Elastic_stresses_py.PyCoulomb': 'PyCoulomb',
     },
-    packages=['PyCoulomb'] + find_packages('PyCoulomb'),
     scripts=[
         'PyCoulomb/bin/disp_okada_driver.py',
         'PyCoulomb/bin/elastic_stresses_config_writer.py',

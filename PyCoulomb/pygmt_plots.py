@@ -123,7 +123,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
     fig.basemap(region=region, projection=proj, frame="+t\"Coseismic Displacements\"");
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
               map_scale="n0.4/0.06+c" + str(region[2]) + "+w20", frame="1.0");
-    fig.plot(model_lon, model_lat, style='c0.3c', color=model_dU, cmap='mycpt.cpt', pen="thin,black");
+    fig.plot(x=model_lon, y=model_lat, style='c0.3c', color=model_dU, cmap='mycpt.cpt', pen="thin,black");
 
     # Draw vectors and vector scale bar
     # scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
@@ -173,7 +173,7 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
                                                                   inputs.zerolat);
         eq_lon.append(source_lon);
         eq_lat.append(source_lat);
-    fig.plot(eq_lon, eq_lat, style=dotstyle, color="purple", pen="thin,black");
+    fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, color="purple", pen="thin,black");
 
     for source in inputs.source_object:
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
@@ -193,5 +193,5 @@ def annotate_figure_with_aftershocks(fig, aftershocks_file=None, style='c0.02c',
     """
     if aftershocks_file:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(aftershocks_file);
-        fig.plot(lon, lat, style=style, color=color, pen=pen);
+        fig.plot(x=lon, y=lat, style=style, color=color, pen=pen);
     return fig;

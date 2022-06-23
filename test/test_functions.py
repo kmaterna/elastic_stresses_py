@@ -1,7 +1,7 @@
 # Testing code
 
 import unittest
-import PyCoulomb
+import Elastic_stresses_py.PyCoulomb as PyCoulomb
 
 class Tests(unittest.TestCase):
 
