@@ -4,17 +4,23 @@ This code uses Okada's (1992) DC3D function to compute elastic displacements, st
 
 ## Description
 
-### Code Requirements: 
-This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/). This code also requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). It requires a few utility functions in a separate utilities repository (https://github.com/kmaterna/Tectonic_Utils).  To get the utilities library, please ```pip install Tectonic-Utils```. 
 
-### Installation and Usage: 
-To install, you can clone this library onto your computer into a location that is on your $PYTHONPATH (in other words, the parent directory holding Elastic_stresses_py/ must be on your $PYTHONPATH).  For convenience, it is nice (but not required) to put the full path to Elastic_stresses_py/PyCoulomb/bin on your regular system $PATH so the main executable ```elastic_stresses_driver.py``` can be found.   
+### Dependencies: 
+This code requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). 
+It requires utility functions in Tectonic_Utils (https://github.com/kmaterna/Tectonic_Utils).  To get the utilities library, install with ```pip install Tectonic-Utils```.
 
-Most of the behavior of the program is controlled by a config text file.  From an experiment directory on your system, you can generate a default config file in the current working directory (.) with: 
+To install Elastic_stresses_py, first clone this library onto your computer. 
+This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/). The easiest way is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
+Then, for Elastic_stresses_py, run ```python setup.py install``` from the directory where you've cloned the repository. 
+
+### Usage
+The main executable is ```elastic_stresses_driver.py```, which takes a config file as the first argument.
+
+Most of the behavior of the program is controlled by the config text file.  From an experiment directory on your system, you can generate a default config file in the current working directory (.) with: 
 ```bash
 elastic_stresses_config_writer.py .
 ```
-You should change the parameters to your own experiment needs.  An example config file is provided in examples/. The elastic parameters mu and lamda, as well as your input/output options, are set in config file. 
+You should change the parameters to your own experiment needs.  An example config file is provided in examples/. The elastic parameters mu and lambda, as well as your input/output options, are set in config file. 
 
 Then, you call the program by passing the config file into the main executable: 
 ```bash
@@ -60,7 +66,7 @@ For all finite sources (i.e., Patch, WC), lon/lat/depth refer to the back updip 
 
 For WC Source Format, faulting_type = ["SS","R","N","ALL"] from the Wells and Coppersmith indications of Strike Slip, Reverse, Normal, and All. 
 
-An example .intxt file with a "Slip Format" source might look like: 
+An example file ```input.intxt``` with a "Slip Format" source might look like: 
 ```
 # General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero
 # Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m
