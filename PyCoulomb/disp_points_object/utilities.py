@@ -10,7 +10,6 @@ Disp_points are now lists of individual disp_point elements
 Displacements are in meters
 """
 
-import numpy as np
 import matplotlib.path
 from .. import coulomb_collections as cc
 from Tectonic_Utils.geodesy import euler_pole
@@ -215,15 +214,6 @@ def station_vel_object_to_disp_points(velfield):
     return disp_points_list;
 
 
-def compute_rms(disp_points):
-    list_of_values = [];
-    for point in disp_points:
-        list_of_values.append(point.dE_obs);
-        list_of_values.append(point.dN_obs);
-        list_of_values.append(point.dU_obs);
-    return np.sqrt(np.mean(np.square(list_of_values)));
-
-
 def translate_by_euler_pole(disp_points_list, euler_pole_components):
     """Rotate by euler pole"""
     new_disp_points_list = [];
@@ -237,47 +227,3 @@ def translate_by_euler_pole(disp_points_list, euler_pole_components):
                                       meas_type=item.meas_type);
         new_disp_points_list.append(res1);
     return new_disp_points_list;
-
-
-def obs_vs_model_L1_misfit(obs_disp_points, model_disp_points):
-    """Implementing one definition of model misfit: L1 norm"""
-    all_misfits_m, all_misfits_norm = [], [];
-    horiz_misfits_m, horiz_misfits_norm = [], [];
-    for i in range(len(obs_disp_points)):
-        E_misfit = abs(obs_disp_points[i].dE_obs - model_disp_points[i].dE_obs)
-        N_misfit = abs(obs_disp_points[i].dN_obs - model_disp_points[i].dN_obs)
-        U_misfit = abs(obs_disp_points[i].dU_obs - model_disp_points[i].dU_obs)
-        norm_E = E_misfit / obs_disp_points[i].Se_obs
-        norm_N = N_misfit / obs_disp_points[i].Sn_obs
-        norm_U = U_misfit / obs_disp_points[i].Su_obs
-        all_misfits_m = all_misfits_m + [E_misfit, N_misfit, U_misfit];
-        all_misfits_norm = all_misfits_norm + [norm_E, norm_N, norm_U];
-        horiz_misfits_m = horiz_misfits_m + [E_misfit, N_misfit];
-        horiz_misfits_norm = horiz_misfits_norm + [norm_E, norm_N];
-    avg_misfit_m = np.nanmean(all_misfits_m)
-    avg_misfit_norm = np.nanmean(all_misfits_norm)
-    avg_horiz_m = np.nanmean(horiz_misfits_m)
-    avg_horiz_norm = np.nanmean(horiz_misfits_norm);
-    return avg_misfit_m, avg_misfit_norm, avg_horiz_m, avg_horiz_norm;
-
-
-def obs_vs_model_L2_misfit(obs_disp_points, model_disp_points):
-    """Implementing one definition of model misfit: L1 norm"""
-    all_misfits_m, all_misfits_norm = [], [];
-    horiz_misfits_m, horiz_misfits_norm = [], [];
-    for i in range(len(obs_disp_points)):
-        E_misfit = np.square(obs_disp_points[i].dE_obs - model_disp_points[i].dE_obs)
-        N_misfit = np.square(obs_disp_points[i].dN_obs - model_disp_points[i].dN_obs)
-        U_misfit = np.square(obs_disp_points[i].dU_obs - model_disp_points[i].dU_obs)
-        norm_E = E_misfit / np.square(obs_disp_points[i].Se_obs)
-        norm_N = N_misfit / np.square(obs_disp_points[i].Sn_obs)
-        norm_U = U_misfit / np.square(obs_disp_points[i].Su_obs)
-        all_misfits_m = all_misfits_m + [E_misfit, N_misfit, U_misfit];
-        all_misfits_norm = all_misfits_norm + [norm_E, norm_N, norm_U];
-        horiz_misfits_m = horiz_misfits_m + [E_misfit, N_misfit];
-        horiz_misfits_norm = horiz_misfits_norm + [norm_E, norm_N];
-    avg_misfit_m = np.nanmean(all_misfits_m)
-    avg_misfit_norm = np.nanmean(all_misfits_norm)
-    avg_horiz_m = np.nanmean(horiz_misfits_m)
-    avg_horiz_norm = np.nanmean(horiz_misfits_norm);
-    return avg_misfit_m, avg_misfit_norm, avg_horiz_m, avg_horiz_norm;
