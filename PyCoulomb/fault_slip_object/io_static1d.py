@@ -258,10 +258,10 @@ def read_stat2C_geometry(infile):
     return faultlist;
 
 
-def plot_earth_model_wrapper(infile, outfile):
+def plot_earth_model_wrapper(infile, outfile, mindepth=0, maxdepth=140):
     """ simple wrapper for reading velocity/viscosity model and plotting it"""
     [radius_inner, radius_outer, density, K, G, nu] = read_earth_model(infile);
-    plot_earth_model(radius_inner, radius_outer, density, K, G, nu, outfile);
+    plot_earth_model(radius_inner, radius_outer, density, K, G, nu, outfile, mindepth=mindepth, maxdepth=maxdepth);
     return;
 
 
@@ -297,17 +297,18 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mi
     nu = [np.log10(x) for x in nu];   # display as log of viscosity
     depth_outer = [x-radius_outer[-1] for x in radius_outer];
     depth_inner = [x - radius_outer[-1] for x in radius_inner];
-    fontsize = 20;
+    fontsize = 29;
     f, axarr = plt.subplots(1, 2, figsize=(10, 10), dpi=300);
+
     for i in range(len(radius_inner)-1):
         if i == 1:
             label1 = 'Viscosity';
         else:
             label1 = '_nolabel_';
-        axarr[0].plot([nu[i], nu[i]], [depth_inner[i], depth_outer[i]], color='blue', label=label1);
-        axarr[0].plot([nu[i], nu[i+1]], [depth_outer[i], depth_outer[i]], color='blue');
-    axarr[0].set_xlabel('Log10 of Viscosity (Pa-s)', fontsize=fontsize);
-    axarr[0].set_ylabel('Depth (km)', fontsize=fontsize);
+        axarr[0].plot([nu[i], nu[i]], [depth_inner[i], depth_outer[i]], color='blue', label=label1, linewidth=2);
+        axarr[0].plot([nu[i], nu[i+1]], [depth_outer[i], depth_outer[i]], color='blue', linewidth=2);
+    axarr[0].set_xlabel('Log Viscosity (Pa-s)', fontsize=fontsize);
+    axarr[0].set_ylabel('Depth (km)', fontsize=fontsize+2);
     axarr[0].legend(fontsize=fontsize);
     axarr[0].grid(True)
     axarr[0].set_ylim([-maxdepth, mindepth]);
@@ -317,15 +318,16 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mi
             label1, label2 = 'Shear', 'Bulk';
         else:
             label1, label2 = '_nolabel_', '_nolabel_';
-        axarr[1].plot([G[i], G[i]], [depth_inner[i], depth_outer[i]], color='red');
-        axarr[1].plot([G[i], G[i+1]], [depth_outer[i], depth_outer[i]], color='red', label=label1);
-        axarr[1].plot([K[i], K[i]], [depth_inner[i], depth_outer[i]], color='black');
-        axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2);
-    axarr[1].set_xlabel('Elastic Moduli (GPa)', fontsize=fontsize);
-    axarr[1].legend(fontsize=fontsize);
+        axarr[1].plot([G[i], G[i]], [depth_inner[i], depth_outer[i]], color='red', linewidth=2);
+        axarr[1].plot([G[i], G[i+1]], [depth_outer[i], depth_outer[i]], color='red', label=label1, linewidth=2);
+        axarr[1].plot([K[i], K[i]], [depth_inner[i], depth_outer[i]], color='black', linewidth=2);
+        axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2, linewidth=2);
+    axarr[1].set_xlabel('Modulus (GPa)', fontsize=fontsize);
+    axarr[1].legend(fontsize=fontsize-2);
     axarr[1].tick_params(labelsize=fontsize);
     axarr[1].yaxis.set_ticklabels([])
     axarr[1].grid(True);
     axarr[1].set_ylim([-maxdepth, mindepth]);
+    plt.tight_layout()
     f.savefig(outfile);
     return;

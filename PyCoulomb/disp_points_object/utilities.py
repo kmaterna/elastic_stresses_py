@@ -47,7 +47,7 @@ def subtract_disp_points(disp_points1, disp_points2, target='all', tol=0.001):
 
 def add_disp_points(disp_points1, disp_points2, tol=0.001):
     """
-    add two lists of objects (1 plus 2).
+    Add two lists of objects (1 plus 2).
     The metadata and uncertainties for object 1 will be retained.
     """
     sum_disp_points = [];
@@ -202,12 +202,15 @@ def extract_particular_station_from_list(disp_points_list, station_lon, station_
 def station_vel_object_to_disp_points(velfield):
     """
     Convert from StationVel objects from GNSS Python library into disp_points
+    This is the opposite of GNSS_TimeSeries_Viewers.gps_tools.gps_vel_functions.disp_points_to_station_vels()
     """
     disp_points_list = [];
     for item in velfield:
         new_disp_point = cc.Displacement_points(lon=item.elon, lat=item.nlat, dE_obs=item.e/1000, dN_obs=item.n/1000,
                                                 dU_obs=item.u/1000, Se_obs=item.se/1000, Sn_obs=item.sn/1000,
-                                                Su_obs=item.su/1000, name=item.name);
+                                                Su_obs=item.su/1000, name=item.name, starttime=item.first_epoch,
+                                                endtime=item.last_epoch, meas_type=item.meas_type,
+                                                refframe=item.refframe);
         disp_points_list.append(new_disp_point);
     return disp_points_list;
 
