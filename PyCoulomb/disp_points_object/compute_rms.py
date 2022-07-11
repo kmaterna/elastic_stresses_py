@@ -48,6 +48,44 @@ def filter_disp_pts_to_vector(disp_points, components=("E", "N", "U")):
     return all_misfits, all_sigmas;
 
 
+def obs_vs_model_L2_misfit(obs_disp_points, model_disp_points):
+    """
+    Implement one definition of model misfit (L2 norm) on horizontal and 3-components of every point passed
+    """
+    resid_pts = utilities.subtract_disp_points(obs_disp_points, model_disp_points);  # make residual points
+    all_resids_m, all_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N", "U"));
+    horiz_resids_m, horiz_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N"));
+    all_L2_norm = np.sqrt(np.sum(np.square(all_resids_m)));  # L2 norm
+    all_misfits_norm = np.divide(np.square(all_resids_m), np.square(all_sigmas));  # chi2 as a vector
+    avg_misfit_norm = np.nanmean(all_misfits_norm);
+    horiz_L2_norm = np.sqrt(np.sum(np.square(horiz_resids_m)));  # L2 norm
+    horiz_misfits_norm = np.divide(np.square(horiz_resids_m), np.square(horiz_sigmas));  # chi2 as a vector
+    avg_horiz_norm = np.nanmean(horiz_misfits_norm);
+    return all_L2_norm, avg_misfit_norm, horiz_L2_norm, avg_horiz_norm;
+
+
+def obs_vs_model_L1_misfit(obs_disp_points, model_disp_points):
+    """
+    Implement one definition of model misfit (L1 norm) on horizontal and 3-components of every point passed
+    """
+    resid_pts = utilities.subtract_disp_points(obs_disp_points, model_disp_points);  # make residual points
+    all_misfits_m, all_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N", "U"));
+    horiz_misfits_m, horiz_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N"));
+    avg_misfit_norm = np.nanmean(np.divide(np.abs(all_misfits_m), all_sigmas))
+    avg_horiz_norm = np.nanmean(np.divide(np.abs(horiz_misfits_m), horiz_sigmas));
+    return np.abs(np.nanmean(all_misfits_m)), avg_misfit_norm, np.nanmean(np.abs(horiz_misfits_m)), avg_horiz_norm;
+
+
+def compute_rms(disp_points):
+    """
+    Compute the bare RMS value of all displacements within a list of disp_points
+    """
+    values, _sigmas = filter_disp_pts_to_vector(disp_points);
+    return np.sqrt(np.mean(np.square(values)));
+
+
+# ----------- SPECIFIC IMPLEMENTATIONS OF MISFIT CALCULATIONS FOR SPECIFIC PROJECTS ------------------ #
+
 def obs_vs_model_L2_aggregate(obs_disp_points, model_disp_points):
     """
     L2 norm on observed vs modeled disp_point objects. Unpacks into vectors, then computes L2 norm.
@@ -88,39 +126,3 @@ def obs_vs_model_L2_vertical(obs_disp_points, model_disp_points):
     resid_sigma = res_cgps[1] + res_lev[1] + res_tg[1];
     rms_mm, reported_chi2 = L2_on_vector(resid_data, resid_sigma);
     return rms_mm, reported_chi2;
-
-
-def obs_vs_model_L2_misfit(obs_disp_points, model_disp_points):
-    """
-    Implement one definition of model misfit: L2 norm
-    """
-    resid_pts = utilities.subtract_disp_points(obs_disp_points, model_disp_points);  # make residual points
-    all_resids_m, all_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N", "U"));
-    horiz_resids_m, horiz_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N"));
-    all_L2_norm = np.sqrt(np.sum(np.square(all_resids_m)));  # L2 norm
-    all_misfits_norm = np.divide(np.square(all_resids_m), np.square(all_sigmas));  # chi2 as a vector
-    avg_misfit_norm = np.nanmean(all_misfits_norm);
-    horiz_L2_norm = np.sqrt(np.sum(np.square(horiz_resids_m)));  # L2 norm
-    horiz_misfits_norm = np.divide(np.square(horiz_resids_m), np.square(horiz_sigmas));  # chi2 as a vector
-    avg_horiz_norm = np.nanmean(horiz_misfits_norm);
-    return all_L2_norm, avg_misfit_norm, horiz_L2_norm, avg_horiz_norm;
-
-
-def obs_vs_model_L1_misfit(obs_disp_points, model_disp_points):
-    """
-    Implement one definition of model misfit: L1 norm
-    """
-    resid_pts = utilities.subtract_disp_points(obs_disp_points, model_disp_points);  # make residual points
-    all_misfits_m, all_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N", "U"));
-    horiz_misfits_m, horiz_sigmas = filter_disp_pts_to_vector(resid_pts, ("E", "N"));
-    avg_misfit_norm = np.nanmean(np.divide(np.abs(all_misfits_m), all_sigmas))
-    avg_horiz_norm = np.nanmean(np.divide(np.abs(horiz_misfits_m), horiz_sigmas));
-    return np.abs(np.nanmean(all_misfits_m)), avg_misfit_norm, np.nanmean(np.abs(horiz_misfits_m)), avg_horiz_norm;
-
-
-def compute_rms(disp_points):
-    """
-    Compute the bare RMS value of all displacements within a list of disp_points
-    """
-    values, _sigmas = filter_disp_pts_to_vector(disp_points);
-    return np.sqrt(np.mean(np.square(values)));
