@@ -16,9 +16,9 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object):
     call(['mkdir', '-p', params.outdir], shell=False);
     if params.config_file:
-        call(['cp', params.config_file, params.outdir], shell=False);
+        call(['cp', params.config_file, params.outdir], shell=False);  # for record-keeping
     if params.input_file:
-        call(['cp', params.input_file, params.outdir], shell=False);
+        call(['cp', params.input_file, params.outdir], shell=False);  # for record-keeping
     write_output_files(params, out_object, obs_strain_points);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
     if params.plot_stress:
@@ -107,7 +107,7 @@ def surface_def_plot(params, out_object):
     plt.grid();
     plt.axis('equal');
     plt.title('Surface Dipslacement', fontsize=28)
-    plt.savefig(params.outdir + "Displacement_model_on_grid.eps")
+    plt.savefig(params.outdir + "Displacement_model_on_grid.png")
     plt.close();
     return;
 
@@ -118,7 +118,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     Plots of fault patches in cartesian space, colored by the magnitude of the stress component.
     """
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
-                                                                        'Stresses_' + stress_type + '.eps'));
+                                                                        'Stresses_' + stress_type + '.png'));
 
     if stress_type == 'shear':
         stress_component = out_object.receiver_shear;
@@ -174,7 +174,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     plt.title(stress_type + ' stress from source faults', fontsize=22)
     plt.xlim([out_object.x.min(), out_object.x.max()])
     plt.ylim([out_object.y.min(), out_object.y.max()])
-    plt.savefig(params.outdir + 'Stresses_' + stress_type + '.eps');
+    plt.savefig(params.outdir + 'Stresses_' + stress_type + '.png');
     plt.close();
     return;
 
@@ -186,7 +186,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     """
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
                                                                         'Stresses_cross_section_' +
-                                                                        stress_type + '.eps'));
+                                                                        stress_type + '.png'));
 
     if stress_type == 'shear':
         stress_component = out_object.receiver_shear;
@@ -255,7 +255,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     plt.ylim([min(min_depth_array), max(max_depth_array)]);
     plt.gca().invert_yaxis();
     plt.gca().invert_xaxis();
-    plt.savefig(params.outdir + 'Stresses_cross_section_' + stress_type + '.eps');
+    plt.savefig(params.outdir + 'Stresses_cross_section_' + stress_type + '.png');
     plt.close();
     return;
 

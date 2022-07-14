@@ -86,7 +86,7 @@ def write_disp_points_results(disp_points, outfile):
     print("Writing %s " % outfile);
     if len(disp_points) > 0:
         ofile = open(outfile, 'w');
-        ofile.write("# Format: lon lat u v w (m)\n");
+        ofile.write("# Format: lon lat east[m] north[m] up[m]\n");
         for point in disp_points:
             ofile.write("%f %f %f %f %f" % (point.lon, point.lat, point.dE_obs, point.dN_obs, point.dU_obs));
             if point.name != "":
