@@ -65,18 +65,20 @@ def map_stress_plot(params, inputs, out_object, stress_component):
 
 
 def map_vertical_def(params, inputs, outfile):
-    """Simple map of grdfile with subsampled vertical deformation.
+    """
+    Simple map of grdfile with subsampled vertical deformation.
     Currently mess, but a proof of concept!
-    Makes a grd file created by gmt surface from the xyz file written in this software. """
+    Makes a grd file created by gmt surface from the xyz file written in this software.
+    """
     print("Mapping vertical deformation in %s " % params.outdir);
 
     proj = 'M4i'
     region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
 
     # First make surfaces of east/north/up deformation for later plotting
-    utilities.call_gmt_surface(params.outdir+'/xyz_model.txt', params.outdir+'/vert.grd', region, inc=0.0005);
-    utilities.call_gmt_surface(params.outdir+'/xyu_model.txt', params.outdir+'/east.grd', region, inc=0.0005);
-    utilities.call_gmt_surface(params.outdir+'/xyv_model.txt', params.outdir+'/north.grd', region, inc=0.0005);
+    utilities.call_gmt_surface(params.outdir+'/xy_vert_model.txt', params.outdir+'/vert.grd', region, inc=0.0005);
+    utilities.call_gmt_surface(params.outdir+'/xy_east_model.txt', params.outdir+'/east.grd', region, inc=0.0005);
+    utilities.call_gmt_surface(params.outdir+'/xy_north_model.txt', params.outdir+'/north.grd', region, inc=0.0005);
 
     # Build a PyGMT plot
     fig = pygmt.Figure();

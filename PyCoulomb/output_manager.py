@@ -25,12 +25,12 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
         stress_plot(params, out_object, 'normal');
         stress_plot(params, out_object, 'coulomb');
-        stress_cross_section_cartesian(params, out_object, 'coulomb', writefile=params.outdir+'coulomb_xsection.txt');
-        stress_cross_section_cartesian(params, out_object, 'normal');
-        stress_cross_section_cartesian(params, out_object, 'shear');
         pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
         pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
         pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
+        stress_cross_section_cartesian(params, out_object, 'coulomb', writefile=params.outdir+'coulomb_xsection.txt');
+        stress_cross_section_cartesian(params, out_object, 'normal');
+        stress_cross_section_cartesian(params, out_object, 'shear');
     surface_def_plot(params, out_object);  # a grid of synthetic points
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
                                          params.outdir+"vector_plot.png")
@@ -287,9 +287,9 @@ def write_synthetic_grid_triplets(x, y, x2d, y2d, zerolon, zerolat, u, v, w, out
     Write lists of lon/lat/def for each component of deformation in synthetic grid
     Used for GMT plots
     """
-    ofile_w = open(outdir + 'xyz_model.txt', 'w');
-    ofile_u = open(outdir + 'xyu_model.txt', 'w');
-    ofile_v = open(outdir + 'xyv_model.txt', 'w');
+    ofile_w = open(outdir + 'xy_vert_model.txt', 'w');
+    ofile_u = open(outdir + 'xy_east_model.txt', 'w');
+    ofile_v = open(outdir + 'xy_north_model.txt', 'w');
     for i in np.arange(0, len(y)):
         for j in np.arange(0, len(x)):
             loni, lati = fault_vector_functions.xy2lonlat(x2d[i][j], y2d[i][j], zerolon, zerolat);
@@ -304,7 +304,7 @@ def write_synthetic_grid_triplets(x, y, x2d, y2d, zerolon, zerolat, u, v, w, out
 
 def write_synthetic_grid_full_results(x, y, x2d, y2d, zerolon, zerolat, u, v, w, outdir):
     ofile = open(outdir + 'disps_model_grid.txt', 'w');
-    ofile.write("# Format: x y lon lat udisp vdisp wdisp (m) \n");
+    ofile.write("# Format: x y lon lat x_disp[m] y_disp[m] z_disp[m] \n");
     for i in np.arange(0, len(y)):
         for j in np.arange(0, len(x)):
             loni, lati = fault_vector_functions.xy2lonlat(x2d[i][j], y2d[i][j], zerolon, zerolat);

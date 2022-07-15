@@ -23,9 +23,7 @@ def configure_stress_calculation(config_file):
     strain_file = configobj.get('io-config', 'strain_file') \
         if configobj.has_option('io-config', 'strain_file') else None;
     output_dir = output_dir + exp_name + '/';
-    if configobj.has_option('io-config', 'write_stress'):  # can take 'write_stress' or 'plot_stress' arguments
-        plot_stress = configobj.getint('io-config', 'write_stress');
-    elif configobj.has_option('io-config', 'plot_stress'):
+    if configobj.has_option('io-config', 'plot_stress'):
         plot_stress = configobj.getint('io-config', 'plot_stress');
     else:
         plot_stress = 1;
@@ -86,17 +84,17 @@ def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, 
 
 
 def write_valid_config_file(directory):
+    config_filename = "my_config.txt";
     configobj = configparser.ConfigParser()
     configobj.optionxform = str   # case-sensitive config options
     configobj["io-config"] = {};
     ioconfig = configobj["io-config"];
     ioconfig["exp_name"] = 'my_experiment';
-    ioconfig["input_file"] = 'my_input.intxt';
+    ioconfig["input_file"] = 'examples/example_case/M6.8_2014.inzero';
     ioconfig["output_dir"] = 'Outputs/';
-    ioconfig["aftershocks"] = '[optional]';
-    ioconfig["gps_disp_points"] = '[optional]';
-    ioconfig["strain_file"] = '[optional]';
-    ioconfig["write_stress"] = '1'
+    ioconfig["aftershocks"] = 'examples/example_case/CA_aftershocks_2014.txt';
+    ioconfig["gps_disp_points"] = 'examples/example_case/CA_GPS_ll.txt';
+    ioconfig["plot_stress"] = '1'
     configobj["compute-config"] = {};
     computeconfig = configobj["compute-config"];
     computeconfig["strike_num_receivers"] = '10';
@@ -104,8 +102,8 @@ def write_valid_config_file(directory):
     computeconfig["mu"] = '30000000000';
     computeconfig["lame1"] = '30000000000';
     computeconfig["B"] = '0';
-    computeconfig["fixed_rake"] = '[optional]';
-    with open(directory+'/dummy_config.txt', 'w') as configfile:
+    computeconfig["fixed_rake"] = '90';
+    with open(directory+'/'+config_filename, 'w') as configfile:
         configobj.write(configfile)
-    print("Writing file %s " % directory+"/dummy_config.txt");
+    print("Writing file %s " % directory+"/"+config_filename);
     return;

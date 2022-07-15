@@ -8,7 +8,6 @@
 # Receiver is a guess to the Cascadia megathrust
 
 General: 0.250 0.40 -125.80 -122.60 -124.50 39.30 41.70 40.30
-# Source_FM: 228 -2 79 -125.134 40.829 16.4 6.8 30e9 30e9  # the catalog location
-Source_FM: 228 -2 79 -125.35 40.72 16.4 6.8 30e9 30e9  # testing moving the source westward
+Source_FM: 228 -2 79 -125.134 40.829 16.4 6.8 30e9 30e9  # catalog location
 Receiver: 355 90 12 140 120 -124.56 40.3 10.8
 

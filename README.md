@@ -27,9 +27,29 @@ Then, you call the program by passing the config file into the main executable:
 elastic_stresses_driver.py my_config.txt
 ```
 
+A complete config file, with both required and optional arguments: 
+```
+[io-config]
+exp_name = my_experiment
+input_file = examples/example_case/M6.8_2014.inzero
+output_dir = Outputs/
+aftershocks = [optional]
+gps_disp_points = [optional]
+strain_file = [optional]
+plot_stress = 1
+
+[compute-config]
+strike_num_receivers = 10
+dip_num_receivers = 10
+mu = 30000000000
+lame1 = 30000000000
+B = 0
+fixed_rake = [optional]
+```
+
 ### Capabilities: 
 * Reads source and receiver faults from .inp formatted Coulomb input files.
-* Reads source and receiver faults from .intxt files, a more convenient input format wheere slip is specified by length/width or by Wells and Coppersmith (1994) scaling rules
+* Reads source and receiver faults from .intxt files, a more convenient input format where slip is specified by length/width or by Wells and Coppersmith (1994) scaling rules
 * Reads point sources and receiver faults from .inzero, a focal mechanism / moment tensor input format
 * Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
 * Computes elastic displacements and stresses due to slip on source faults.
