@@ -4,7 +4,7 @@
 [io-config]
 exp_name = M6.5_Benchmark
 aftershocks = 
-input_file = examples/example_inputs/simple_receiver_bm.inp
+input_file = examples/sample_inputs/simple_receiver_bm.inp
 gps_disp_points = 
 strain_file = 
 output_dir = Outputs/

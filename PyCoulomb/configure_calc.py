@@ -27,6 +27,10 @@ def configure_stress_calculation(config_file):
         plot_stress = configobj.getint('io-config', 'plot_stress');
     else:
         plot_stress = 1;
+    if configobj.has_option('io-config', 'plot_grd_disp'):
+        plot_grd_disp = configobj.getint('io-config', 'plot_grd_disp');
+    else:
+        plot_grd_disp = 1;
 
     # Computation parameters
     strike_num_receivers = configobj.getint('compute-config', 'strike_num_receivers');
@@ -36,7 +40,7 @@ def configure_stress_calculation(config_file):
     B = configobj.getfloat('compute-config', 'B');
     alpha = (lame1 + mu) / (lame1 + 2 * mu);
     # alpha = parameter for Okada functions. It is 2/3 for simplest case. See DC3D.f documentation.
-    fixed_rake = configobj.getfloat('compute-config', 'fixed_rake') \
+    fixed_rake = configobj.get('compute-config', 'fixed_rake') \
         if configobj.has_option('compute-config', 'fixed_rake') else None;
     # on receiver faults, we need to specify rake globally if we're using .inp format. No effect for other file formats.
     if '.inp' in input_file:
@@ -46,12 +50,13 @@ def configure_stress_calculation(config_file):
                          disp_points_file=gps_file, strain_file=strain_file,
                          strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
                          dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
-                         alpha=alpha, plot_stress=plot_stress, outdir=output_dir);
+                         alpha=alpha, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp,
+                         outdir=output_dir);
     print(MyParams);
     return MyParams;
 
 
-def configure_default_displacement_params(outdir='output/', plot_stress=1):
+def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_grd_disp=1):
     """
     Build a default Params object used for displacement-only calculations.
     Displacement from Okada only uses alpha.  Stress uses alpha, mu, lame1, and B.
@@ -61,7 +66,7 @@ def configure_default_displacement_params(outdir='output/', plot_stress=1):
                          disp_points_file=None, strain_file=None,
                          strike_num_receivers=1, fixed_rake=0,
                          dip_num_receivers=1, mu=30e9, lame1=30e9, B=0,
-                         alpha=2/3, plot_stress=plot_stress, outdir=outdir);
+                         alpha=2/3, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, outdir=outdir);
     return MyParams;
 
 
@@ -92,9 +97,11 @@ def write_valid_config_file(directory):
     ioconfig["exp_name"] = 'my_experiment';
     ioconfig["input_file"] = 'examples/example_case/M6.8_2014.inzero';
     ioconfig["output_dir"] = 'Outputs/';
-    ioconfig["aftershocks"] = 'examples/example_case/CA_aftershocks_2014.txt';
-    ioconfig["gps_disp_points"] = 'examples/example_case/CA_GPS_ll.txt';
     ioconfig["plot_stress"] = '1'
+    ioconfig["plot_grd_disp"] = '1'
+    ioconfig["gps_disp_points"] = 'examples/example_case/CA_GPS_ll.txt';
+    ioconfig["aftershocks"] = 'examples/example_case/CA_aftershocks_2014.txt';
+    ioconfig["strain_file"] = ''
     configobj["compute-config"] = {};
     computeconfig = configobj["compute-config"];
     computeconfig["strike_num_receivers"] = '10';
@@ -102,7 +109,7 @@ def write_valid_config_file(directory):
     computeconfig["mu"] = '30000000000';
     computeconfig["lame1"] = '30000000000';
     computeconfig["B"] = '0';
-    computeconfig["fixed_rake"] = '90';
+    computeconfig["fixed_rake"] = '';
     with open(directory+'/'+config_filename, 'w') as configfile:
         configobj.write(configfile)
     print("Writing file %s " % directory+"/"+config_filename);

@@ -68,6 +68,8 @@ def read_disp_points(infile):
 
 def write_receiver_traces_gmt(receiver_object, outfile):
     """Write the top edge of each receiver fault in GMT map coordinates"""
+    if not receiver_object:
+        return;
     print("Writing %s" % outfile);
     ofile = open(outfile, 'w');
     for fault in receiver_object:
@@ -83,16 +85,17 @@ def write_disp_points_results(disp_points, outfile):
     """
     Write the contents of disp_points (dE_obs etc.) into a file.  Mirrors the function read_disp_points().
     """
+    if len(disp_points) == 0:
+        return;
     print("Writing %s " % outfile);
-    if len(disp_points) > 0:
-        ofile = open(outfile, 'w');
-        ofile.write("# Format: lon lat east[m] north[m] up[m]\n");
-        for point in disp_points:
-            ofile.write("%f %f %f %f %f" % (point.lon, point.lat, point.dE_obs, point.dN_obs, point.dU_obs));
-            if point.name != "":
-                ofile.write(" %s" % point.name);
-            ofile.write("\n");
-        ofile.close();
+    ofile = open(outfile, 'w');
+    ofile.write("# Format: lon lat east[m] north[m] up[m]\n");
+    for point in disp_points:
+        ofile.write("%f %f %f %f %f" % (point.lon, point.lat, point.dE_obs, point.dN_obs, point.dU_obs));
+        if point.name != "":
+            ofile.write(" %s" % point.name);
+        ofile.write("\n");
+    ofile.close();
     return;
 
 

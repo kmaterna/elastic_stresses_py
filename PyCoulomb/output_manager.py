@@ -7,13 +7,17 @@ import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from subprocess import call
 from . import coulomb_collections as cc
-from . import conversion_math, io_inp, pygmt_plots, io_additionals
+from . import conversion_math, io_inp, pygmt_plots, io_additionals, utilities
 from .fault_slip_object import io_pycoulomb
 from .fault_slip_object import io_slippy
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
 def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object):
+    """
+    Passes the program into the right plotting and mapping routines.
+    Reads parameter flags such as plot_stress and plot_grd_disp.
+    """
     call(['mkdir', '-p', params.outdir], shell=False);
     if params.config_file:
         call(['cp', params.config_file, params.outdir], shell=False);  # for record-keeping
@@ -21,6 +25,9 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         call(['cp', params.input_file, params.outdir], shell=False);  # for record-keeping
     write_output_files(params, out_object, obs_strain_points);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
+    surface_def_plot(params, out_object);  # grid of synthetic points in cartesian space
+    pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
+                                         params.outdir+"vector_plot.png");  # map point displacements
     if params.plot_stress:
         stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
         stress_plot(params, out_object, 'normal');
@@ -31,10 +38,9 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         stress_cross_section_cartesian(params, out_object, 'coulomb', writefile=params.outdir+'coulomb_xsection.txt');
         stress_cross_section_cartesian(params, out_object, 'normal');
         stress_cross_section_cartesian(params, out_object, 'shear');
-    surface_def_plot(params, out_object);  # a grid of synthetic points
-    pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
-                                         params.outdir+"vector_plot.png")
-    pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
+    if params.plot_grd_disp:  # create grd files and plot vertical. Can take a while.
+        write_disp_grd_files(params, inputs);  # based on txt files already written
+        pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
     if out_object.receiver_profile:
         write_horiz_profile(params, inputs.receiver_horiz_profile, out_object.receiver_profile);
         map_horiz_profile(params, inputs.receiver_horiz_profile, out_object.receiver_profile);
@@ -106,6 +112,9 @@ def surface_def_plot(params, out_object):
     plt.gca().tick_params(axis='both', which='major', labelsize=18)
     plt.grid();
     plt.axis('equal');
+    plt.xlabel('X (km)', fontsize=20)
+    plt.ylabel('Y (km)', fontsize=20)
+    plt.gca().tick_params(labelsize=16)
     plt.title('Surface Dipslacement', fontsize=28)
     plt.savefig(params.outdir + "Displacement_model_on_grid.png")
     plt.close();
@@ -117,6 +126,10 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     default vmin,vmax are in KPa
     Plots of fault patches in cartesian space, colored by the magnitude of the stress component.
     """
+
+    if not out_object.receiver_object:
+        return;
+
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
                                                                         'Stresses_' + stress_type + '.png'));
 
@@ -126,9 +139,6 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
         stress_component = out_object.receiver_normal;
     else:
         stress_component = out_object.receiver_coulomb;
-
-    if not out_object.receiver_object:
-        return;
 
     # Select boundaries of color map.
     vmin, vmax = produce_vmin_vmax_symmetric(stress_component, vmin, vmax);
@@ -174,6 +184,9 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     plt.title(stress_type + ' stress from source faults', fontsize=22)
     plt.xlim([out_object.x.min(), out_object.x.max()])
     plt.ylim([out_object.y.min(), out_object.y.max()])
+    plt.xlabel('X (km)', fontsize=20);
+    plt.ylabel('Y (km)', fontsize=20);
+    plt.gca().tick_params(labelsize=16)
     plt.savefig(params.outdir + 'Stresses_' + stress_type + '.png');
     plt.close();
     return;
@@ -184,6 +197,10 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     default vmin,vmax are in KPa
     Vertical plots of fault patches in cartesian space, colored by the magnitude of the stress component.
     """
+
+    if not out_object.receiver_object:
+        return;
+
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, params.outdir +
                                                                         'Stresses_cross_section_' +
                                                                         stress_type + '.png'));
@@ -194,6 +211,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
         stress_component = out_object.receiver_normal;
     else:
         stress_component = out_object.receiver_coulomb;
+
     max_depth_array = [x.bottom for x in out_object.receiver_object];
     min_depth_array = [x.top for x in out_object.receiver_object];
 
@@ -278,6 +296,9 @@ def map_horiz_profile(params, horiz_profile, profile_results):
     cb.set_label('Kilopascals', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
+    plt.xlabel('Longitude', fontsize=18)
+    plt.ylabel('Latitude', fontsize=18)
+    plt.gca().tick_params(labelsize=16)
     plt.savefig(params.outdir+'horizontal_profile_stresses.png');
     return;
 
@@ -343,4 +364,14 @@ def write_horiz_profile(params, horiz_profile, profile_results):
     for i in range(len(horiz_profile.lon1d)):
         ofile.write("%f %f %f %f %f %f\n" % (horiz_profile.lon1d[i], horiz_profile.lat1d[i], horiz_profile.depth_km,
                                              profile_results[0][i], profile_results[1][i], profile_results[2][i]) );
+    return;
+
+
+def write_disp_grd_files(params, inputs):
+    # Make surfaces of east/north/up deformation for plotting
+    region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+    utilities.displacements_to_3_grds(params.outdir,
+                                      efiles=('xy_east_model.txt', 'east.grd'),
+                                      nfiles=('xy_north_model.txt', 'north.grd'),
+                                      ufiles=('xy_vert_model.txt', 'vert.grd'), region=region, inc=0.0005)
     return;

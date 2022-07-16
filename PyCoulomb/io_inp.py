@@ -14,6 +14,7 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 
 
 def read_inp(input_file, fixed_rake):
+    fixed_rake = float(fixed_rake);
     print("Reading source and receiver information from file %s with fixed_rake = %f " % (input_file, fixed_rake));
     # inp files require fixed rake for receiver faults, since they don't provide a fault-specific one in input file.
 

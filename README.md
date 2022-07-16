@@ -27,16 +27,17 @@ Then, you call the program by passing the config file into the main executable:
 elastic_stresses_driver.py my_config.txt
 ```
 
-A complete config file, with both required and optional arguments: 
+A complete config file, with both required and optional arguments. Optional arguments can be omitted or be left blank.  
 ```
 [io-config]
 exp_name = my_experiment
 input_file = examples/example_case/M6.8_2014.inzero
 output_dir = Outputs/
+plot_stress = 1
+plot_grd_disp = 1
 aftershocks = [optional]
 gps_disp_points = [optional]
 strain_file = [optional]
-plot_stress = 1
 
 [compute-config]
 strike_num_receivers = 10

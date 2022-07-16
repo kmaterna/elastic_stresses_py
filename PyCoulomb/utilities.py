@@ -65,9 +65,20 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
     return [cmap_options, cbar_options];
 
 
+def displacements_to_3_grds(outdir, efiles, nfiles, ufiles, region, inc=0.0005):
+    """
+    Call gmt surface on each component. efiles, nfiles, and ufiles are tuples of inputs and outputs: (txtfile, grdfile)
+    """
+    call_gmt_surface(outdir+'/'+ufiles[0], outdir+'/'+ufiles[1], region, inc=inc);
+    call_gmt_surface(outdir+'/'+efiles[0], outdir+'/'+efiles[1], region, inc=inc);
+    call_gmt_surface(outdir+'/'+nfiles[0], outdir+'/'+nfiles[1], region, inc=inc);
+    return;
+
+
 def call_gmt_surface(xyzfile, outfile, region, inc):
     """
     Create a grd file from an xyz text file
+
     :param xyzfile: string
     :param outfile: string
     :param region: list of 4 floats

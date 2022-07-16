@@ -11,6 +11,9 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     Using PyGMT
     Filling in fault patches with colors corresponding to their stress changes
     """
+    if not out_object.receiver_object:
+        return;
+
     if stress_component == 'shear':
         plotting_stress = out_object.receiver_shear;
         label = 'Shear';
@@ -20,9 +23,6 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     else:
         plotting_stress = out_object.receiver_coulomb;  # The default option
         label = 'Coulomb';
-
-    if not out_object.receiver_object:
-        return;
 
     # Make stress bounds for color map.
     vmin, vmax = -1, 1;
@@ -74,11 +74,6 @@ def map_vertical_def(params, inputs, outfile):
 
     proj = 'M4i'
     region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
-
-    # First make surfaces of east/north/up deformation for later plotting
-    utilities.call_gmt_surface(params.outdir+'/xy_vert_model.txt', params.outdir+'/vert.grd', region, inc=0.0005);
-    utilities.call_gmt_surface(params.outdir+'/xy_east_model.txt', params.outdir+'/east.grd', region, inc=0.0005);
-    utilities.call_gmt_surface(params.outdir+'/xy_north_model.txt', params.outdir+'/north.grd', region, inc=0.0005);
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
