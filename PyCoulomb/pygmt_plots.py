@@ -77,7 +77,8 @@ def map_vertical_def(params, inputs, outfile):
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
-    pygmt.makecpt(cmap="roma", series="-0.045/0.045/0.001", background="o", output="mycpt.cpt");
+    max_down, max_up = -0.045, 0.045;
+    pygmt.makecpt(cmap="roma", series=str(max_down) + "/"+str(max_up)+"/0.001", background="o", output="mycpt.cpt");
     fig.basemap(region=region, projection=proj, frame="+t\"Vertical Displacement\"");
     fig.grdimage(params.outdir+'/vert.grd', region=region, cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
@@ -86,7 +87,7 @@ def map_vertical_def(params, inputs, outfile):
     fig = annotate_figure_with_sources(fig, inputs, params, dotstyle='s0.05c');
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c');
 
-    fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate="-0.045/0.045",
+    fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(max_down)+"/"+str(max_up),
                  frame=["x0.01", "y+L\"Disp(m)\""]);
     fig.savefig(outfile);
     return;
@@ -103,7 +104,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
     proj = 'M4i'
     region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
 
-    # Unpack
+    # Unpack modeled displacements, in meters
     model_dE = np.array([x.dE_obs for x in model_disp_points]);
     model_dN = np.array([x.dN_obs for x in model_disp_points]);
     model_dU = np.array([x.dU_obs for x in model_disp_points]);
@@ -115,6 +116,10 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
     pygmt.makecpt(cmap="roma", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]), background="o",
                   output="mycpt.cpt");
 
+    # Automatically define the vector scale bar based on max modeled displacements
+    scale_arrow, vectext = utilities.define_vector_scale_size(model_dE, model_dN);
+    scale = 2.5 / scale_arrow;  # empirical scaling, convenient display
+
     # Build a PyGMT plot
     fig = pygmt.Figure();
     fig.basemap(region=region, projection=proj, frame="+t\"Coseismic Displacements\"");
@@ -122,13 +127,6 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
               map_scale="n0.4/0.06+c" + str(region[2]) + "+w20", frame="1.0");
     fig.plot(x=model_lon, y=model_lat, style='c0.3c', color=model_dU, cmap='mycpt.cpt', pen="thin,black");
 
-    # Draw vectors and vector scale bar
-    # scale_factor = 1; scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
-    scale_factor = 100; scale_arrow = 0.010;  vectext = "10 mm";  # 10 mm, small vectors
-    # scale_factor = 1000; scale_arrow = 0.002; vectext = "2 mm";  # 1 mm, extra small vectors
-    max_disp = np.max(np.sqrt(np.square(model_dN) + np.square(model_dE)));
-
-    scale = (max_disp * scale_factor / 0.003);  # empirical scaling, convenient display
     fig.plot(x=model_lon, y=model_lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
              direction=[model_dE, model_dN], pen="thin,black");
     fig.plot(x=[region[0]+0.30], y=[region[2]+0.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),

@@ -9,7 +9,7 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
     Various scenarios of input plotting_arrays are coded here.
     The goal is to avoid issue of "z_high larger than highest z"
 
-    :param plotting_array: array that is being plotted with pygmt colorscale
+    :param plotting_array: 1d array that is being plotted with pygmt colorscale
     :param vmin: imposed lower bound of color scale
     :param vmax: imposed upper bound of color scale
     :param tol: lower tolerance on edges of color scale
@@ -65,13 +65,42 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
     return [cmap_options, cbar_options];
 
 
+def define_vector_scale_size(model_dE, model_dN):
+    """
+    Based on the modeled displacements, determine an appropriate vector scale for map visualization
+    """
+    max_disp = np.max(np.sqrt(np.square(model_dN) + np.square(model_dE)));
+    if max_disp > 0.5:
+        scale_arrow = 0.500;  vectext = "50 cm";
+    elif max_disp > 0.2:
+        scale_arrow = 0.200;  vectext = "20 cm";
+    elif max_disp > 0.10:
+        scale_arrow = 0.100;   vectext = "10 cm";  # 10 cm, large vectors
+    elif max_disp > 0.050:
+        scale_arrow = 0.05;   vectext = "5 cm";
+    elif max_disp > 0.02:
+        scale_arrow = 0.02;  vectext = "20 mm"
+    elif max_disp > 0.01:
+        scale_arrow = 0.01;  vectext = "10 mm"   # medium vectors
+    elif max_disp > 0.005:
+        scale_arrow = 0.005;  vectext = "5 mm"
+    elif max_disp > 0.002:
+        scale_arrow = 0.002;  vectext = "2 mm"  # small vectors
+    else:
+        scale_arrow = 0.001;  vectext = "1 mm"
+    return scale_arrow, vectext;
+
+
 def displacements_to_3_grds(outdir, efiles, nfiles, ufiles, region, inc=0.0005):
     """
     Call gmt surface on each component. efiles, nfiles, and ufiles are tuples of inputs and outputs: (txtfile, grdfile)
     """
     call_gmt_surface(outdir+'/'+ufiles[0], outdir+'/'+ufiles[1], region, inc=inc);
+    print("Printing "+ufiles[1]);
     call_gmt_surface(outdir+'/'+efiles[0], outdir+'/'+efiles[1], region, inc=inc);
+    print("Printing " + efiles[1]);
     call_gmt_surface(outdir+'/'+nfiles[0], outdir+'/'+nfiles[1], region, inc=inc);
+    print("Printing " + nfiles[1]);
     return;
 
 

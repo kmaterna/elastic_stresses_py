@@ -370,8 +370,9 @@ def write_horiz_profile(params, horiz_profile, profile_results):
 def write_disp_grd_files(params, inputs):
     # Make surfaces of east/north/up deformation for plotting
     region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+    inc = (region[1]-region[0]) / 500;  # for gmt mapping, default is 500 points per axis
     utilities.displacements_to_3_grds(params.outdir,
                                       efiles=('xy_east_model.txt', 'east.grd'),
                                       nfiles=('xy_north_model.txt', 'north.grd'),
-                                      ufiles=('xy_vert_model.txt', 'vert.grd'), region=region, inc=0.0005)
+                                      ufiles=('xy_vert_model.txt', 'vert.grd'), region=region, inc=inc)
     return;

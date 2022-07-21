@@ -18,6 +18,7 @@ Faults_object = collections.namedtuple('Faults_object', [
     'rtlat', 'reverse', 'tensile', 'potency',
     'strike', 'dipangle', 'rake',
     'top', 'bottom', 'comment']);
+# rtlat, reverse, tensile are in units of meters
 
 Input_object = collections.namedtuple('Input_object', [
     'PR1', 'FRIC', 'depth',

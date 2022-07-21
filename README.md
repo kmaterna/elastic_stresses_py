@@ -11,7 +11,7 @@ It requires utility functions in Tectonic_Utils (https://github.com/kmaterna/Tec
 
 To install Elastic_stresses_py, first clone this library onto your computer. 
 This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/). The easiest way is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
-Then, for Elastic_stresses_py, run ```python setup.py install``` from the directory where you've cloned the repository. 
+Then, from the conda environment you've just created, run ```python setup.py install``` from the directory where you've cloned the repository. 
 
 ### Usage
 The main executable is ```elastic_stresses_driver.py```, which takes a config file as the first argument.

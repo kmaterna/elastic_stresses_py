@@ -48,6 +48,8 @@ def fault_dict_to_coulomb_fault(fault_dict_list, zerolon_system=None, zerolat_sy
     Parameters zerolon_system and zerolat_system can be passed in for system with 1+ faults.
     """
     source_object = [];
+    if len(fault_dict_list) > 1 and zerolon_system is None:
+        print("Warning! You are converting multiple faults to cartesian without defining a system coordinate system!");
     for onefault in fault_dict_list:
         zerolon = onefault['lon'] if not zerolon_system else zerolon_system;
         zerolat = onefault['lat'] if not zerolat_system else zerolat_system;

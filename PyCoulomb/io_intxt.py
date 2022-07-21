@@ -15,7 +15,8 @@ def read_intxt(input_file):
     sources, receivers = [], [];
     receiver_horiz_profile = None;
     [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = get_general_compute_params(input_file);
-    [start_x, end_x, start_y, end_y, xinc, yinc] = compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolat);
+    [start_x, end_x, start_y, end_y, xinc, yinc] = compute_grid_params_general(minlon, maxlon, minlat, maxlat,
+                                                                               zerolon, zerolat);
     ifile = open(input_file, 'r');
     for line in ifile:
         temp = line.split();
@@ -256,17 +257,17 @@ def read_moment_tensor_source_line(line):
 # Compute functions to generate fault object's quantities
 # ------------------------------------
 
-def compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolat):
+def compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolon, zerolat):
     """
-    Compute the grid parameters that we'll be using, based on the size of the map.
-    Assuming 100 increments in both directions.
+    Compute the Cargesian grid parameters (in km) that we'll be using, based on the size of the map.
+    For synthetic displacements, assuming 100 increments in both directions.
     """
     deltalon = (maxlon - minlon) * 111.00 * np.cos(np.deg2rad(zerolat));  # in km.
     deltalat = (maxlat - minlat) * 111.00;  # in km.
-    start_gridx = -deltalon / 2.0;
-    finish_gridx = deltalon / 2.0;
-    start_gridy = -deltalat / 2.0;
-    finish_gridy = deltalat / 2.0;
+    start_gridx = (minlon - zerolon) * 111.00 * np.cos(np.deg2rad(zerolat));  # in km
+    finish_gridx = (maxlon - zerolon) * 111.00 * np.cos(np.deg2rad(zerolat));  # in km.;
+    start_gridy = (minlat - zerolat) * 111.00;  # in km.
+    finish_gridy = (maxlat - zerolat) * 111.00;  # in km.
     xinc = deltalon / 100.0;
     yinc = deltalat / 100.0;
     return [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc];
