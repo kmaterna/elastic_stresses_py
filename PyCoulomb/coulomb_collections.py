@@ -33,7 +33,8 @@ Input_object = collections.namedtuple('Input_object', [
     'receiver_object', 'receiver_horiz_profile'])
 
 Receiver_Horiz_Profile = collections.namedtuple('Receiver_Horiz_Profile', [
-    'depth_km', 'strike', 'dip', 'rake', 'centerlon', 'centerlat', 'lon1d', 'lat1d', 'shape'])
+    'depth_km', 'strike', 'dip', 'rake', 'centerlon', 'centerlat', 'lon1d', 'lat1d',
+    'width', 'length', 'inc', 'shape'])
 
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',

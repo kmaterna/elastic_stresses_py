@@ -53,8 +53,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     proj = "M7i"
     if not region:  # automatically determine the region
         buffer_deg = 0.15
-        lons, lats = fault_slip_object.get_four_corners_lon_lat(fault_dict_list[0]);
-        region = [np.min(lons)-buffer_deg, np.max(lons)+buffer_deg, np.min(lats)-buffer_deg, np.max(lats)+buffer_deg];
+        minlon, maxlon, minlat, maxlat = fault_slip_object.get_four_corners_lon_lat_multiple(fault_dict_list);
+        region = [minlon-buffer_deg, maxlon+buffer_deg, minlat-buffer_deg, maxlat+buffer_deg];
     fig = pygmt.Figure();
     fig_width_deg = region[1] - region[0];
     fig.basemap(region=region, projection=proj, frame="+t\"" + title + "\"");
@@ -69,9 +69,9 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                       truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
     for item in fault_dict_list:
         lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
-        fig.plot(x=lons, y=lats, zvalue=str(item["slip"]), pen="thick,black", color="+z", cmap="mycpt.cpt");
-        fig.plot(x=lons[0:2], y=lats[0:2], pen="thickest,black", color="+z", cmap="mycpt.cpt");
-    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="g-126.5/38.4+c1.5+w50");
+        fig.plot(x=lons, y=lats, zvalue=str(item["slip"]), pen="0.2p,black", color="+z", cmap="mycpt.cpt");
+        fig.plot(x=lons[0:2], y=lats[0:2], pen="0.8p,black", color="+z", cmap="mycpt.cpt");
+    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w25");
     if fault_dict_list:
         if plot_slip_colorbar:
             fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",

@@ -50,6 +50,11 @@ def read_intxt(input_file):
 
 
 def write_intxt(input_object, output_file, label=None):
+    """
+    :param input_object: cc.Input_object
+    :param output_file: string, filename
+    :param label: string, optional header
+    """
     ofile = open(output_file, 'w');
     if label:
         ofile.write(label);
@@ -60,14 +65,15 @@ def write_intxt(input_object, output_file, label=None):
                                                          input_object.maxlon, input_object.zerolon, input_object.minlat,
                                                          input_object.maxlat, input_object.zerolat) );
     for src in input_object.source_object:
-        if not src.potency:  # write a finite source
+        if not src.potency:  # write a finite source as a Source_Patch
             L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish);  # in km
             W = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle);  # in km
             fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
             slip = fault_vector_functions.get_vector_magnitude([src.rtlat, src.reverse]);  # in m
             ofile.write("Source_Patch: %f %f %f %f %f %f %f %f %f\n" % (src.strike, src.rake, src.dipangle, L, W,
                                                                         fault_lon, fault_lat, src.top, slip));
-        if src.potency:   # write a focal mechanism source
+        if src.potency:   # write a focal mechanism or point source
+            print("Warning: We are not yet prepared to write out Source_FM or Source_MT. Source will be ignored.")
             continue;   # still working on this.
     for rec in input_object.receiver_object:
         L = fault_vector_functions.get_strike_length(rec.xstart, rec.xfinish, rec.ystart, rec.yfinish);  # in km
@@ -75,6 +81,12 @@ def write_intxt(input_object, output_file, label=None):
         fault_lon, fault_lat = fault_vector_functions.xy2lonlat(rec.xstart, rec.ystart, rec.zerolon, rec.zerolat);
         ofile.write("Receiver: %f %f %f %f %f %f %f %f \n" % (rec.strike, rec.rake, rec.dipangle, L, W, fault_lon,
                                                               fault_lat, rec.top) );
+    if input_object.receiver_horiz_profile:
+        rec = input_object.receiver_horiz_profile;
+        ofile.write("Receiver_Horizontal_Profile: ");
+        ofile.write("%f %f %f %f " % (rec.depth_km, rec.strike, rec.dip, rec.rake))
+        ofile.write("%f %f " % (rec.centerlon, rec.centerlat) )
+        ofile.write("%f %f %f\n" % (rec.length, rec.width, rec.inc) );
     ofile.close();
     print("Writing file %s " % output_file);
     return;
@@ -98,6 +110,7 @@ def get_general_compute_params(input_file):
     assert (zerolat is not None), RuntimeError("Line General: general parameters not read from input file.");
     return [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat];
 
+
 def get_receiver_fault(line, zerolon, zerolat):
     """Create a receiver object from line in text file"""
     [strike, rake, dip, L, W, fault_lon, fault_lat, fault_depth] = read_receiver_line(line);
@@ -114,6 +127,7 @@ def get_receiver_fault(line, zerolon, zerolat):
     defensive_programming_faults(one_receiver_object);
     return one_receiver_object;
 
+
 def get_source_patch(line, zerolon, zerolat):
     """Create a source object from a patch in text file"""
     [strike, rake, dip, L, W, slip, tensile, flt_lon, flt_lat, fault_depth] = read_source_line_slip_convention(line);
@@ -127,6 +141,7 @@ def get_source_patch(line, zerolon, zerolat):
                                          dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
+
 
 def get_source_wc(line, zerolon, zerolat):
     """Create a source object from wells and coppersmith and text file"""
@@ -143,6 +158,7 @@ def get_source_wc(line, zerolon, zerolat):
     defensive_programming_faults(one_source_object);
     return one_source_object;
 
+
 def get_FocalMech_source(line, zerolon, zerolat):
     """Create a source object from a point source focal mechanism"""
     [strike, rake, dip, lon, lat, depth, magnitude, mu, _] = read_point_source_line(line);
@@ -155,6 +171,7 @@ def get_FocalMech_source(line, zerolon, zerolat):
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
+
 
 def get_MT_source(line, zerolon, zerolat):
     """Create a source object from a six-component moment tensor solution"""
@@ -169,6 +186,7 @@ def get_MT_source(line, zerolon, zerolat):
                                          rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
+
 
 def get_receiver_profile(line):
     """
@@ -186,7 +204,8 @@ def get_receiver_profile(line):
     lon1d = np.reshape(X, (np.size(X),));
     lat1d = np.reshape(Y, (np.size(X),));
     horiz_profile = cc.Receiver_Horiz_Profile(depth_km=depth, strike=strike, dip=dip, rake=rake, centerlon=centerlon,
-                                              centerlat=centerlat, lon1d=lon1d, lat1d=lat1d, shape=np.shape(X));
+                                              centerlat=centerlat, lon1d=lon1d, lat1d=lat1d, length=length, width=width,
+                                              inc=inc,  shape=np.shape(X));
     return horiz_profile;
 
 
@@ -272,6 +291,7 @@ def compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolon, zerolat
     yinc = deltalat / 100.0;
     return [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc];
 
+
 def compute_params_for_WC_source(strike, dip, rake, depth, mag, faulting_type, fault_lon, fault_lat, zerolon, zerolat):
     [xcenter, ycenter] = fault_vector_functions.latlon2xy(fault_lon, fault_lat, zerolon, zerolat);
     L = wells_and_coppersmith.RLD_from_M(mag, faulting_type);  # rupture length
@@ -289,6 +309,7 @@ def compute_params_for_WC_source(strike, dip, rake, depth, mag, faulting_type, f
     comment = '';
     return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment];
 
+
 def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fault_lat, slip, zerolon, zerolat):
     [xcorner, ycorner] = fault_vector_functions.latlon2xy(fault_lon, fault_lat, zerolon, zerolat);
     # if  hypocenter is really the center of the rupture:
@@ -303,6 +324,7 @@ def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fa
     comment = '';
     return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment]
 
+
 def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu):
     """ Given information about point sources from focal mechanisms,
     Return the right components that get packaged into input_obj. """
@@ -310,6 +332,7 @@ def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat,
     potency = get_DC_potency(rake, magnitude, mu);
     comment = '';
     return [xcenter, ycenter, 0, 0, potency, comment];
+
 
 def get_DC_potency(rake, momentmagnitude, mu):
     """
@@ -337,6 +360,7 @@ def get_DC_potency(rake, momentmagnitude, mu):
     p4 = 0;
     return [p1, p2, p3, p4];
 
+
 def get_mag_from_dc_potency(potency, mu, rake):
     """
     The opposite of the function above.
@@ -349,6 +373,7 @@ def get_mag_from_dc_potency(potency, mu, rake):
     Mw = moment_calculations.mw_from_moment(dc_moment);
     return Mw;
 
+
 def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1):
     """ Given information about point sources from moment tensors,
     Return the right components that get packaged into input_obj. """
@@ -356,6 +381,7 @@ def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1
     potency = get_MT_potency(MT, rake, mu, lame1);
     comment = '';
     return [xcenter, ycenter, 0, 0, potency, comment];
+
 
 def get_MT_potency(MT, rake, mu, lame1):
     """

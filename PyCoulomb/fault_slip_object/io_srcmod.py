@@ -39,7 +39,7 @@ def read_srcmod_distribution(infile):
                 depth_top, _ = fault_vector_functions.get_top_bottom_from_center(depth_top_center, total_width_km/nz,
                                                                                  overall_dip)
                 slip_m = float(temp[5]);
-                rake = float(temp[6]);
+                rake = float(temp[7]);
                 one_fault = {"strike": overall_strike, "dip": overall_dip, "length": total_len_km/nx,
                              "width": total_width_km/nz,
                              "depth": depth_top_center, "rake": rake, "slip": slip_m, "tensile": 0};

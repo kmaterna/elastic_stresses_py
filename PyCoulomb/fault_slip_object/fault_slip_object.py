@@ -45,6 +45,21 @@ def get_four_corners_lon_lat(fault_dict_object):
     return lons, lats;
 
 
+def get_four_corners_lon_lat_multiple(fault_dict_list):
+    """
+    Return the lon/lat of all 4 corners of a list of fault_dict_object
+    Basically the bounding box for this list of fault_dict_objects
+    """
+    lons_all, lats_all = [], [];
+    for item in fault_dict_list:
+        [source] = fault_dict_to_coulomb_fault([item]);
+        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
+        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, source.zerolon, source.zerolat);
+        lons_all = lons_all + lons;
+        lats_all = lats_all + lats;
+    return np.min(lons_all), np.max(lons_all), np.min(lats_all), np.max(lats_all);
+
+
 def get_updip_corners_lon_lat(fault_dict_object):
     """
     Return the lon/lat of 2 shallow corners of a fault_dict_object

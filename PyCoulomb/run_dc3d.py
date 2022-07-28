@@ -263,6 +263,7 @@ def compute_strains_stresses(params, inputs):
     if not inputs.receiver_object:
         return [receiver_normal, receiver_shear, receiver_coulomb];
 
+    print("Resolving stresses on receiver fault(s).")
     for receiver in inputs.receiver_object:
         centercoords = conversion_math.get_fault_center(receiver);
         normal_sum, shear_sum, coulomb_sum = 0, 0, 0;
