@@ -1,6 +1,8 @@
 # Definitions of objects used in this project
 
 import collections
+from . import conversion_math
+from Tectonic_Utils.geodesy import fault_vector_functions
 
 Params = collections.namedtuple('Params', [
     'config_file', 'input_file', 'aftershocks',
@@ -17,8 +19,10 @@ Faults_object = collections.namedtuple('Faults_object', [
     'Kode', 'zerolon', 'zerolat',
     'rtlat', 'reverse', 'tensile', 'potency',
     'strike', 'dipangle', 'rake',
-    'top', 'bottom', 'comment']);
+    'top', 'bottom', 'comment',
+    'R', 'R2', 'W', 'L', 'strike_unit_vector', 'dip_unit_vector', 'plane_normal']);
 # rtlat, reverse, tensile are in units of meters
+# See constructor below for the creating of this object.  We usually don't call this object directly.
 
 Input_object = collections.namedtuple('Input_object', [
     'PR1', 'FRIC', 'depth',
@@ -52,3 +56,28 @@ Displacement_points = collections.namedtuple('Disp_Points', [
 # Disp_points are now lists of individual disp_point elements
 # Displacements in meters
 # Might want to ensure that -180 < lon < 180 in the future
+
+
+def construct_fault_object(xstart, xfinish, ystart, yfinish, rtlat, reverse, tensile, potency, strike, dipangle, rake,
+                           zerolon, zerolat, top, bottom, Kode=100, comment=None):
+    """
+    Like a constructor for this named tuple.
+    You pass the required input parameters, and the remaining parameters are filled in.
+    While keeping the interface simple,
+    we are pre-computing some geometry parameters ONCE for each fault, for performance reasons.
+    """
+    R, R2 = conversion_math.get_R_from_strike(strike);
+    L = fault_vector_functions.get_strike_length(xstart, xfinish, ystart, yfinish);
+    W = fault_vector_functions.get_downdip_width(top, bottom, dipangle);
+    strike_unit_vector = fault_vector_functions.get_strike_vector(strike);  # 3d vector in horizontal plane.
+    dip_unit_vector = fault_vector_functions.get_dip_vector(strike, dipangle);  # a 3d vector.
+    plane_normal = fault_vector_functions.get_plane_normal(strike, dipangle);  # a 3d vector.
+
+    one_source = Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                               Kode=Kode, rtlat=rtlat, reverse=reverse, tensile=tensile,
+                               potency=potency, strike=strike, zerolon=zerolon, zerolat=zerolat,
+                               dipangle=dipangle, rake=rake, top=top, bottom=bottom, comment=comment,
+                               R=R, R2=R2, W=W, L=L,
+                               strike_unit_vector=strike_unit_vector, dip_unit_vector=dip_unit_vector,
+                               plane_normal=plane_normal);
+    return one_source;

@@ -49,22 +49,23 @@ def read_inp(input_file, fixed_rake):
                     [xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom,
                      comment] = read_fault_line(line);
                     rake = fault_vector_functions.get_rake(rtlat_strike_slip=rtlat, dip_slip=reverse);
-                    one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                                         Kode=Kode, rtlat=rtlat, reverse=reverse, tensile=0, potency=[],
-                                                         strike=strike, dipangle=dipangle, rake=rake, top=top,
-                                                         zerolon=zerolon, zerolat=zerolat,
-                                                         bottom=bottom, comment=comment);
+                    one_source_object = cc.construct_fault_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
+                                                                  yfinish=yfinish, Kode=Kode, rtlat=rtlat,
+                                                                  reverse=reverse, tensile=0, potency=[], strike=strike,
+                                                                  dipangle=dipangle, rake=rake, top=top,
+                                                                  zerolon=zerolon, zerolat=zerolat, bottom=bottom,
+                                                                  comment=comment);
                     sources.append(one_source_object)
                 else:  # here we have a receiver fault
                     [xstart, ystart, xfinish, yfinish, Kode, _, _, strike, dipangle, top, bottom,
                      comment] = read_fault_line(line);
                     rake = fixed_rake;
-                    one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
-                                                           yfinish=yfinish, Kode=Kode, rtlat=0, reverse=0,
-                                                           tensile=0, potency=[],
-                                                           strike=strike, dipangle=dipangle, rake=rake, top=top,
-                                                           zerolon=zerolon, zerolat=zerolat,
-                                                           bottom=bottom, comment=comment);
+                    one_receiver_object = cc.construct_fault_object(xstart=xstart, xfinish=xfinish, ystart=ystart,
+                                                                    yfinish=yfinish, Kode=Kode, rtlat=0, reverse=0,
+                                                                    tensile=0, potency=[], strike=strike,
+                                                                    dipangle=dipangle, rake=rake, top=top,
+                                                                    zerolon=zerolon, zerolat=zerolat,
+                                                                    bottom=bottom, comment=comment);
                     receivers.append(one_receiver_object);
     ifile.close();
 

@@ -120,10 +120,10 @@ def get_receiver_fault(line, zerolon, zerolat):
                                                                                                     fault_lat, 0,
                                                                                                     zerolon,
                                                                                                     zerolat);
-    one_receiver_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, Kode=100,
-                                           rtlat=0, reverse=0, tensile=0, potency=[],
-                                           strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat,
-                                           rake=rake, top=top, bottom=bottom, comment=comment);
+    one_receiver_object = cc.construct_fault_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                                    Kode=100, rtlat=0, reverse=0, tensile=0, potency=[],
+                                                    strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat,
+                                                    rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_receiver_object);
     return one_receiver_object;
 
@@ -134,11 +134,10 @@ def get_source_patch(line, zerolon, zerolat):
     [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
      comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, flt_lon, flt_lat, slip, zerolon,
                                                zerolat);
-    one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                         Kode=100, rtlat=rtlat, reverse=reverse, tensile=tensile,
-                                         potency=[], strike=strike,
-                                         zerolon=zerolon, zerolat=zerolat,
-                                         dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
+    one_source_object = cc.construct_fault_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                                  Kode=100, rtlat=rtlat, reverse=reverse, tensile=tensile,
+                                                  potency=[], strike=strike, zerolon=zerolon, zerolat=zerolat,
+                                                  dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
 
@@ -150,11 +149,10 @@ def get_source_wc(line, zerolon, zerolat):
     [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
      comment] = compute_params_for_WC_source(strike, dip, rake, fault_depth, magnitude, faulting_type, fault_lon,
                                              fault_lat, zerolon, zerolat);
-    one_source_object = cc.Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
-                                         Kode=100, rtlat=rtlat, reverse=reverse, tensile=0,
-                                         potency=[], strike=strike,
-                                         zerolon=zerolon, zerolat=zerolat,
-                                         dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
+    one_source_object = cc.construct_fault_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                                  Kode=100, rtlat=rtlat, reverse=reverse, tensile=0,
+                                                  potency=[], strike=strike, zerolon=zerolon, zerolat=zerolat,
+                                                  dipangle=dip, rake=rake, top=top, bottom=bottom, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
 
@@ -164,11 +162,10 @@ def get_FocalMech_source(line, zerolon, zerolat):
     [strike, rake, dip, lon, lat, depth, magnitude, mu, _] = read_point_source_line(line);
     [x, y, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat, zerolon,
                                                                                zerolat, mu);
-    one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
-                                         reverse=reverse, tensile=0,
-                                         potency=potency, strike=strike, dipangle=dip,
-                                         zerolon=zerolon, zerolat=zerolat,
-                                         rake=rake, top=depth, bottom=depth, comment=comment);
+    one_source_object = cc.construct_fault_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
+                                                  reverse=reverse, tensile=0, potency=potency, strike=strike,
+                                                  dipangle=dip, zerolon=zerolon, zerolat=zerolat,
+                                                  rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
 
@@ -179,11 +176,10 @@ def get_MT_source(line, zerolon, zerolat):
     MT = MT_calculations.get_MT(Mrr, Mtt, Mpp, Mrt, Mrp, Mtp);
     [x, y, rtlat, reverse, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu,
                                                                             lam1);
-    one_source_object = cc.Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
-                                         reverse=reverse, tensile=0, potency=potency,
-                                         strike=strike, dipangle=dip,
-                                         zerolon=zerolon, zerolat=zerolat,
-                                         rake=rake, top=depth, bottom=depth, comment=comment);
+    one_source_object = cc.construct_fault_object(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
+                                                  reverse=reverse, tensile=0, potency=potency, strike=strike,
+                                                  dipangle=dip, zerolon=zerolon, zerolat=zerolat,
+                                                  rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
     return one_source_object;
 

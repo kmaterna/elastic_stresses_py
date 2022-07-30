@@ -102,11 +102,10 @@ def get_fault_center(fault_object):
     """
     Compute the x-y-z coordinates of the center of a PyCoulomb fault patch (a namedtuple)
     """
-    W = fault_vector_functions.get_downdip_width(fault_object.top, fault_object.bottom, fault_object.dipangle);
     center_z = (fault_object.top+fault_object.bottom)/2.0;
     updip_center_x = (fault_object.xstart+fault_object.xfinish)/2.0;
     updip_center_y = (fault_object.ystart+fault_object.yfinish)/2.0;
-    vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle))/2.0;  # how far the middle is displaced
+    vector_mag = fault_object.W*np.cos(np.deg2rad(fault_object.dipangle))/2.0;  # how far the middle is displaced
     # downdip from map-view
     center_point = fault_vector_functions.add_vector_to_point(updip_center_x, updip_center_y, vector_mag,
                                                               fault_object.strike+90);
@@ -121,18 +120,16 @@ def get_fault_four_corners(fault_object, coords="cartesian"):
     dip is fault_object.dipangle (in case you need it)
     coords can be "cartesian" or "geographic" for lon/lat
     """
-    W = fault_vector_functions.get_downdip_width(fault_object.top, fault_object.bottom, fault_object.dipangle);
-    strike = fault_object.strike;
 
     updip_point0 = [fault_object.xstart, fault_object.ystart];
     updip_point1 = [fault_object.xfinish, fault_object.yfinish];
-    vector_mag = W*np.cos(np.deg2rad(fault_object.dipangle));  # how far the bottom edge is displaced
+    vector_mag = fault_object.W*np.cos(np.deg2rad(fault_object.dipangle));  # how far the bottom edge is displaced
     # downdip from map-view
     downdip_point0 = fault_vector_functions.add_vector_to_point(fault_object.xstart, fault_object.ystart, vector_mag,
-                                                                strike+90);
+                                                                fault_object.strike+90);
     # strike+90 = downdip direction.
     downdip_point1 = fault_vector_functions.add_vector_to_point(fault_object.xfinish, fault_object.yfinish, vector_mag,
-                                                                strike+90);
+                                                                fault_object.strike+90);
 
     if coords == 'geographic':
         updip_point0 = fault_vector_functions.xy2lonlat_single(updip_point0[0], updip_point0[1],
@@ -151,6 +148,7 @@ def get_fault_four_corners(fault_object, coords="cartesian"):
 
     return [x_total, y_total, x_updip, y_updip];
 
+
 def get_fault_slip_moment(fault_object, mu):
     """
     From a source fault object, calculate the seismic moment.
@@ -159,10 +157,7 @@ def get_fault_slip_moment(fault_object, mu):
     """
     if fault_object.potency:  # for the case of point source, we can't do the moment calculation
         return None, None;
-    W = fault_vector_functions.get_downdip_width(fault_object.top, fault_object.bottom, fault_object.dipangle);
-    L = fault_vector_functions.get_strike_length(fault_object.xstart, fault_object.xfinish, fault_object.ystart,
-                                                 fault_object.yfinish);
-    area = L * W * 1000 * 1000;
+    area = fault_object.L * fault_object.W * 1000 * 1000;
     slip = fault_vector_functions.get_vector_magnitude([fault_object.rtlat, fault_object.reverse]);
     seismic_moment = mu * area * slip;
     moment_magnitude = moment_calculations.mw_from_moment(seismic_moment);
@@ -199,23 +194,6 @@ def rotate_list_of_points(xlist, ylist, degrees):
     return xprime_list, yprime_list;
 
 
-def get_geom_attributes_from_sources(sources):
-    """
-    Pre-compute geometry terms for a set of source faults.
-    """
-    # Perf improvement: Compute lists of source geometry parameters before we loop over sources.
-    source_Rs, source_R2s, Ls, Ws = [], [], [], [];
-    for source in sources:
-        R, R2 = get_R_from_strike(source.strike);
-        source_Rs.append(R);
-        source_R2s.append(R2);
-        L = fault_vector_functions.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
-        W = fault_vector_functions.get_downdip_width(source.top, source.bottom, source.dipangle);
-        Ls.append(L);
-        Ws.append(W);
-    return source_Rs, source_R2s, Ls, Ws;
-
-
 def get_geom_attributes_from_receiver_profile(profile):
     """
     Pre-compute geometry for receiver plane
@@ -224,18 +202,3 @@ def get_geom_attributes_from_receiver_profile(profile):
     dip_unit_vector = fault_vector_functions.get_dip_vector(profile.strike, profile.dip);  # a 3d vector.
     plane_normal = fault_vector_functions.get_plane_normal(profile.strike, profile.dip);  # a 3d vector.
     return strike_unit_vector, dip_unit_vector, plane_normal;
-
-
-def get_geom_attributes_from_receivers(receivers):
-    """
-    Pre-compute geometry for receivers
-    """
-    strike_unit_vs, dip_unit_vs, plane_normal_vs = [], [], [];
-    for item in receivers:
-        strike_unit_vector = fault_vector_functions.get_strike_vector(item.strike);  # 3d vector in horizontal plane.
-        dip_unit_vector = fault_vector_functions.get_dip_vector(item.strike, item.dipangle);  # a 3d vector.
-        plane_normal = fault_vector_functions.get_plane_normal(item.strike, item.dipangle);  # a 3d vector.
-        strike_unit_vs.append(strike_unit_vector);
-        dip_unit_vs.append(dip_unit_vector);
-        plane_normal_vs.append(plane_normal);
-    return strike_unit_vs, dip_unit_vs, plane_normal_vs;
