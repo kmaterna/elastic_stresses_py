@@ -84,7 +84,7 @@ def map_vertical_def(params, inputs, outfile):
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
               map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0");
 
-    fig = annotate_figure_with_sources(fig, inputs, params, dotstyle='s0.05c');
+    fig = annotate_figure_with_sources(fig, inputs, params, dotstyle='s0.01c');
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c');
 
     fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(max_down)+"/"+str(max_up),
@@ -174,7 +174,7 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
         if not source.potency:  # in case of area sources, outline the fault patches
-            fig.plot(x=lons, y=lats, pen="thick,black");
+            fig.plot(x=lons, y=lats, pen="0.2p,black");
         else:  # in case of point sources, draw focal mechanisms
             mag = io_intxt.get_mag_from_dc_potency(source.potency, params.mu, source.rake);
             focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)

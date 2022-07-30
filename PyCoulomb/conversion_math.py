@@ -37,28 +37,45 @@ def get_stress_tensor(eij, lamda, mu):
 
 def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
     """
-    Given a stress tensor, strike, rake, and dip
+    Given a stress tensor, receiver strike, receiver rake, and receiver dip
     Resolve the stress changes on the fault plane.
     Tau is full 3x3 stress tensor
     Friction is coefficient of friction
     B is Skepmton's coefficient
     Return in KPa
     """
-
+    # First compute the geometric vectors associated with the receiver
     strike_unit_vector = fault_vector_functions.get_strike_vector(strike);  # a 3d vector in the horizontal plane.
     dip_unit_vector = fault_vector_functions.get_dip_vector(strike, dip);  # a 3d vector.
     plane_normal = fault_vector_functions.get_plane_normal(strike, dip);  # a 3d vector.
-    traction_vector = np.dot(tau, plane_normal);
+
+    effective_normal_stress, shear_stress, coulomb_stress = \
+        get_coulomb_stresses_internal(tau, strike_unit_vector, rake, dip_unit_vector, plane_normal, friction, B);
+
+    return effective_normal_stress, shear_stress, coulomb_stress;
+
+
+def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, rec_plane_normal, friction, B):
+    """
+    The math behind Coulomb stresses
+    Given a stress tensor, receiver strike, receiver rake, and receiver dip
+    Resolve the stress changes on the fault plane.
+    Tau is full 3x3 stress tensor
+    Friction is coefficient of friction
+    B is Skepmton's coefficient
+    Return in KPa
+    """
+    traction_vector = np.dot(tau, rec_plane_normal);
 
     # The stress that's normal to the receiver fault plane:
-    dry_normal_stress = np.dot(plane_normal, traction_vector);  # positive = unclamping (same as Coulomb software)
-    effective_normal_stress = dry_normal_stress - np.average(np.diag(tau)) * B;
+    dry_normal_stress = np.dot(rec_plane_normal, traction_vector);  # positive = unclamping (same as Coulomb software)
+    effective_normal_stress = dry_normal_stress - (np.trace(tau) / 3.0) * B;
 
     # The shear stress causing strike slip (in the receiver fault plane).
-    shear_rtlat = np.dot(strike_unit_vector, traction_vector);
+    shear_rtlat = np.dot(rec_strike_vector, traction_vector);
 
     # The shear stress causing reverse slip (in the receiver fault plane).
-    shear_reverse = np.dot(dip_unit_vector, traction_vector);
+    shear_reverse = np.dot(rec_dip_vector, traction_vector);
 
     # The shear that we want (in the rake direction).
     rake_rad = np.deg2rad(rake);
@@ -151,6 +168,18 @@ def get_fault_slip_moment(fault_object, mu):
     moment_magnitude = moment_calculations.mw_from_moment(seismic_moment);
     return seismic_moment, moment_magnitude;
 
+
+def get_R_from_strike(strike):
+    """Compute the rotation matrix into a system with a given fault strike"""
+    # Preparing to rotate to a fault-oriented coordinate system.
+    theta = strike - 90;
+    theta = np.deg2rad(theta);
+    R = np.array([[np.cos(theta), -np.sin(theta), 0], [np.sin(theta), np.cos(theta), 0],
+                  [0, 0, 1]]);  # horizontal rotation into strike-aligned coordinates.
+    R2 = np.array([[np.cos(-theta), -np.sin(-theta), 0], [np.sin(-theta), np.cos(-theta), 0], [0, 0, 1]]);
+    return R, R2;
+
+
 def rotate_points(x, y, degrees):
     """Rotate cartesian points into a new orthogonal coordinate system. Implements a rotation matrix. """
     rot_matrix = np.array([[np.cos(np.deg2rad(degrees)), -np.sin(np.deg2rad(degrees))],
@@ -168,3 +197,45 @@ def rotate_list_of_points(xlist, ylist, degrees):
         xprime_list.append(xprime);
         yprime_list.append(yprime);
     return xprime_list, yprime_list;
+
+
+def get_geom_attributes_from_sources(sources):
+    """
+    Pre-compute geometry terms for a set of source faults.
+    """
+    # Perf improvement: Compute lists of source geometry parameters before we loop over sources.
+    source_Rs, source_R2s, Ls, Ws = [], [], [], [];
+    for source in sources:
+        R, R2 = get_R_from_strike(source.strike);
+        source_Rs.append(R);
+        source_R2s.append(R2);
+        L = fault_vector_functions.get_strike_length(source.xstart, source.xfinish, source.ystart, source.yfinish);
+        W = fault_vector_functions.get_downdip_width(source.top, source.bottom, source.dipangle);
+        Ls.append(L);
+        Ws.append(W);
+    return source_Rs, source_R2s, Ls, Ws;
+
+
+def get_geom_attributes_from_receiver_profile(profile):
+    """
+    Pre-compute geometry for receiver plane
+    """
+    strike_unit_vector = fault_vector_functions.get_strike_vector(profile.strike);  # 3d vector in horizontal plane.
+    dip_unit_vector = fault_vector_functions.get_dip_vector(profile.strike, profile.dip);  # a 3d vector.
+    plane_normal = fault_vector_functions.get_plane_normal(profile.strike, profile.dip);  # a 3d vector.
+    return strike_unit_vector, dip_unit_vector, plane_normal;
+
+
+def get_geom_attributes_from_receivers(receivers):
+    """
+    Pre-compute geometry for receivers
+    """
+    strike_unit_vs, dip_unit_vs, plane_normal_vs = [], [], [];
+    for item in receivers:
+        strike_unit_vector = fault_vector_functions.get_strike_vector(item.strike);  # 3d vector in horizontal plane.
+        dip_unit_vector = fault_vector_functions.get_dip_vector(item.strike, item.dipangle);  # a 3d vector.
+        plane_normal = fault_vector_functions.get_plane_normal(item.strike, item.dipangle);  # a 3d vector.
+        strike_unit_vs.append(strike_unit_vector);
+        dip_unit_vs.append(dip_unit_vector);
+        plane_normal_vs.append(plane_normal);
+    return strike_unit_vs, dip_unit_vs, plane_normal_vs;
