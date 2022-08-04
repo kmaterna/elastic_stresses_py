@@ -1,7 +1,7 @@
 # output_manager
 
 import numpy as np
-import pygmt
+import pygmt, os
 from . import io_additionals, utilities, io_intxt, conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -44,13 +44,11 @@ def map_stress_plot(params, inputs, out_object, stress_component):
 
     fig = annotate_figure_with_sources(fig, inputs, params);
 
-    # Draw each receiver, with associated data
-    for i in range(len(out_object.receiver_object)):
-        rec = out_object.receiver_object[i];
-        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(rec);
-        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        fig.plot(x=lons, y=lats, zvalue=str(plotting_stress[i]), pen="thick,black", color="+z", cmap="mycpt.cpt");
-        # color = stress
+    # Plot the stress components
+    utilities.write_fault_edges_to_gmt_file(out_object.receiver_object, 'tmp.txt', colorcode='custom',
+                                            color_array=plotting_stress);
+    fig.plot(data='tmp.txt', pen="thick,black", color="+z", cmap="mycpt.cpt");
+    os.remove('tmp.txt');
 
     # Colorbar annotation
     fig.coast(shorelines="1.0p,black", region=region, projection=proj);  # the boundary.
@@ -166,19 +164,20 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
     for source in inputs.source_object:
         source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
                                                                   inputs.zerolat);
-        eq_lon.append(source_lon);
-        eq_lat.append(source_lat);
+        eq_lon.append(source_lon); eq_lat.append(source_lat);
     fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, color="purple", pen="thin,black");
 
-    for source in inputs.source_object:
+    rect_sources, point_sources = utilities.split_rectangular_from_point_sources(inputs.source_object);
+    for source in point_sources:  # draw focal mechanisms
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        if not source.potency:  # in case of area sources, outline the fault patches
-            fig.plot(x=lons, y=lats, pen="0.2p,black");
-        else:  # in case of point sources, draw focal mechanisms
-            mag = io_intxt.get_mag_from_dc_potency(source.potency, params.mu, source.rake);
-            focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
-            fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top);
+        mag = io_intxt.get_mag_from_dc_potency(source.potency, params.mu, source.rake);
+        focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
+        fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top);
+    # draw the fault patches, no special color code
+    utilities.write_fault_edges_to_gmt_file(rect_sources, "tmp.txt", colorcode='None');
+    fig.plot(data='tmp.txt', pen="0.2p,black");
+    os.remove('tmp.txt');
     return fig;
 
 

@@ -22,17 +22,21 @@ def read_srcmod_distribution(infile):
     ifile = open(infile, 'r');
     for line in ifile:
         temp = line.split();
+        if len(temp) == 0:
+            continue;
+        if len(temp) <= 3 and line[0] == '%':
+            continue;
         if len(temp) > 3:
-            if temp[0] == '%' and temp[1] == 'Mech':
+            if line[0] == '%' and temp[1] == 'Mech':
                 overall_strike = float(temp[5]);
                 overall_dip = float(temp[8]);
-            if temp[0] == '%' and temp[1] == 'Size':
+            if line[0] == '%' and temp[1] == 'Size':
                 total_len_km = float(temp[5]);
                 total_width_km = float(temp[9]);
-            if temp[0] == '%' and temp[3] == 'Nx':
+            if line[0] == '%' and temp[3] == 'Nx':
                 nx = int(temp[5]);
                 nz = int(temp[8]);
-            if temp[0] != '%':
+            if line[0] != '%':
                 lon_top_center = float(temp[1]);
                 lat_top_center = float(temp[0]);
                 depth_top_center = float(temp[4]);

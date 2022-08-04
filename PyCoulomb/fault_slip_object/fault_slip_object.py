@@ -163,21 +163,27 @@ def filter_by_depth(fault_dict_list, upper_depth, lower_depth):
     return new_list;
 
 
-def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip'):
+def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip', color_array=None, verbose=True):
     """
     Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT
     By default, colors patches by slip on fault segment.
-    Can color patches by their depth.
+    colorcode = ['slip', 'depth', 'custom', 'None']
+    color_array is 1d array for custom colorcode.
     """
-    print("Writing file %s " % outfile);
+    if verbose:
+        print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
-    for fault in fault_dict_list:
+    for i, fault in enumerate(fault_dict_list):
         lons, lats = get_four_corners_lon_lat(fault);
         if colorcode == 'depth':
-            color_string = str(fault['depth']);
-        else:
-            color_string = str(fault['slip'])
-        ofile.write("> -Z"+color_string+"\n");
+            color_string = "-Z"+str(fault['depth']);
+        elif colorcode == 'slip':
+            color_string = "-Z"+str(fault['slip'])
+        elif colorcode == 'custom':
+            color_string = "-Z"+str(color_array[i]);
+        else:   # no color attached
+            color_string = '';
+        ofile.write("> "+color_string+"\n");
         ofile.write("%f %f\n" % (lons[0], lats[0]));
         ofile.write("%f %f\n" % (lons[1], lats[1]));
         ofile.write("%f %f\n" % (lons[2], lats[2]));
@@ -186,11 +192,13 @@ def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip'):
     ofile.close();
     return;
 
-def write_gmt_surface_trace(fault_dict_list, outfile):
+
+def write_gmt_surface_trace(fault_dict_list, outfile, verbose=True):
     """
-    Write the 2 updip corners of a fault into a multi-segment file for plotting in GMT
+    Write the 2 updip corners of a rectangular fault into a multi-segment file for plotting in GMT
     """
-    print("Writing file %s " % outfile);
+    if verbose:
+        print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
     for fault in fault_dict_list:
         lons, lats = get_four_corners_lon_lat(fault);
@@ -199,6 +207,7 @@ def write_gmt_surface_trace(fault_dict_list, outfile):
         ofile.write("%f %f\n" % (lons[1], lats[1]));
     ofile.close();
     return;
+
 
 def write_gmt_vertical_fault_file(fault_dict_list, outfile):
     """

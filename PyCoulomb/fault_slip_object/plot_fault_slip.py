@@ -2,6 +2,7 @@
 
 import numpy as np
 import pygmt
+import os
 from ..fault_slip_object import fault_slip_object
 from .. import utilities
 
@@ -29,6 +30,15 @@ def unpack_horiz_disp_points_for_vectors(disp_points):
     disp_x_horiz = np.array([x.dE_obs for x in disp_points if ~np.isnan(x.dE_obs)]);
     disp_y_horiz = np.array([x.dN_obs for x in disp_points if ~np.isnan(x.dE_obs)]);
     return [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz];
+
+
+def write_patch_edges_for_plotting(fault_dict_list, colorby='slip'):
+    """
+    Plot the full patches and the surface traces of a collection of rectangular faults.  Can colorcode by slip.
+    """
+    fault_slip_object.write_gmt_fault_file(fault_dict_list, 'tmp.txt', colorcode=colorby, verbose=False);
+    fault_slip_object.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
+    return "tmp.txt", "tmp2.txt";
 
 
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
@@ -67,10 +77,11 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     if len(fault_colors) > 0:
         pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
                       truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
-    for item in fault_dict_list:
-        lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
-        fig.plot(x=lons, y=lats, zvalue=str(item["slip"]), pen="0.2p,black", color="+z", cmap="mycpt.cpt");
-        fig.plot(x=lons[0:2], y=lats[0:2], pen="0.8p,black", color="+z", cmap="mycpt.cpt");
+    # Write the source patches
+    file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='slip');   # write the source patches
+    fig.plot(data=file1, pen="0.2p,black", color="+z", cmap="mycpt.cpt");
+    fig.plot(data=file2, pen="0.6p,black");   # shallow edges
+    os.remove(file1); os.remove(file2);
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w25");
     if fault_dict_list:
         if plot_slip_colorbar:
@@ -158,10 +169,10 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             [_, _, _, _, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(model_disp_points);
             [lon_horiz, lat_horiz, dispx_horiz, dispy_horiz] = unpack_horiz_disp_points_for_vectors(model_disp_points);
 
-            for item in fault_dict_list:
-                lons, lats = fault_slip_object.get_four_corners_lon_lat(item);
-                fig.plot(x=lons, y=lats, projection=proj, pen="thick,black", color="white");
-                fig.plot(x=lons[0:2], y=lats[0:2], projection=proj, pen="thickest,black", color="white");
+            file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='None');
+            fig.plot(data=file1, pen="0.2p,black", color="white");  # annotate the rectangular fault patches
+            fig.plot(data=file2, pen="0.6p,black", projection=proj);  # annotate shallow edges of rect. fault patches
+            os.remove(file1); os.remove(file2);
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
                 fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
