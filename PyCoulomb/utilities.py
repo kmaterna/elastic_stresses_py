@@ -1,6 +1,8 @@
 
 import numpy as np
 from subprocess import call
+from Tectonic_Utils.seismo import moment_calculations
+import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
 
 
 def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_labeling_interval=None):
@@ -116,4 +118,18 @@ def call_gmt_surface(xyzfile, outfile, region, inc):
     call(['gmt', 'surface', xyzfile, '-G' + outfile,
           '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
           '-r'], shell=False);
+    return;
+
+
+def print_metrics_on_sources(source_object):
+    """
+    Print overall magnitude of source objects.
+    Skips fault sources if they are point sources (Focal Mechanisms or Moment Tensors)
+    *** Can try to fix that later.
+    """
+    print("Number of sources:", len(source_object));
+    fault_dict_list = fso.io_pycoulomb.coulomb_fault_to_fault_dict(source_object);
+    # default mu = 30GPa
+    Mw = moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list))
+    print("Moment Magnitude from Rectangular Fault Patches: ", Mw);
     return;
