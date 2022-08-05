@@ -36,6 +36,6 @@ def read_inputs(params):
 
     assert input_object.source_object, ValueError("You have not specified any sources.");
     utilities.print_metrics_on_sources(input_object.source_object);
-    utilities.check_each_source_has_same_coord_system(input_object.source_object+input_object.receiver_object,
-                                                      input_object.zerolon, input_object.zerolat);
+    utilities.check_each_fault_has_same_coord_system(input_object.source_object + input_object.receiver_object,
+                                                     input_object.zerolon, input_object.zerolat);
     return [input_object, disp_points, strain_points];

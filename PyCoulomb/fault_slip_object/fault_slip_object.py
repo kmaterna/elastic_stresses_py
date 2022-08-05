@@ -2,14 +2,13 @@
 The functions in this package operate on an internal format of faults/ slip distributions
 For all other formats, make sure you build read/write conversion AND TEST functions into internal format.
 
-Written file formats:
-    * Format: geojson format for Slippy input faults
-    * Format: slippy format, output format for Elastic_stresses_py and Slippy
-    * Format: static1d/visco1d, Fred Pollitz's STATIC1D code.
-    * Format: four-corners, used for Wei et al. 2015
-Computer memory formats:
-    * Format: fault_dict dictionary with all the elements for a slip distribution (INTERNAL FORMAT FOR THIS LIBRARY)
-    * Format: PyCoulomb format, a named tuple (For Elastic_stresses_py.PyCoulomb)
+    * Format(File): geojson format for Slippy input faults
+    * Format(File): slippy format, output format for Elastic_stresses_py and Slippy
+    * Format(File): static1d/visco1d, Fred Pollitz's STATIC1D code.
+    * Format(File): four-corners, used for Wei et al. 2015
+    * Format(File): .fsp format, used by USGS fault distributions and srcmod database
+    * Format(Memory): fault_dict dictionary with elements for a slip distribution (INTERNAL FORMAT FOR THIS LIBRARY)
+    * Format(Memory): PyCoulomb format, a named tuple (For Elastic_stresses_py.PyCoulomb)
 
 The internal format here is a dictionary containing:
 Fault_Dict:
@@ -168,6 +167,10 @@ def filter_by_depth(fault_dict_list, upper_depth, lower_depth):
 
 
 def get_how_many_segments(fault_dict_list):
+    """
+    Reduce fault_dict_list into the number of segments (often 1) and the number of individual fault patches
+    :param fault_dict_list: list of fault_slip_dictionaries
+    """
     segments = [x["segment"] for x in fault_dict_list];
     num_segments = len(set(segments));
     num_patches = len(segments);

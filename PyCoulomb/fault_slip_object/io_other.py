@@ -9,6 +9,7 @@ from . import io_four_corners
 
 def io_hamling_2017(filename):
     """Read Ian Hamling's 2017 Science paper fault model"""
+    print("Reading file %s " % filename);
     fault_dict_list = [];
     [centerlon, centerlat, strike, dip, rake, slip, l_km, top_km, bottom_km, segment] = np.loadtxt(filename,
                                                                                                    unpack=True,
@@ -34,6 +35,7 @@ def io_wallace_sse(filename):
     """
     Read Laura Wallace's slow slip event files for New Zealand
     """
+    print("Reading file %s " % filename);
     fault_dict_list = [];
     ifile = open(filename, 'r');
     for line in ifile:

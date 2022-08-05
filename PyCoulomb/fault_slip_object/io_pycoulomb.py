@@ -61,11 +61,11 @@ def fault_dict_to_coulomb_fault(fault_dict_list, zerolon_system=None, zerolat_sy
         rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(onefault['slip'], onefault['rake']);
         xfinish, yfinish = fault_vector_functions.add_vector_to_point(startx, starty, onefault['length'],
                                                                       onefault['strike']);
-        one_source = cc.construct_pycoulomb_fault(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish, Kode=100,
-                                                  rtlat=rtlat, reverse=reverse, tensile=onefault['tensile'],
-                                                  potency=[], strike=onefault['strike'],
-                                                  dipangle=onefault['dip'], zerolon=zerolon, zerolat=zerolat,
-                                                  rake=onefault['rake'], top=onefault['depth'], bottom=bottom, comment='');
+        one_source = cc.construct_pycoulomb_fault(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish,
+                                                  Kode=100, rtlat=rtlat, reverse=reverse, tensile=onefault['tensile'],
+                                                  potency=[], strike=onefault['strike'], dipangle=onefault['dip'],
+                                                  zerolon=zerolon, zerolat=zerolat, rake=onefault['rake'],
+                                                  top=onefault['depth'], bottom=bottom, comment='');
         source_object.append(one_source);
     return source_object;
 
@@ -77,6 +77,6 @@ def read_pycoulomb_displacements(filename):
     for i in range(len(lon)):
         disp_point = cc.Displacement_points(lon=lon[i], lat=lat[i], dE_obs=disp_x_Okada[i], dN_obs=disp_y_Okada[i],
                                             dU_obs=disp_z_Okada[i], Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan,
-                                            name="");
+                                            name="", starttime=None, endtime=None, meas_type=None, refframe=None);
         disp_points.append(disp_point);
     return disp_points;

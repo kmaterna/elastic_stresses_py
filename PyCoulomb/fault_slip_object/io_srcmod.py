@@ -38,7 +38,6 @@ def read_srcmod_distribution(infile):
                 total_len_km = float(temp[5]);
                 total_width_km = float(temp[9]);
             if "% SEGMENT #" in line:  # Enter into segment definition for multi-segment file
-                print("starting new segment");
                 segment_number = int(temp[3].strip(":"));
                 overall_strike = float(temp[6]);
                 overall_dip = float(temp[10]);
@@ -48,8 +47,8 @@ def read_srcmod_distribution(infile):
                 segnum = segment_list[segment_number-1];  # one-indexed segments, zero-indexed python
                 nx = nx_list[segment_number-1];
                 nz = nz_list[segment_number-1];  # for multi-segment files
-                print("strike, dip, len, width, nx, nz, segnum")
-                print(overall_strike, overall_dip, total_len_km, total_width_km, nx, nz, segnum);
+                print("segnum, strike, dip, len, width, nx, nz")
+                print(segnum, overall_strike, overall_dip, total_len_km, total_width_km, nx, nz);
             if line[0] != '%':
                 one_fault = read_srcmod_line(line, overall_strike, overall_dip, total_len_km, total_width_km, nx, nz,
                                              segment=segnum, rake_col=rake_col);

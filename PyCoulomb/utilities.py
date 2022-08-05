@@ -126,7 +126,7 @@ def print_metrics_on_sources(source_object):
     Print overall magnitude of rectangular source objects.
     """
     print("Number of sources:", len(source_object));
-    rect_sources, point_sources = split_rectangular_from_point_sources(source_object);
+    rect_sources, point_sources = separate_rectangular_from_point_sources(source_object);
     if len(point_sources) > 0:
         print("Number of point sources: %d" % len(point_sources) );
     if len(rect_sources) > 0:
@@ -137,7 +137,7 @@ def print_metrics_on_sources(source_object):
     return;
 
 
-def split_rectangular_from_point_sources(source_object):
+def separate_rectangular_from_point_sources(source_object):
     point_sources, rect_sources = [], [];
     for source in source_object:
         if source.potency:
@@ -153,14 +153,14 @@ def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', colorcode='sl
     colorcode: string used for which parameter is going to be plotted.
     colorcode can be 'custom' if a 1D color_array is provided
     """
-    rect_sources, _ = split_rectangular_from_point_sources(fault_object);
+    rect_sources, _ = separate_rectangular_from_point_sources(fault_object);
     fault_dict_list = fso.io_pycoulomb.coulomb_fault_to_fault_dict(fault_object);
     fso.fault_slip_object.write_gmt_fault_file(fault_dict_list, outfile, colorcode=colorcode, color_array=color_array,
                                                verbose=False);
     return;
 
 
-def check_each_source_has_same_coord_system(list_of_fault_objects, system_zerolon, system_zerolat):
+def check_each_fault_has_same_coord_system(list_of_fault_objects, system_zerolon, system_zerolat):
     """
     Check that all faults have the same coord system
     """

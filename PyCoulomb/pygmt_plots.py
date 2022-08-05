@@ -167,7 +167,7 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
         eq_lon.append(source_lon); eq_lat.append(source_lat);
     fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, color="purple", pen="thin,black");
 
-    rect_sources, point_sources = utilities.split_rectangular_from_point_sources(inputs.source_object);
+    rect_sources, point_sources = utilities.separate_rectangular_from_point_sources(inputs.source_object);
     for source in point_sources:  # draw focal mechanisms
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
