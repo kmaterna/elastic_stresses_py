@@ -6,3 +6,4 @@ from . import io_slippy
 from . import plot_fault_slip
 from . import fault_slip_object
 from . import io_srcmod
+from . import io_other

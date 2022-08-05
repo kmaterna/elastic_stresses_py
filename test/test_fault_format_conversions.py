@@ -4,7 +4,7 @@ import unittest
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
 
 example_fault = {'strike': 5, 'dip': 75, 'length': 40, 'width': 20, 'lon': -123.00, 'lat': 40.00,
-                 'depth': 3, 'rake': 10, 'slip': 1, 'tensile': 0};
+                 'depth': 3, 'rake': 10, 'slip': 1, 'tensile': 0, 'segment': 0};
 
 
 class Tests(unittest.TestCase):

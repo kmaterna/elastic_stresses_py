@@ -57,6 +57,7 @@ def read_srcmod_distribution(infile):
                                                                           lat_top_center);
                 one_fault["lon"] = corner_lon;
                 one_fault["lat"] = corner_lat;
+                one_fault["segment"] = 0;  # will be adjusted in the future
                 fault_list.append(one_fault);
     ifile.close();
     print("  -->Returning %d fault segments" % len(fault_list));

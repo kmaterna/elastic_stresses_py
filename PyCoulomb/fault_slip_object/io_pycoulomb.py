@@ -37,6 +37,7 @@ def coulomb_fault_to_fault_dict(source_object):
         lon, lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
         one_fault["lon"] = lon;
         one_fault["lat"] = lat
+        one_fault["segment"] = 0;
         fault_dict_list.append(one_fault);
     return fault_dict_list;
 

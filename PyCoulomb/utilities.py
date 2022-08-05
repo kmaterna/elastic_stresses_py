@@ -25,7 +25,7 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
         if bumper < tol:
             bumper = tol;
         cmap_options = [vmin-bumper, vmax+bumper, total_interval/100];  # color maps
-        cbar_options = [vmin, vmax, np.round((vmax-vmin)/8, 5)];  # color bars
+        cbar_options = [vmin, vmax, np.round((vmax-vmin)/8, 3)];  # color bars
         return [cmap_options, cbar_options];
 
     if plotting_array is None:    # if no plotting array is passed
@@ -59,7 +59,7 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
             if v_labeling_interval:
                 label_int = v_labeling_interval;  # using default value
             else:
-                label_int = np.round(total_range/8, 5);
+                label_int = np.round(total_range/8, 3);
             cmap_interval = total_range/100;
             cmap_options = [np.nanmin(plotting_array)-bumper, np.nanmax(plotting_array)+bumper, cmap_interval];
             cbar_options = [np.nanmin(plotting_array)-bumper/2, np.nanmax(plotting_array)+bumper/2, label_int];

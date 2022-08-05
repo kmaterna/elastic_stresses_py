@@ -45,6 +45,7 @@ def read_slippy_distribution(infile, desired_segment=-1):
             one_fault["rake"] = fault_vector_functions.get_rake(rtlat_strike_slip=-ll_slip[i], dip_slip=thrust_slip[i]);
             one_fault["slip"] = fault_vector_functions.get_total_slip(ll_slip[i], thrust_slip[i]);
             one_fault["tensile"] = 0;
+            one_fault["segment"] = 0;
             fault_list.append(one_fault);
     return fault_list;
 
@@ -65,10 +66,12 @@ def write_slippy_distribution(faults_list, outfile):
         rtlat_slip, dip_slip = fault_vector_functions.get_rtlat_dip_slip(item["slip"], item["rake"]);
         tensile_slip = 0;
         ofile.write("%f %f %f " % (center_lon, center_lat, item["depth"]*-1000) );
-        ofile.write("%f %f %f %f %f %f %f 0 \n" % (item["strike"], item["dip"], item["length"]*1000,
-                                                   item["width"]*1000, -1*rtlat_slip, dip_slip, tensile_slip) );
+        ofile.write("%f %f %f %f %f %f %f %d \n" % (item["strike"], item["dip"], item["length"]*1000,
+                                                    item["width"]*1000, -1*rtlat_slip, dip_slip, tensile_slip,
+                                                    item["segment"]));
     ofile.close();
     return;
+
 
 def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outfile):
     """
@@ -121,6 +124,7 @@ def read_stress_slippy_format(infile):
         one_fault["rake"] = rake[i];
         one_fault["slip"] = 0;
         one_fault["tensile"] = 0;
+        one_fault["segment"] = 0;
         fault_list.append(one_fault);
 
     return fault_list, shear, normal, coulomb;

@@ -75,5 +75,5 @@ def read_four_corners_fault_file(filename):
         updip_corner_depth = depths[idx1];
 
     fault_object = {'strike': strike, 'slip': 0, 'tensile': 0, 'rake': 0, 'length': length, 'width': width, 'dip': dip,
-                    'lon': updip_corner_lon, 'lat': updip_corner_lat, 'depth': updip_corner_depth};
+                    'lon': updip_corner_lon, 'lat': updip_corner_lat, 'depth': updip_corner_depth, 'segment': 0};
     return fault_object;

@@ -86,7 +86,7 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
                                                                    upper_corner_back_edge[1], lower_lon_corner,
                                                                    lower_lat_corner);
     new_fault = {"strike": strike, "dip": dip, "length": length, "rake": rake, "slip": slip / 100, "tensile": 0,
-                 "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat};
+                 "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat, "segment": 0};
     return new_fault;
 
 
@@ -252,7 +252,8 @@ def read_stat2C_geometry(infile):
                                                                                lower_lat_corner);
 
                 new_fault = {"strike": strike, "dip": dip, "length": length, "rake": rake, "slip": slip, "tensile": 0,
-                             "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat};
+                             "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat,
+                             "segment": 0};
                 faultlist.append(new_fault);
 
     return faultlist;

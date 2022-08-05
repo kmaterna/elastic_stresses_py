@@ -24,6 +24,7 @@ Fault_Dict:
     rake(deg),
     slip(m),
     tensile(m)
+    segment(int)
 }
 If the fault is a receiver fault, we put slip = 0
 """
@@ -117,7 +118,8 @@ def add_two_fault_dict_lists(list1, list2):
                     "depth": item1["depth"],
                     "tensile": item1["tensile"]+item2["tensile"],
                     "slip": slip_total,
-                    "rake": rake_total };
+                    "rake": rake_total,
+                    "segment": item1["segment"]};
         new_list.append(new_item);
     return new_list;
 
@@ -144,9 +146,11 @@ def change_fault_slip(fault_dict_list, new_slip, new_rake=None):
                    "depth": item["depth"],
                    "tensile": item["tensile"],
                    "slip": new_slip,
-                   "rake": new_rake};
+                   "rake": new_rake,
+                   "segment": item["segment"]};
         new_list.append(new_obj);
     return new_list;
+
 
 def filter_by_depth(fault_dict_list, upper_depth, lower_depth):
     """
@@ -161,6 +165,13 @@ def filter_by_depth(fault_dict_list, upper_depth, lower_depth):
         if upper_depth <= item['depth'] <= lower_depth:
             new_list.append(item);
     return new_list;
+
+
+def get_how_many_segments(fault_dict_list):
+    segments = [x["segment"] for x in fault_dict_list];
+    num_segments = len(set(segments));
+    num_patches = len(segments);
+    return num_segments, num_patches;
 
 
 def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip', color_array=None, verbose=True):

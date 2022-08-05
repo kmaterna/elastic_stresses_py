@@ -38,6 +38,7 @@ def read_faults_json(infile):
         one_fault["rake"] = 0;
         one_fault["slip"] = 0;
         one_fault["tensile"] = 0;
+        one_fault["segment"] = 0;
         fault_list.append(one_fault);
     config_file.close();
     return fault_list;
