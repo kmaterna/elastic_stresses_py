@@ -174,6 +174,20 @@ def get_how_many_segments(fault_dict_list):
     return num_segments, num_patches;
 
 
+def filter_by_segment(fault_dict_list, segment_num=0):
+    """
+    Filter a list of fault_dicts to only those that have segment=x
+    :param fault_dict_list: list of fault_slip_dictionaries
+    :param segment_num: int
+    :returns new_list: a list of fault_slip_dictionaries
+    """
+    new_list = [];
+    for item in fault_dict_list:
+        if item["segment"] == segment_num:
+            new_list.append(item);
+    return new_list;
+
+
 def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip', color_array=None, verbose=True):
     """
     Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT

@@ -62,6 +62,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     print("Plotting outfile %s " % outfile);
     proj = "M7i"
     if not region:  # automatically determine the region
+        if len(fault_dict_list) == 0:
+            raise ValueError("Error! Cannot automatically determine map region because no fault patches provided.");
         buffer_deg = 0.15
         minlon, maxlon, minlat, maxlat = fault_slip_object.get_four_corners_lon_lat_multiple(fault_dict_list);
         region = [minlon-buffer_deg, maxlon+buffer_deg, minlat-buffer_deg, maxlat+buffer_deg];

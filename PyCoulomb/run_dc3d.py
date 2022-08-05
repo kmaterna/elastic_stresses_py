@@ -69,18 +69,18 @@ def split_subfault_receivers(params, inputs):
                                                                     finish_y_top, strike_split);
 
                 for k in range(strike_split):
-                    single_subfaulted_receiver = cc.construct_fault_object(xstart=xsplit_array[k],
-                                                                           xfinish=xsplit_array[k + 1],
-                                                                           ystart=ysplit_array[k],
-                                                                           yfinish=ysplit_array[k + 1],
-                                                                           Kode=fault.Kode, rtlat=0, reverse=0,
-                                                                           tensile=0, potency=[], strike=fault.strike,
-                                                                           dipangle=fault.dipangle,
-                                                                           zerolon=inputs.zerolon,
-                                                                           zerolat=inputs.zerolat,
-                                                                           rake=fault.rake, top=zsplit_array[j],
-                                                                           bottom=zsplit_array[j + 1],
-                                                                           comment=fault.comment);
+                    single_subfaulted_receiver = cc.construct_pycoulomb_fault(xstart=xsplit_array[k],
+                                                                              xfinish=xsplit_array[k + 1],
+                                                                              ystart=ysplit_array[k],
+                                                                              yfinish=ysplit_array[k + 1],
+                                                                              Kode=fault.Kode, rtlat=0, reverse=0,
+                                                                              tensile=0, potency=[], strike=fault.strike,
+                                                                              dipangle=fault.dipangle,
+                                                                              zerolon=inputs.zerolon,
+                                                                              zerolat=inputs.zerolat,
+                                                                              rake=fault.rake, top=zsplit_array[j],
+                                                                              bottom=zsplit_array[j + 1],
+                                                                              comment=fault.comment);
                     subfaulted_receivers.append(single_subfaulted_receiver);
 
     subfaulted_objects = cc.Input_object(PR1=inputs.PR1, FRIC=inputs.FRIC, depth=inputs.depth,

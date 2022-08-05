@@ -61,11 +61,11 @@ def fault_dict_to_coulomb_fault(fault_dict_list, zerolon_system=None, zerolat_sy
         rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(onefault['slip'], onefault['rake']);
         xfinish, yfinish = fault_vector_functions.add_vector_to_point(startx, starty, onefault['length'],
                                                                       onefault['strike']);
-        one_source = cc.construct_fault_object(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish, Kode=100,
-                                               rtlat=rtlat, reverse=reverse, tensile=onefault['tensile'],
-                                               potency=[], strike=onefault['strike'],
-                                               dipangle=onefault['dip'], zerolon=zerolon, zerolat=zerolat,
-                                               rake=onefault['rake'], top=onefault['depth'], bottom=bottom, comment='');
+        one_source = cc.construct_pycoulomb_fault(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish, Kode=100,
+                                                  rtlat=rtlat, reverse=reverse, tensile=onefault['tensile'],
+                                                  potency=[], strike=onefault['strike'],
+                                                  dipangle=onefault['dip'], zerolon=zerolon, zerolat=zerolat,
+                                                  rake=onefault['rake'], top=onefault['depth'], bottom=bottom, comment='');
         source_object.append(one_source);
     return source_object;
 

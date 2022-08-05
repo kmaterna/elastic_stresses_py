@@ -4,6 +4,7 @@ Read other fault formats of rectangular patches into fault slip objects
 """
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
+from . import io_four_corners
 
 
 def io_hamling_2017(filename):
@@ -26,4 +27,36 @@ def io_hamling_2017(filename):
         one_fault["lon"] = corner_lon;
         one_fault["lat"] = corner_lat;
         fault_dict_list.append(one_fault);
+    return fault_dict_list;
+
+
+def io_wallace_sse(filename):
+    """
+    Read Laura Wallace's slow slip event files for New Zealand
+    """
+    fault_dict_list = [];
+    ifile = open(filename, 'r');
+    for line in ifile:
+        if line[0] == "#":
+            continue;
+        if line[0:4] == "> -Z":
+            temp = line.split();
+            patch_slip_m = float(temp[3])/1000;  # into meters
+            patch_tensile_m = float(temp[6])/1000;
+            rake = float(temp[7]);
+            c1_lon, c1_lat, c1_depth = ifile.readline().split();
+            c2_lon, c2_lat, c2_depth = ifile.readline().split();
+            c3_lon, c3_lat, c3_depth = ifile.readline().split();
+            c4_lon, c4_lat, c4_depth = ifile.readline().split();
+            lons = [float(c1_lon), float(c2_lon), float(c3_lon), float(c4_lon)];
+            lats = [float(c1_lat), float(c2_lat), float(c3_lat), float(c4_lat)];
+            depths = [-float(c1_depth), -float(c2_depth), -float(c3_depth), -float(c4_depth)];
+            if np.sum(lons) == 0 and np.sum(lats) == 0 and np.sum(depths) == 0:  # skip pathological case
+                continue;
+            one_fault = io_four_corners.get_fault_dict_from_four_corners(lons, lats, depths);
+            one_fault["slip"] = patch_slip_m;
+            one_fault["rake"] = rake
+            one_fault["tensile"] = patch_tensile_m;
+            fault_dict_list.append(one_fault);
+    ifile.close();
     return fault_dict_list;

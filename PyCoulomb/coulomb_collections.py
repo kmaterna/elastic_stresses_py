@@ -35,6 +35,8 @@ Input_object = collections.namedtuple('Input_object', [
     'zerolat',
     'source_object',
     'receiver_object', 'receiver_horiz_profile'])
+# source_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system
+# receiver_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system
 
 Receiver_Horiz_Profile = collections.namedtuple('Receiver_Horiz_Profile', [
     'depth_km', 'strike', 'dip', 'rake', 'centerlon', 'centerlat', 'lon1d', 'lat1d',
@@ -58,8 +60,8 @@ Displacement_points = collections.namedtuple('Disp_Points', [
 # Might want to ensure that -180 < lon < 180 in the future
 
 
-def construct_fault_object(xstart, xfinish, ystart, yfinish, rtlat, reverse, tensile, potency, strike, dipangle, rake,
-                           zerolon, zerolat, top, bottom, Kode=100, comment=None):
+def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, tensile, potency, strike, dipangle,
+                              rake, zerolon, zerolat, top, bottom, Kode=100, comment=None):
     """
     Like a constructor for this named tuple.
     You pass the required input parameters, and the remaining parameters are filled in.
