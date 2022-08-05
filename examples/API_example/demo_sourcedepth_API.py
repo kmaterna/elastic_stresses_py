@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from Elastic_stresses_py import PyCoulomb
-from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 
-# My configuration: special experiment, focal mechanism as a function of depth.  This is my "lab notebook"
+# My configuration: special experiment, focal mechanism as a function of depth.  This is my "lab notebook".
+# First column: depth.  Second column: Directory name.
 config = {
     "exp1": [1.0, "depth1.0"],
     "exp2": [2.0, "depth2.0"],
@@ -21,17 +21,11 @@ def swap_output_dir(default_params, dirname):
     return MyParams;
 
 
-def swap_input_depth(default, new_depth):
+def swap_input_depth(default_inputs, new_depth):
     # PACK MY SUITCASE. Replace source(old_depth) with source(new_depth)
-    new_sources = [];
-    inputs = cc.Input_object(PR1=default.PR1, FRIC=default.FRIC, depth=default.depth,
-                             start_gridx=default.start_gridx, finish_gridx=default.finish_gridx,
-                             start_gridy=default.start_gridy, finish_gridy=default.finish_gridy,
-                             xinc=default.xinc, yinc=default.yinc,
-                             minlon=default.minlon, maxlon=default.minlon, zerolon=default.zerolon,
-                             minlat=default.minlat, maxlat=default.maxlat, zerolat=default.zerolat,
-                             source_object=new_sources, receiver_object=default.receiver_object,
-                             receiver_horiz_profile=default.receiver_object);
+    base_source = default_inputs.source_object[0];
+    new_point_source = PyCoulomb.configure_calc.modify_fault_object(base_source, top=new_depth, bottom=new_depth);
+    inputs = PyCoulomb.configure_calc.modify_inputs_object(default_inputs, source_object=[new_point_source]);
     return inputs;
 
 

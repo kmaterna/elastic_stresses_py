@@ -74,7 +74,7 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
                          strain_file=None, strike_num_receivers=None, dip_num_receivers=None, fixed_rake=None,
                          mu=None, lame1=None, B=None, alpha=None, plot_stress=None, plot_grd_disp=None, outdir=None):
     """
-    Take an existing params object and create a duplicate with some of its properties modified.
+    Modify the fields in a Pycoulomb.Params named tuple
     By default, none of the properties will be altered.
 
     :param default_params: (required) existing named tuple
@@ -136,6 +136,42 @@ def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, 
     return inputs;
 
 
+def modify_inputs_object(default_inputs, PR1=None, FRIC=None, depth=None, start_gridx=None, finish_gridx=None,
+                         start_gridy=None, finish_gridy=None, xinc=None, yinc=None, minlon=None, maxlon=None,
+                         zerolon=None, minlat=None, maxlat=None, zerolat=None, source_object=None, receiver_object=None,
+                         receiver_horiz_profile=None):
+    """
+    Modify the fields in a PyCoulomb.Input_object namedtuple
+    """
+
+    PR1 = default_inputs.PR1 if PR1 is None else PR1;
+    FRIC = default_inputs.FRIC if FRIC is None else FRIC;
+    depth = default_inputs.depth if depth is None else depth;
+    start_gridx = default_inputs.start_gridx if start_gridx is None else start_gridx;
+    finish_gridx = default_inputs.finish_gridx if finish_gridx is None else finish_gridx;
+    start_gridy = default_inputs.start_gridy if start_gridy is None else start_gridy;
+    finish_gridy = default_inputs.finish_gridy if finish_gridy is None else finish_gridy;
+    xinc = default_inputs.xinc if xinc is None else xinc;
+    yinc = default_inputs.yinc if yinc is None else yinc;
+    minlon = default_inputs.minlon if minlon is None else minlon;
+    maxlon = default_inputs.maxlon if maxlon is None else maxlon;
+    zerolon = default_inputs.zerolon if zerolon is None else zerolon;
+    minlat = default_inputs.minlat if minlat is None else minlat;
+    maxlat = default_inputs.maxlat if maxlat is None else maxlat;
+    zerolat = default_inputs.zerolat if zerolat is None else zerolat;
+    source_object = default_inputs.source_object if source_object is None else source_object;
+    receiver_object = default_inputs.receiver_object if receiver_object is None else receiver_object;
+    receiver_horiz_profile = default_inputs.receiver_horiz_profile if receiver_horiz_profile is None else receiver_horiz_profile;
+
+    modified_inputs = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx,
+                                      finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy,
+                                      xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon,
+                                      minlat=minlat, maxlat=maxlat, zerolat=zerolat,
+                                      source_object=source_object, receiver_object=receiver_object,
+                                      receiver_horiz_profile=receiver_horiz_profile);
+    return modified_inputs;
+
+
 def write_valid_config_file(directory):
     config_filename = "my_config.txt";
     configobj = configparser.ConfigParser()
@@ -162,3 +198,31 @@ def write_valid_config_file(directory):
         configobj.write(configfile)
     print("Writing file %s " % directory+"/"+config_filename);
     return;
+
+
+def modify_fault_object(default_fault, xstart=None, xfinish=None, ystart=None, yfinish=None, rtlat=None,
+                        reverse=None, tensile=None, potency=None, strike=None, dipangle=None, rake=None, zerolon=None,
+                        zerolat=None, top=None, bottom=None):
+    """
+    Modify the fields in a Pycoulomb.Faults_object namedtuple
+    """
+
+    xstart = default_fault.xstart if xstart is None else xstart;
+    xfinish = default_fault.xfinish if xfinish is None else xfinish;
+    ystart = default_fault.ystart if ystart is None else ystart;
+    yfinish = default_fault.yfinish if yfinish is None else yfinish;
+    rtlat = default_fault.rtlat if rtlat is None else rtlat;
+    reverse = default_fault.reverse if reverse is None else reverse;
+    potency = default_fault.potency if potency is None else potency;
+    strike = default_fault.strike if strike is None else strike;
+    dipangle = default_fault.dipangle if dipangle is None else dipangle;
+    rake = default_fault.rake if rake is None else rake;
+    zerolon = default_fault.zerolon if zerolon is None else zerolon;
+    zerolat = default_fault.zerolat if zerolat is None else zerolat;
+    top = default_fault.top if top is None else top;
+    bottom = default_fault.bottom if bottom is None else bottom;
+    new_fault = cc.construct_pycoulomb_fault(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                             rtlat=rtlat, reverse=reverse, tensile=tensile,
+                                             potency=potency, strike=strike, dipangle=dipangle, rake=rake,
+                                             zerolon=zerolon, zerolat=zerolat, top=top, bottom=bottom);
+    return new_fault;
