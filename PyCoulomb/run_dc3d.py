@@ -223,6 +223,10 @@ def compute_stresses_horiz_profile(params, inputs):
     """
     Pseudocode: Create a grid of points, and compute all stresses on them, given specified strike/dip/rake.
     horiz_profile = [depth_km, strike, dip, rake, centerlon, centerlat, length_km, width_km, inc_km];
+
+    :param params: named tuple
+    :param inputs: named tuple
+    :returns: list of 3 lists, representing receiver normal, shear, and coulomb stress results
     """
     if not inputs.receiver_horiz_profile:
         return None;

@@ -70,6 +70,54 @@ def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_
     return MyParams;
 
 
+def modify_params_object(default_params, config_file=None, input_file=None, aftershocks=None, disp_points_file=None,
+                         strain_file=None, strike_num_receivers=None, dip_num_receivers=None, fixed_rake=None,
+                         mu=None, lame1=None, B=None, alpha=None, plot_stress=None, plot_grd_disp=None, outdir=None):
+    """
+    Take an existing params object and create a duplicate with some of its properties modified.
+    By default, none of the properties will be altered.
+
+    :param default_params: (required) existing named tuple
+    :param config_file: optional, string
+    :param input_file: optional, string
+    :param aftershocks: optional, string
+    :param disp_points_file: optional, string
+    :param strain_file: optional, string
+    :param strike_num_receivers: optional, int
+    :param dip_num_receivers: optional, int
+    :param fixed_rake: optional, float
+    :param mu: optional, float
+    :param lame1: optional, float
+    :param B: optional, float
+    :param alpha: optional, float
+    :param plot_stress: optional, int
+    :param plot_grd_disp: optional, int
+    :param outdir: optional, float
+    """
+    config_file = default_params.config_file if config_file is None else config_file;
+    input_file = default_params.input_file if input_file is None else input_file;
+    aftershocks = default_params.aftershocks if aftershocks is None else aftershocks;
+    disp_points_file = default_params.disp_points_file if disp_points_file is None else disp_points_file;
+    strain_file = default_params.strain_file if strain_file is None else strain_file;
+    str_num_receivers = default_params.strike_num_receivers if strike_num_receivers is None else strike_num_receivers;
+    dip_num_receivers = default_params.dip_num_receivers if dip_num_receivers is None else dip_num_receivers;
+    fixed_rake = default_params.fixed_rake if fixed_rake is None else fixed_rake;
+    mu = default_params.mu if mu is None else mu;
+    lame1 = default_params.lame1 if lame1 is None else lame1;
+    B = default_params.B if B is None else B;
+    alpha = default_params.alpha if alpha is None else alpha;
+    plot_stress = default_params.plot_stress if plot_stress is None else plot_stress;
+    plot_grd_disp = default_params.plot_grd_disp if plot_grd_disp is None else plot_grd_disp;
+    outdir = default_params.outdir if outdir is None else outdir;
+    MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
+                         disp_points_file=disp_points_file, strain_file=strain_file,
+                         strike_num_receivers=str_num_receivers, fixed_rake=fixed_rake,
+                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
+                         alpha=alpha, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp,
+                         outdir=outdir);
+    return MyParams;
+
+
 def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20):
     """
     Build a default Input object for displacement-only calculations.

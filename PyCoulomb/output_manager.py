@@ -359,7 +359,7 @@ def write_output_files(params, out_object, obs_strain_points):
 def write_horiz_profile(params, horiz_profile, profile_results):
     print("Writing %s " % params.outdir+"stresses_horiz_profile.txt");
     ofile = open(params.outdir+"stresses_horiz_profile.txt", 'w');
-    ofile.write("# lon lat depth_km normal_Pa shear_Pa coulomb_Pa\n");
+    ofile.write("# lon lat depth_km normal_kPa shear_kPa coulomb_kPa\n");
     ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake) );
     for i in range(len(horiz_profile.lon1d)):
         ofile.write("%f %f %f %f %f %f\n" % (horiz_profile.lon1d[i], horiz_profile.lat1d[i], horiz_profile.depth_km,
