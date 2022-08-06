@@ -42,8 +42,8 @@ strain_file = [optional]
 [compute-config]
 strike_num_receivers = 10
 dip_num_receivers = 10
-mu = 30000000000
-lame1 = 30000000000
+mu = 30e9
+lame1 = 30e9
 B = 0
 fixed_rake = [optional]
 ```
@@ -76,9 +76,9 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
 * **WC Format:** For catalogs using Wells and Coppersmith (1994) 
     * "Source_WC: strike rake dip magnitude faulting_type lon lat depth_km" 
 * **FM Format:** For focal mechanisms 
-    * "Source_FM: strike rake dip lon lat depth_km magnitude mu lambda" 
+    * "Source_FM: strike rake dip lon lat depth_km magnitude" 
 * **MT Format:** * For full moment tensors, although only double-couple part works right now 
-    * "Source_MT: Mrr Mtt Mpp Mrt Mrp Mtp strike rake dip lon lat depth_km mu lambda"
+    * "Source_MT: Mrr Mtt Mpp Mrt Mrp Mtp strike rake dip lon lat depth_km"
 * **Horizontal Profile Format:** Specify an orientation and compute stresses on that plane/orientation over an area. Like a horizontal cross-section.
     * "Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km" 
     
@@ -107,7 +107,7 @@ For input files, strike/rake/dip have units of degrees. Length/width/depth have 
 
 PR1 in the Coulomb input format is never used. Specifying Poisson's ratio should be done at the computation level through lame1 and mu in the config file, thus altering alpha in the Okada formulation.
 
-Mu and Lambda in the Source_FM and Source_MT format are only ever used for computing potency, not for the rest of the computation. Set the domain elastic parameters at the computation level through lame1 and mu1 in the config file.
+Set domain elastic parameters at the computation level through lame1 and mu in the config file.
 
 ## Results: 
 

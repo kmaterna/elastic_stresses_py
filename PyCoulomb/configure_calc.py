@@ -161,14 +161,14 @@ def modify_inputs_object(default_inputs, PR1=None, FRIC=None, depth=None, start_
     zerolat = default_inputs.zerolat if zerolat is None else zerolat;
     source_object = default_inputs.source_object if source_object is None else source_object;
     receiver_object = default_inputs.receiver_object if receiver_object is None else receiver_object;
-    receiver_horiz_profile = default_inputs.receiver_horiz_profile if receiver_horiz_profile is None else receiver_horiz_profile;
+    rec_profile = default_inputs.receiver_horiz_profile if receiver_horiz_profile is None else receiver_horiz_profile;
 
     modified_inputs = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx,
                                       finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy,
                                       xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon,
                                       minlat=minlat, maxlat=maxlat, zerolat=zerolat,
                                       source_object=source_object, receiver_object=receiver_object,
-                                      receiver_horiz_profile=receiver_horiz_profile);
+                                      receiver_horiz_profile=rec_profile);
     return modified_inputs;
 
 

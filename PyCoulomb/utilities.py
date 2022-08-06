@@ -121,7 +121,7 @@ def call_gmt_surface(xyzfile, outfile, region, inc):
     return;
 
 
-def print_metrics_on_sources(source_object):
+def print_metrics_on_sources(source_object, mu):
     """
     Print overall magnitude of rectangular source objects.
     """
@@ -132,8 +132,8 @@ def print_metrics_on_sources(source_object):
     if len(rect_sources) > 0:
         fault_dict_list = fso.io_pycoulomb.coulomb_fault_to_fault_dict(rect_sources);
         # default mu = 30GPa
-        Mw = moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list))
-        print("Moment Magnitude from Rectangular Fault Patches (assuming G=30Gpa): ", Mw);
+        Mw = moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list, mu=mu));
+        print("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f" % (mu/1e9, Mw));
     return;
 
 

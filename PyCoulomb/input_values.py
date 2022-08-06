@@ -21,9 +21,9 @@ def read_inputs(params):
     elif '.inr' in params.input_file:
         input_object = io_inr.read_inr(params.input_file);  # variable rake format (will write later);
     elif '.intxt' in params.input_file:
-        input_object = io_intxt.read_intxt(params.input_file);  # convenient input format
+        input_object = io_intxt.read_intxt(params.input_file, params.mu, params.lame1);  # convenient input format
     elif '.inzero' in params.input_file:
-        input_object = io_intxt.read_intxt(params.input_file);  # a point source in convenient format
+        input_object = io_intxt.read_intxt(params.input_file, params.mu, params.lame1);  # point source
     else:
         raise Exception("Error! Unrecognized type of input file!");
 
@@ -35,7 +35,7 @@ def read_inputs(params):
         strain_points = io_additionals.read_disp_points(params.strain_file);
 
     assert input_object.source_object, ValueError("You have not specified any sources.");
-    utilities.print_metrics_on_sources(input_object.source_object);
+    utilities.print_metrics_on_sources(input_object.source_object, params.mu);
     utilities.check_each_fault_has_same_coord_system(input_object.source_object + input_object.receiver_object,
                                                      input_object.zerolon, input_object.zerolat);
     return [input_object, disp_points, strain_points];

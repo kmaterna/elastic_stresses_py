@@ -60,7 +60,8 @@ def read_disp_points(infile):
                 dE_obs, dN_obs, dU_obs = float(temp[2]), float(temp[3]), float(temp[4]);
                 Se_obs, Sn_obs, Su_obs = float(temp[5]), float(temp[6]), float(temp[7]);
             new_disp_point = cc.Displacement_points(lon=lon, lat=lat, dE_obs=dE_obs, dN_obs=dN_obs, dU_obs=dU_obs,
-                                                    Se_obs=Se_obs, Sn_obs=Sn_obs, Su_obs=Su_obs, name=name);
+                                                    Se_obs=Se_obs, Sn_obs=Sn_obs, Su_obs=Su_obs, name=name,
+                                                    starttime=None, endtime=None, meas_type=None, refframe=None);
             disp_points_list.append(new_disp_point);
     ifile.close();
     return disp_points_list;

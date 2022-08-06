@@ -51,10 +51,10 @@ def read_inp(input_file, fixed_rake):
                     rake = fault_vector_functions.get_rake(rtlat_strike_slip=rtlat, dip_slip=reverse);
                     one_source_object = cc.construct_pycoulomb_fault(xstart=xstart, xfinish=xfinish, ystart=ystart,
                                                                      yfinish=yfinish, Kode=Kode, rtlat=rtlat,
-                                                                     reverse=reverse, tensile=0, potency=[], strike=strike,
-                                                                     dipangle=dipangle, rake=rake, top=top,
-                                                                     zerolon=zerolon, zerolat=zerolat, bottom=bottom,
-                                                                     comment=comment);
+                                                                     reverse=reverse, tensile=0, potency=[],
+                                                                     strike=strike, dipangle=dipangle, rake=rake,
+                                                                     top=top, bottom=bottom,
+                                                                     zerolon=zerolon, zerolat=zerolat, comment=comment);
                     sources.append(one_source_object)
                 else:  # here we have a receiver fault
                     [xstart, ystart, xfinish, yfinish, Kode, _, _, strike, dipangle, top, bottom,

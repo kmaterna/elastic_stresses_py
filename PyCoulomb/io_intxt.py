@@ -10,7 +10,7 @@ from Tectonic_Utils.seismo import wells_and_coppersmith, moment_calculations, MT
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def read_intxt(input_file):
+def read_intxt(input_file, mu, lame1):
     print("Reading source and receiver fault information from file %s " % input_file);
     sources, receivers = [], [];
     receiver_horiz_profile = None;
@@ -28,10 +28,10 @@ def read_intxt(input_file):
                 one_source_object = get_source_patch(line, zerolon, zerolat);
                 sources.append(one_source_object);
             if temp[0] == 'Source_FM:':  # point source from focal mechanism
-                one_source_object = get_FocalMech_source(line, zerolon, zerolat);
+                one_source_object = get_FocalMech_source(line, zerolon, zerolat, mu);
                 sources.append(one_source_object);
             if temp[0] == "Source_MT:":  # point source from moment tensor
-                one_source_object = get_MT_source(line, zerolon, zerolat);
+                one_source_object = get_MT_source(line, zerolon, zerolat, lame1, mu);
                 sources.append(one_source_object);
             if temp[0] == 'Receiver:':  # receiver fault
                 one_receiver_object = get_receiver_fault(line, zerolon, zerolat);
@@ -157,9 +157,9 @@ def get_source_wc(line, zerolon, zerolat):
     return one_source_object;
 
 
-def get_FocalMech_source(line, zerolon, zerolat):
+def get_FocalMech_source(line, zerolon, zerolat, mu):
     """Create a source object from a point source focal mechanism"""
-    [strike, rake, dip, lon, lat, depth, magnitude, mu, _] = read_point_source_line(line);
+    [strike, rake, dip, lon, lat, depth, magnitude] = read_point_source_line(line);
     [x, y, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat, zerolon,
                                                                                zerolat, mu);
     one_source_object = cc.construct_pycoulomb_fault(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
@@ -170,12 +170,12 @@ def get_FocalMech_source(line, zerolon, zerolat):
     return one_source_object;
 
 
-def get_MT_source(line, zerolon, zerolat):
+def get_MT_source(line, zerolon, zerolat, lame1, mu):
     """Create a source object from a six-component moment tensor solution"""
-    [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth, mu, lam1] = read_moment_tensor_source_line(line);
+    [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth] = read_moment_tensor_source_line(line);
     MT = MT_calculations.get_MT(Mrr, Mtt, Mpp, Mrt, Mrp, Mtp);
     [x, y, rtlat, reverse, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu,
-                                                                            lam1);
+                                                                            lame1);
     one_source_object = cc.construct_pycoulomb_fault(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
                                                      reverse=reverse, tensile=0, potency=potency, strike=strike,
                                                      dipangle=dip, zerolon=zerolon, zerolat=zerolat,
@@ -257,15 +257,15 @@ def read_general_line(line):
 
 def read_point_source_line(line):
     """Format: strike rake dip lon lat depth magnitude mu lamdba """
-    [strike, rake, dip, lon, lat, depth, magnitude, mu, lame1] = [float(i) for i in line.split()[1:10]];
-    return [strike, rake, dip, lon, lat, depth, magnitude, mu, lame1];
+    [strike, rake, dip, lon, lat, depth, magnitude] = [float(i) for i in line.split()[1:8]];
+    return [strike, rake, dip, lon, lat, depth, magnitude];
 
 def read_moment_tensor_source_line(line):
     """Format: Mrr Mtt Mpp Mrt Mrp Mtp strike dip rake lon lat depth_km mu lambda"""
     [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp] = [float(i) for i in line.split()[1:7]];
     [strike, dip, rake] = [float(i) for i in line.split()[7:10]];
-    [lon, lat, depth, mu, lame1] = [float(i) for i in line.split()[10:15]];
-    return [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth, mu, lame1];
+    [lon, lat, depth] = [float(i) for i in line.split()[10:13]];
+    return [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth];
 
 
 # ------------------------------------
