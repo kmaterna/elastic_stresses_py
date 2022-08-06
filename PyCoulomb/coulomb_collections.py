@@ -68,6 +68,8 @@ def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, 
     While keeping the interface simple,
     we are pre-computing some geometry parameters ONCE for each fault, for performance reasons.
     """
+    if bottom < top:
+        raise ValueError("Error! Provided bad fault- top depth (%f km) below bottom depth (%f km)" % (top, bottom) )
     R, R2 = conversion_math.get_R_from_strike(strike);
     L = fault_vector_functions.get_strike_length(xstart, xfinish, ystart, yfinish);
     W = fault_vector_functions.get_downdip_width(top, bottom, dipangle);

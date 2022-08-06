@@ -1,0 +1,18 @@
+[io-config]
+exp_name = my_experiment
+input_file = demo.intxt
+output_dir = Outputs/
+plot_stress = 1
+plot_grd_disp = 1
+gps_disp_points =
+aftershocks =
+strain_file = 
+
+[compute-config]
+strike_num_receivers = 10
+dip_num_receivers = 10
+mu = 30000000000
+lame1 = 30000000000
+B = 0
+fixed_rake = 
+

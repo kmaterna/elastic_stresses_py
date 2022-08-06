@@ -1,0 +1,9 @@
+# convenient input format defined by K. Materna
+# Source: strike rake dip magnitude faulting_type fault_center_lon fault_center_lat fault_center_depth
+# Receivers: strike rake dip length width updip_corner_lon updip_corner_lat updip_corner_dep
+# General: PR1 FRIC lon_min lon_max lon_zero lat_min lat_max lat_zero
+# Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km
+#
+
+General: 0.250 0.40 12 14 13 41.70 43.2 42.5
+Receiver_Horizontal_Profile: 1 15 45 0 13 42.5 100 100 2.0
