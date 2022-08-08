@@ -102,7 +102,7 @@ def determine_nx_nz_for_multiple_segments(filename):
                 depth_list = [];
                 while entering_segment:
                     newline = ifile.readline();
-                    if '%-------------------------------' in newline and len(depth_list) > 0:   # finishing a loop
+                    if '% -------------------------------' in newline and len(depth_list) > 0:   # finishing a loop
                         segment_list.append(segment_number);
                         nz = int(len(set(depth_list)));
                         nx = int(len(depth_list) / nz);
