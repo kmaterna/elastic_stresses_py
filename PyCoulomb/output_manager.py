@@ -7,7 +7,7 @@ import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from subprocess import call
 from . import coulomb_collections as cc
-from . import conversion_math, io_inp, pygmt_plots, io_additionals, utilities
+from . import conversion_math, io_inp, pygmt_plots, io_additionals, utilities, configure_calc
 from .fault_slip_object import io_pycoulomb
 from .fault_slip_object import io_slippy
 from Tectonic_Utils.geodesy import fault_vector_functions
@@ -20,7 +20,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     """
     call(['mkdir', '-p', params.outdir], shell=False);
     if params.config_file:
-        call(['cp', params.config_file, params.outdir], shell=False);  # for record-keeping
+        configure_calc.write_params_into_config(params, params.outdir+"used_config.txt");  # for record-keeping
     if params.input_file:
         call(['cp', params.input_file, params.outdir], shell=False);  # for record-keeping
     write_output_files(params, out_object, obs_strain_points);

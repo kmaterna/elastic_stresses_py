@@ -1,4 +1,4 @@
-# Configures a stress calculation 
+# Configures a stress calculation
 
 import os, configparser
 from . import coulomb_collections as cc
@@ -54,6 +54,36 @@ def configure_stress_calculation(config_file):
                          outdir=output_dir);
     print(MyParams);
     return MyParams;
+
+
+def write_params_into_config(params, outfile):
+    """
+    Write an output file from the param object. First you must unpack Params into a ConfigParser.
+    Useful for Python API work.
+    """
+    configobj = configparser.ConfigParser()
+    configobj["io-config"] = {};
+    ioconfig = configobj["io-config"];
+    ioconfig["exp_name"] = params.outdir.split('/')[-2]
+    ioconfig["input_file"] = params.input_file
+    ioconfig["output_dir"] = '/'.join(params.outdir.split('/')[0:-2])+'/'
+    ioconfig["plot_stress"] = str(params.plot_stress)
+    ioconfig["plot_grd_disp"] = str(params.plot_grd_disp)
+    ioconfig["gps_disp_points"] = params.disp_points_file
+    ioconfig["aftershocks"] = params.aftershocks
+    ioconfig["strain_file"] = params.strain_file
+    configobj["compute-config"] = {};
+    computeconfig = configobj["compute-config"];
+    computeconfig["strike_num_receivers"] = str(params.strike_num_receivers)
+    computeconfig["dip_num_receivers"] = str(params.dip_num_receivers)
+    computeconfig["mu"] = str(params.mu)
+    computeconfig["lame1"] = str(params.lame1)
+    computeconfig["B"] = str(params.B)
+    computeconfig["fixed_rake"] = str(params.fixed_rake)
+    print("Writing file %s " % outfile);
+    with open(outfile, 'w') as ofile:
+        configobj.write(ofile);
+    return;
 
 
 def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_grd_disp=1):
