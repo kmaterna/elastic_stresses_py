@@ -2,7 +2,7 @@
 # Run this in your pygmt environment
 
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
-import Tectonic_Utilities.Tectonic_Utils.seismo as seismo
+import Tectonic_Utils.seismo as seismo
 import Elastic_stresses_py.PyCoulomb as PyCoulomb
 
 filedict = {"fault_slip_file": "s2016NORCIA01PIZZ.fsp",
