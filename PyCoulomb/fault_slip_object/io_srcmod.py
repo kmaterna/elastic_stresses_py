@@ -109,7 +109,7 @@ def determine_nx_nz_for_multiple_segments(filename):
                         nz_list.append(nz);
                         nx_list.append(nx);
                         break;
-                    if newline[0] != '%':
+                    if len(newline) > 0 and newline[0] != '%':
                         depth_list.append(float(newline.split()[4]));
         ifile.close();
     return segment_list, nx_list, nz_list, rake_col;
