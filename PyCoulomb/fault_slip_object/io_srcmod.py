@@ -102,7 +102,7 @@ def determine_nx_nz_for_multiple_segments(filename):
                 depth_list = [];
                 while entering_segment:
                     newline = ifile.readline();
-                    if '% -------------------------------' in newline and len(depth_list) > 0:   # finishing a loop
+                    if is_segment_break(newline) and len(depth_list) > 0:   # finishing a loop
                         segment_list.append(segment_number);
                         nz = int(len(set(depth_list)));
                         nx = int(len(depth_list) / nz);
@@ -113,6 +113,16 @@ def determine_nx_nz_for_multiple_segments(filename):
                         depth_list.append(float(newline.split()[4]));
         ifile.close();
     return segment_list, nx_list, nz_list, rake_col;
+
+
+def is_segment_break(line):
+    """Filter for the various ways that .fsp files encode segment breaks in multi-segment files"""
+    is_segment_break = 0;
+    if '% -------------------------------' in line:  # has leading space
+        is_segment_break = 1;
+    if '%-------------------------------' in line:  # has no leading space
+        is_segment_break = 1;
+    return is_segment_break;
 
 
 def determine_if_single_segment(filename):
