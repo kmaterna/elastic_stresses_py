@@ -70,6 +70,18 @@ def fault_dict_to_coulomb_fault(fault_dict_list, zerolon_system=None, zerolat_sy
     return source_object;
 
 
+def construct_intxt_source_patch(fault_dict):
+    """
+    Turn a fault_slip_object into a string corresponding to a slip_patch in .intxt file.
+    """
+    fault_patch_string = "Source_Patch: " + str(fault_dict["strike"]) + " " + str(fault_dict["rake"]) + " ";
+    fault_patch_string = fault_patch_string + str(fault_dict["dip"]) + " " + str(fault_dict["length"]) + " ";
+    fault_patch_string = fault_patch_string + str(fault_dict["width"]) + " " + str(fault_dict["lon"]) + " ";
+    fault_patch_string = fault_patch_string + str(fault_dict["lat"]) + " " + str(fault_dict["depth"]) + " ";
+    fault_patch_string = fault_patch_string + str(fault_dict["slip"]) + " " + str(fault_dict["tensile"]) + " ";
+    return fault_patch_string;
+
+
 def read_pycoulomb_displacements(filename):
     lon, lat, disp_x_Okada, disp_y_Okada, disp_z_Okada = np.loadtxt(filename, skiprows=1,
                                                                     usecols=(0, 1, 2, 3, 4), unpack=True);
