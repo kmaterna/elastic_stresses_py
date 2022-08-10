@@ -55,10 +55,13 @@ fixed_rake = [optional]
 * Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
 * Computes elastic displacements and stresses due to slip on source faults.
 * Writes .inp formatted Coulomb files with split subfaults.
-* Plots displacements at the surface.
-* Plots shear stress, normal stress, and Coulomb stress on receiver faults.
 * Maps the faults and stress values using PyGMT.
 * Produces output tables of stresses and displacements.
+
+
+### Config Switches
+* If ```plot_grd_disp```: Will produce grid of 100x100 synthetic points and their surface displacements, in txt and grd and eps plots [default: True]
+* If ```plot_stress```: Will compute and plot shear stress, normal stress, and Coulomb stress on receiver faults [default: True]
 
 ### Future work: 
 * Output computations at depths other than the surface

@@ -20,7 +20,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     subfaulted_inputs = split_subfault_receivers(params, inputs);
 
     # Computes here.
-    [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params.alpha);
+    [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params);
     model_disp_points = compute_ll_def(subfaulted_inputs, params.alpha, disp_points);
     strain_tensor_results = compute_ll_strain(subfaulted_inputs, params.alpha, strain_points);
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
@@ -126,11 +126,10 @@ def get_split_z_array(top, bottom, dip_split):
     return zsplit_array;
 
 
-def compute_grid_def(inputs, alpha):
+def compute_grid_def(inputs, params):
     """
     Loop through a grid and compute the displacements at each point from all sources put together.
     """
-    print("Computing synthetic grid of dispalcements");
     x = np.linspace(inputs.start_gridx, inputs.finish_gridx,
                     int((inputs.finish_gridx - inputs.start_gridx) / inputs.xinc));
     y = np.linspace(inputs.start_gridy, inputs.finish_gridy,
@@ -139,6 +138,12 @@ def compute_grid_def(inputs, alpha):
     u_displacements = np.zeros((len(y), len(x)));
     v_displacements = np.zeros((len(y), len(x)));
     w_displacements = np.zeros((len(y), len(x)));
+
+    if not params.plot_grd_disp:
+        return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
+
+    print("Computing synthetic grid of dispalcements");
+    alpha = params.alpha;
     numrows = np.shape(u_displacements)[0]
     numcols = np.shape(u_displacements)[1]
 

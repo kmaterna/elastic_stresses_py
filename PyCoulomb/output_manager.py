@@ -25,7 +25,6 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         call(['cp', params.input_file, params.outdir], shell=False);  # for record-keeping
     write_output_files(params, out_object, obs_strain_points);
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
-    surface_def_plot(params, out_object);  # grid of synthetic points in cartesian space
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
                                          params.outdir+"vector_plot.png");  # map point displacements
     if params.plot_stress:
@@ -39,6 +38,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         stress_cross_section_cartesian(params, out_object, 'normal');
         stress_cross_section_cartesian(params, out_object, 'shear');
     if params.plot_grd_disp:  # create grd files and plot vertical. Can take a while.
+        surface_def_plot(params, out_object);  # grid of synthetic points in cartesian space
         write_disp_grd_files(params, inputs);  # based on txt files already written
         pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
     if out_object.receiver_profile:
@@ -324,7 +324,9 @@ def write_synthetic_grid_triplets(x, y, x2d, y2d, zerolon, zerolat, u, v, w, out
 
 
 def write_synthetic_grid_full_results(x, y, x2d, y2d, zerolon, zerolat, u, v, w, outdir):
-    ofile = open(outdir + 'disps_model_grid.txt', 'w');
+    outfile = outdir + 'disps_model_grid.txt';
+    print("Writing synthetic grid of displacements in %s " % outfile)
+    ofile = open(outfile, 'w');
     ofile.write("# Format: x y lon lat x_disp[m] y_disp[m] z_disp[m] \n");
     for i in np.arange(0, len(y)):
         for j in np.arange(0, len(x)):
@@ -336,12 +338,13 @@ def write_synthetic_grid_full_results(x, y, x2d, y2d, zerolon, zerolat, u, v, w,
 
 def write_output_files(params, out_object, obs_strain_points):
     # Write synethetic displacement output file and lists of lon/lat/def for synthetic grid
-    write_synthetic_grid_full_results(out_object.x, out_object.y, out_object.x2d, out_object.y2d, out_object.zerolon,
+    if params.plot_grd_disp:
+        write_synthetic_grid_full_results(out_object.x, out_object.y, out_object.x2d, out_object.y2d,
+                                          out_object.zerolon,out_object.zerolat, out_object.u_disp, out_object.v_disp,
+                                          out_object.w_disp, params.outdir);
+        write_synthetic_grid_triplets(out_object.x, out_object.y, out_object.x2d, out_object.y2d, out_object.zerolon,
                                       out_object.zerolat, out_object.u_disp, out_object.v_disp, out_object.w_disp,
                                       params.outdir);
-    write_synthetic_grid_triplets(out_object.x, out_object.y, out_object.x2d, out_object.y2d, out_object.zerolon,
-                                  out_object.zerolat, out_object.u_disp, out_object.v_disp, out_object.w_disp,
-                                  params.outdir);
 
     # Write output file for stresses.
     if out_object.receiver_object:
