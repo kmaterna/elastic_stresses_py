@@ -207,13 +207,14 @@ def get_receiver_profile(line):
 
 def defensive_programming_faults(onefault):
     """Assert sanity on faults to make sure they've been read properly"""
+    critical_distance = 1000;  # in km
     assert (-360 < onefault.strike < 360), RuntimeError("Invalid strike parameter for fault object");
     assert (-360 < onefault.rake < 360), RuntimeError("Invalid rake parameter for fault object");
     assert (0 < onefault.dipangle < 90), RuntimeError("Invalid dip parameter for fault object");
-    assert (abs(onefault.xstart) < 200), RuntimeError("Too distant fault (>200km) for fault object");
-    assert (abs(onefault.xfinish) < 200), RuntimeError("Too distant fault (>200km) for fault object");
-    assert (abs(onefault.ystart) < 200), RuntimeError("Too distant fault (>200km) for fault object");
-    assert (abs(onefault.yfinish) < 200), RuntimeError("Too distant fault (>200km) for fault object");
+    assert (abs(onefault.xstart) < critical_distance), RuntimeError("Too distant fault for fault object");
+    assert (abs(onefault.xfinish) < critical_distance), RuntimeError("Too distant fault for fault object");
+    assert (abs(onefault.ystart) < critical_distance), RuntimeError("Too distant fault for fault object");
+    assert (abs(onefault.yfinish) < critical_distance), RuntimeError("Too distant fault for fault object");
     assert (onefault.top >= 0), RuntimeError("Invalid depth parameter for fault object");
     assert (onefault.bottom >= onefault.top), RuntimeError("Bottom of fault above top of fault. ");
     if onefault.rtlat > 0 or onefault.reverse > 0:
