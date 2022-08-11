@@ -56,6 +56,8 @@ def write_slippy_distribution(faults_list, outfile):
     :param outfile: name of output file.
     Caveat: can only do one fault segment right now.  That part of the read/write cycle is lossy.
     """
+    if len(faults_list) == 0:
+        return;
     print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
     ofile.write("# lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees] length[m] width[m] left-lateral[m] "
@@ -83,6 +85,8 @@ def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outf
     Caveat: This is ALMOST slippy format.
     You will lose the fault segment number, and we add the rake column.
     """
+    if len(faults_list) == 0:
+        return;
     print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
     ofile.write("# lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees] rake[degrees] length[m] width[m] "

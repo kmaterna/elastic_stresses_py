@@ -347,7 +347,7 @@ def write_output_files(params, out_object, obs_strain_points):
                                       params.outdir);
 
     # Write output file for stresses.
-    if out_object.receiver_object:
+    if out_object.receiver_object and params.plot_stress:
         fault_dict_list = io_pycoulomb.coulomb_fault_to_fault_dict(out_object.receiver_object);
         io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
                                                      out_object.receiver_normal, out_object.receiver_coulomb,
