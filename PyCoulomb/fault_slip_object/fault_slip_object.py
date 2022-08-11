@@ -207,6 +207,10 @@ def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip', color_array
             color_string = "-Z"+str(fault['depth']);
         elif colorcode == 'slip':
             color_string = "-Z"+str(fault['slip'])
+        elif colorcode == 'rake':
+            color_string = "-Z" + str(fault['rake'])
+        elif colorcode == 'dip':
+            color_string = "-Z" + str(fault['dip'])
         elif colorcode == 'custom':
             color_string = "-Z"+str(color_array[i]);
         else:   # no color attached
