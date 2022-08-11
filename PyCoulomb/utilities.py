@@ -2,6 +2,7 @@
 import numpy as np
 from subprocess import call
 from Tectonic_Utils.seismo import moment_calculations
+from Tectonic_Utils.geodesy import fault_vector_functions
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
 
 
@@ -91,6 +92,25 @@ def define_vector_scale_size(model_dE, model_dN):
     else:
         scale_arrow = 0.001;  vectext = "1 mm"
     return scale_arrow, vectext;
+
+
+def define_map_region(inputs):
+    """
+    Define the bounding box for map in pygmt [W, E, S, N] based on sources and receivers, if bigger than coord system
+    """
+    region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+    allfaults = inputs.receiver_object + inputs.source_object
+    for item in allfaults:
+        lon, lat = fault_vector_functions.xy2lonlat(item.xstart, item.ystart, inputs.zerolon, inputs.zerolat);
+        if lon < region[0]:
+            region[0] = lon;
+        if lon > region[1]:
+            region[1] = lon;
+        if lat < region[2]:
+            region[2] = lat;
+        if lat > region[3]:
+            region[3] = lat;
+    return region;
 
 
 def displacements_to_3_grds(outdir, efiles, nfiles, ufiles, region, inc=0.0005):

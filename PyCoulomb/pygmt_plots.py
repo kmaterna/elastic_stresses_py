@@ -33,14 +33,14 @@ def map_stress_plot(params, inputs, out_object, stress_component):
                   output="mycpt.cpt", background=True);
 
     # Make Map
-    region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+    region = utilities.define_map_region(inputs);
     proj = "M7i"
     fig = pygmt.Figure()
     title = "+t\"" + stress_component + " stress\"";  # must put escaped quotations around the title.
     fig.basemap(region=region, projection=proj, frame=title);
     fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame="1.0");  # the boundary.
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='white',
-              map_scale="g-125.5/39.6+c1.5+w50");
+              map_scale="jBL+c1.5+w50");
 
     fig = annotate_figure_with_sources(fig, inputs, params);
 
