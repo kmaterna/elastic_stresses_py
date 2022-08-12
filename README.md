@@ -27,7 +27,9 @@ Then, you call the program by passing the config file into the main executable:
 elastic_stresses_driver.py my_config.txt
 ```
 
-A complete description of the config file is shown below, with both required and optional arguments. Optional arguments can be omitted or be left blank.  
+A complete description of the config file is shown below, with both required and optional arguments. Optional arguments can be omitted or be left blank.
+
+
 ![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/annotated_config.png)
 
 
@@ -50,6 +52,7 @@ A complete description of the config file is shown below, with both required and
 * Output computations at depths other than the surface
 * Read in full moment tensor (not just double couple focal mechanisms)
 * Read .inr files (like Coulomb)
+* Complete the separation of output stage from visualization stage
 
 ### Additional Input Formats beyond Coulomb Format: 
 Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. Each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
