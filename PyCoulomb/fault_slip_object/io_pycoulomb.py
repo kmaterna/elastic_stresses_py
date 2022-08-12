@@ -28,7 +28,7 @@ def coulomb_fault_to_fault_dict(source_object):
             print("ERROR! Cannot convert a point source into a rectangular source. Skipping...");
             continue;
         one_fault = {"strike": src.strike, "dip": src.dipangle, "depth": src.top,
-                     "rake": fault_vector_functions.get_rake(rtlat_strike_slip=src.rtlat, dip_slip=src.reverse),
+                     "rake": src.rake,
                      "slip": fault_vector_functions.get_total_slip(src.rtlat, src.reverse),
                      "tensile": src.tensile,
                      "length": fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart,
