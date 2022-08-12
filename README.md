@@ -27,26 +27,9 @@ Then, you call the program by passing the config file into the main executable:
 elastic_stresses_driver.py my_config.txt
 ```
 
-A complete config file, with both required and optional arguments. Optional arguments can be omitted or be left blank.  
-```
-[io-config]
-exp_name = my_experiment
-input_file = examples/example_case/M6.8_2014.inzero
-output_dir = Outputs/
-plot_stress = 1
-plot_grd_disp = 1
-aftershocks = [optional]
-gps_disp_points = [optional]
-strain_file = [optional]
+A complete description of the config file is shown below, with both required and optional arguments. Optional arguments can be omitted or be left blank.  
+![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/annotated_config.png)
 
-[compute-config]
-strike_num_receivers = 10
-dip_num_receivers = 10
-mu = 30e9
-lame1 = 30e9
-B = 0
-fixed_rake = [optional]
-```
 
 ### Capabilities: 
 * Reads source and receiver faults from .inp formatted Coulomb input files.

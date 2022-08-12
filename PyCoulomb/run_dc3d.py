@@ -198,16 +198,16 @@ def compute_ll_def(inputs, alpha, disp_points):
     return model_disp_points;
 
 
-def compute_surface_disp_point(sources, alpha, x, y):
+def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
     """
     A major compute loop for each source object at one x/y point.
     x/y in the same coordinate system as the fault object.
     Computes displacement and strain tensor.
     Sources is a list of fault objects
+    Default depth is at surface of earth
     """
     u_disp, v_disp, w_disp = 0, 0, 0;
     strain_tensor_total = np.zeros((3, 3));
-    compute_depth = 0;  # at surface of earth
 
     for source in sources:
         desired_coords_grad_u, desired_coords_u = compute_strains_stresses_from_one_fault(source, x, y, compute_depth,

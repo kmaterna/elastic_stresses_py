@@ -6,3 +6,4 @@ test/example_*.txt
 dist/*
 Elastic_stresses_py.egg-info/*
 build/*
+*.pptx

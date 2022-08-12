@@ -340,7 +340,7 @@ def write_output_files(params, out_object, obs_strain_points):
     # Write synethetic displacement output file and lists of lon/lat/def for synthetic grid
     if params.plot_grd_disp:
         write_synthetic_grid_full_results(out_object.x, out_object.y, out_object.x2d, out_object.y2d,
-                                          out_object.zerolon,out_object.zerolat, out_object.u_disp, out_object.v_disp,
+                                          out_object.zerolon, out_object.zerolat, out_object.u_disp, out_object.v_disp,
                                           out_object.w_disp, params.outdir);
         write_synthetic_grid_triplets(out_object.x, out_object.y, out_object.x2d, out_object.y2d, out_object.zerolon,
                                       out_object.zerolat, out_object.u_disp, out_object.v_disp, out_object.w_disp,
