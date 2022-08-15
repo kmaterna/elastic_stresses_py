@@ -1,6 +1,14 @@
 # Elastic_stresses_py
 
-This code uses Okada's (1992) DC3D function to compute elastic displacements, strains, and stresses in an elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases, it reproduces the Coulomb outputs (see Examples). 
+This code uses Okada's (1992) DC3D function to compute elastic displacements, strains, stresses, and Coulomb failure stresses in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases, it reproduces the Coulomb outputs (see Examples). 
+
+The equation being solved, following the sign conventions used in Coulomb, is:
+
+$$ \Delta CFS = \Delta\tau + \mu (\Delta\sigma_n - \Delta P) $$ 
+
+where pore pressure P is determined by B and the mean stress:
+
+$$ \Delta P = {B \over 3} * (\sigma_{kk}) $$
 
 ## Description
 
@@ -112,3 +120,11 @@ Coulomb-produced Coulomb Stress Changes:
 
 In a real research application, a computation would look more like this: 
 ![Ex_Coulomb_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Coulomb_map.png)
+
+## References: 
+
+* Okada, Y. (1992). Internal deformation due to shear and tensile faults in a half-space. Bulletin of the seismological society of America, 82(2), 1018-1040.
+
+* King, G. C., Stein, R. S., & Lin, J. (1994). Static stress changes and the triggering of earthquakes. Bulletin of the Seismological Society of America, 84(3), 935-953.
+
+* Beeler, N. M., Simpson, R. W., Hickman, S. H., & Lockner, D. A. (2000). Pore fluid pressure, apparent friction, and Coulomb failure. Journal of Geophysical Research: Solid Earth, 105(B11), 25533-25542.
