@@ -8,7 +8,9 @@ import numpy as np
 
 
 def read_aftershock_table(infile):
-    """Simple catalog format: time, lon, lat, depth, magnitude"""
+    """
+    Simple catalog format: time, lon, lat, depth, magnitude
+    """
     print("Reading aftershocks from file %s " % infile);
     lon, lat, time, depth, magnitude = [], [], [], [], [];
 
@@ -68,7 +70,9 @@ def read_disp_points(infile):
 
 
 def write_receiver_traces_gmt(receiver_object, outfile):
-    """Write the top edge of each receiver fault in GMT map coordinates"""
+    """
+    Write the top edge of each receiver fault in GMT map coordinates
+    """
     if not receiver_object:
         return;
     print("Writing %s" % outfile);
@@ -104,6 +108,10 @@ def write_strain_results(obs_strain_points, strains, outfile):
     """
     obs_strain_points is an object of format cc.dips_points
     strains is a list of tensors
+
+    :param obs_strain_points: a list of disp_points
+    :param strains: a list of strain tensors (matrices)
+    :param outfile: string, name of output file
     """
     if obs_strain_points:
         ofile = open(outfile, 'w');

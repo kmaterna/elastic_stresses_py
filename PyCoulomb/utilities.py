@@ -158,6 +158,9 @@ def print_metrics_on_sources(source_object, mu):
 
 
 def separate_rectangular_from_point_sources(source_object):
+    """
+    Take a list of source objects and separate it into two lists: one of rectangular sources, one of point sources
+    """
     point_sources, rect_sources = [], [];
     for source in source_object:
         if source.potency:

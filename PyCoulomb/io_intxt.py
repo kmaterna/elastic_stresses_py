@@ -112,7 +112,9 @@ def get_general_compute_params(input_file):
 
 
 def get_receiver_fault(line, zerolon, zerolat):
-    """Create a receiver object from line in text file"""
+    """
+    Create a receiver object from line in text file
+    """
     [strike, rake, dip, L, W, fault_lon, fault_lat, fault_depth] = read_receiver_line(line);
     [xstart, xfinish, ystart, yfinish, _, _, top, bottom, comment] = compute_params_for_slip_source(strike, dip, rake,
                                                                                                     fault_depth, L, W,
@@ -129,7 +131,9 @@ def get_receiver_fault(line, zerolon, zerolat):
 
 
 def get_source_patch(line, zerolon, zerolat):
-    """Create a source object from a patch in text file"""
+    """
+    Create a source object from a patch in text file
+    """
     [strike, rake, dip, L, W, slip, tensile, flt_lon, flt_lat, fault_depth] = read_source_line_slip_convention(line);
     [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
      comment] = compute_params_for_slip_source(strike, dip, rake, fault_depth, L, W, flt_lon, flt_lat, slip, zerolon,
@@ -143,7 +147,9 @@ def get_source_patch(line, zerolon, zerolat):
 
 
 def get_source_wc(line, zerolon, zerolat):
-    """Create a source object from wells and coppersmith and text file"""
+    """
+    Create a source object from wells and coppersmith and text file
+    """
     [strike, rake, dip, magnitude, faulting_type, fault_lon, fault_lat,
      fault_depth] = read_source_line_WCconvention(line);
     [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom,
@@ -158,12 +164,13 @@ def get_source_wc(line, zerolon, zerolat):
 
 
 def get_FocalMech_source(line, zerolon, zerolat, mu):
-    """Create a source object from a point source focal mechanism"""
+    """
+    Create a source object from a point source focal mechanism
+    """
     [strike, rake, dip, lon, lat, depth, magnitude] = read_point_source_line(line);
-    [x, y, rtlat, reverse, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat, zerolon,
-                                                                               zerolat, mu);
-    one_source_object = cc.construct_pycoulomb_fault(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
-                                                     reverse=reverse, tensile=0, potency=potency, strike=strike,
+    [x, y, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu);
+    one_source_object = cc.construct_pycoulomb_fault(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=0,
+                                                     reverse=0, tensile=0, potency=potency, strike=strike,
                                                      dipangle=dip, zerolon=zerolon, zerolat=zerolat,
                                                      rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
@@ -171,13 +178,14 @@ def get_FocalMech_source(line, zerolon, zerolat, mu):
 
 
 def get_MT_source(line, zerolon, zerolat, lame1, mu):
-    """Create a source object from a six-component moment tensor solution"""
+    """
+    Create a source object from a six-component moment tensor solution
+    """
     [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth] = read_moment_tensor_source_line(line);
     MT = MT_calculations.get_MT(Mrr, Mtt, Mpp, Mrt, Mrp, Mtp);
-    [x, y, rtlat, reverse, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu,
-                                                                            lame1);
-    one_source_object = cc.construct_pycoulomb_fault(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=rtlat,
-                                                     reverse=reverse, tensile=0, potency=potency, strike=strike,
+    [x, y, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1);
+    one_source_object = cc.construct_pycoulomb_fault(xstart=x, xfinish=x, ystart=y, yfinish=y, Kode=100, rtlat=0,
+                                                     reverse=0, tensile=0, potency=potency, strike=strike,
                                                      dipangle=dip, zerolon=zerolon, zerolat=zerolat,
                                                      rake=rake, top=depth, bottom=depth, comment=comment);
     defensive_programming_faults(one_source_object);
@@ -206,7 +214,9 @@ def get_receiver_profile(line):
 
 
 def defensive_programming_faults(onefault):
-    """Assert sanity on faults to make sure they've been read properly"""
+    """
+    Assert sanity on faults to make sure they've been read properly
+    """
     critical_distance = 1000;  # in km
     assert (-360 < onefault.strike < 360), RuntimeError("Invalid strike parameter for fault object");
     assert (-360 < onefault.rake < 360), RuntimeError("Invalid rake parameter for fault object");
@@ -289,46 +299,56 @@ def compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolon, zerolat
     return [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc];
 
 
-def compute_params_for_WC_source(strike, dip, rake, depth, mag, faulting_type, fault_lon, fault_lat, zerolon, zerolat):
+def compute_params_for_WC_source(strike, dip, rake, depth, mag, faulting_type, fault_lon, fault_lat, zerolon, zerolat,
+                                 refpoint='updip_corner'):
+    """
+    Helper function for setting up faults from 'Source_WC' format
+    """
     [xcenter, ycenter] = fault_vector_functions.latlon2xy(fault_lon, fault_lat, zerolon, zerolat);
     L = wells_and_coppersmith.RLD_from_M(mag, faulting_type);  # rupture length
     W = wells_and_coppersmith.RW_from_M(mag, faulting_type);  # rupture width
     slip = wells_and_coppersmith.rectangular_slip(L * 1000, W * 1000, mag);  # must input in meters
-    # if hypocenter is really the center of the rupture:
-    # xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, -L/2, strike);
-    # xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L/2, strike);
-    # top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
-    # if hypocenter is on one side of rupture:
-    xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, 0, strike);
-    xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L, strike);
+    if refpoint == 'center':  # if hypocenter is really the center of the rupture:
+        xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, -L/2, strike);
+        top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L/2, strike);
+    else:  # if hypocenter is top updip corner of rupture:
+        xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, 0, strike);
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L, strike);
+        top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
     rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake);
-    top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
     comment = '';
     return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment];
 
 
-def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fault_lat, slip, zerolon, zerolat):
+def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fault_lat, slip, zerolon, zerolat,
+                                   refpoint='updip_corner'):
+    """
+    Helper function for setting up faults from 'Source_Patch' and 'Receiver' format
+    """
     [xcorner, ycorner] = fault_vector_functions.latlon2xy(fault_lon, fault_lat, zerolon, zerolat);
-    # if  hypocenter is really the center of the rupture:
-    # xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, -L/2, strike);
-    # xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L/2, strike);
-    # top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
-    # if hypocenter is on one side of rupture:
-    xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, 0, strike);
-    xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L, strike);
-    top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
+    if refpoint == 'center':  # if hypocenter is the center of the rupture:
+        xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, -L/2, strike);
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L/2, strike);
+        top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
+    else:  # if hypocenter is top updip corner of rupture:
+        xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, 0, strike);
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L, strike);
+        top, bottom = fault_vector_functions.get_top_bottom_from_top(depth, W, dip);
     rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake);
     comment = '';
     return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment]
 
 
 def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu):
-    """ Given information about point sources from focal mechanisms,
-    Return the right components that get packaged into input_obj. """
+    """
+    Helper function for setting up faults from 'Source_FM' format
+    Return the right components that get packaged into input_obj.
+    """
     [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat);
     potency = get_DC_potency(rake, magnitude, mu);
     comment = '';
-    return [xcenter, ycenter, 0, 0, potency, comment];
+    return [xcenter, ycenter, potency, comment];
 
 
 def get_DC_potency(rake, momentmagnitude, mu):
@@ -372,12 +392,14 @@ def get_mag_from_dc_potency(potency, mu, rake):
 
 
 def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1):
-    """ Given information about point sources from moment tensors,
-    Return the right components that get packaged into input_obj. """
+    """
+    Given information about point sources from moment tensors,
+    Return the right components that get packaged into input_obj.
+    """
     [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat);
     potency = get_MT_potency(MT, rake, mu, lame1);
     comment = '';
-    return [xcenter, ycenter, 0, 0, potency, comment];
+    return [xcenter, ycenter, potency, comment];
 
 
 def get_MT_potency(MT, rake, mu, lame1):

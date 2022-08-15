@@ -154,6 +154,10 @@ def get_fault_slip_moment(fault_object, mu):
     From a source fault object, calculate the seismic moment.
     Must be a finite fault, not a point source.
     Not really used yet, but could be useful in the future.
+
+    :param fault_object: PyCoulomb named-tuple representing one fault
+    :param mu: shear modulus, float, in Pa
+    :returns: array with two elements, seismic moment (N-m), and moment magnitude
     """
     if fault_object.potency:  # for the case of point source, we can't do the moment calculation
         return None, None;
