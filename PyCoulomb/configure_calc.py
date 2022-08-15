@@ -69,9 +69,9 @@ def write_params_into_config(params, outfile):
     ioconfig["output_dir"] = '/'.join(params.outdir.split('/')[0:-2])+'/'
     ioconfig["plot_stress"] = str(params.plot_stress)
     ioconfig["plot_grd_disp"] = str(params.plot_grd_disp)
-    ioconfig["gps_disp_points"] = params.disp_points_file
-    ioconfig["aftershocks"] = params.aftershocks
-    ioconfig["strain_file"] = params.strain_file
+    ioconfig["gps_disp_points"] = "" if params.disp_points_file is None else params.disp_points_file
+    ioconfig["aftershocks"] = "" if params.aftershocks is None else params.aftershocks
+    ioconfig["strain_file"] = "" if params.strain_file is None else params.strain_file
     configobj["compute-config"] = {};
     computeconfig = configobj["compute-config"];
     computeconfig["strike_num_receivers"] = str(params.strike_num_receivers)
