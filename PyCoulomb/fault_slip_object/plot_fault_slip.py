@@ -43,7 +43,8 @@ def write_patch_edges_for_plotting(fault_dict_list, colorby='slip'):
 
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
                                  scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=None, fault_traces=None,
-                                 fault_traces_from_dict=None, title="", plot_slip_colorbar=True):
+                                 fault_traces_from_dict=None, title="", plot_slip_colorbar=True,
+                                 vert_disp_units="m", vert_mult=1):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
     In order to use this function with other formats, like intxt or slippy, convert to the internal fault dict first.
@@ -58,6 +59,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param fault_traces_from_dict: a list of fault_dict objects that will be used for updip fault traces
     :param title: string
     :param plot_slip_colorbar: bool, whether to show a color bar for fault slip
+    :param vert_disp_units: string, describing the units of the vertical scale bar
+    :param vert_mult: can turn verticals into mm by providing 1000 if you want (default is meters)
     """
     print("Plotting outfile %s " % outfile);
     proj = "M7i"
@@ -80,10 +83,11 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
                       truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
     # Write the source patches
-    file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='slip');   # write the source patches
-    fig.plot(data=file1, pen="0.2p,black", color="+z", cmap="mycpt.cpt");
-    fig.plot(data=file2, pen="0.6p,black");   # shallow edges
-    os.remove(file1); os.remove(file2);
+    if len(fault_colors) > 0:
+        file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='slip');  # write the source patches
+        fig.plot(data=file1, pen="0.2p,black", color="+z", cmap="mycpt.cpt");
+        fig.plot(data=file2, pen="0.6p,black");   # shallow edges
+        os.remove(file1); os.remove(file2);
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w25");
     if fault_dict_list:
         if plot_slip_colorbar:
@@ -96,6 +100,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz] = unpack_horiz_disp_points_for_vectors(disp_points);
         fig.plot(x=lon, y=lat, style='s0.07i', color='blue', pen="thin,black");
         if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
+            disp_z_vert = np.multiply(disp_z_vert, vert_mult);
             [v_cmap_opts, v_cbar_opts] = utilities.define_colorbar_series(disp_z_vert, tol=0.0001,
                                                                           v_labeling_interval=v_labeling_interval);
             series_str = str(v_cmap_opts[0])+"/" + str(v_cmap_opts[1]) + "/" + str(v_cmap_opts[2])
@@ -103,7 +108,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             fig.plot(x=lon_vert, y=lat_vert, style='c0.3c', color=disp_z_vert, cmap='vert.cpt', pen="thin,black");
             truncate_str = str(v_cbar_opts[0]) + "/" + str(v_cbar_opts[1]),
             fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="vert.cpt", truncate=truncate_str,
-                         frame=["x"+str(v_cbar_opts[2]), "y+L\"Vert Disp(m)\""]);
+                         frame=["x"+str(v_cbar_opts[2]), "y+L\"Vert Disp("+vert_disp_units+")\""]);
         if sum(~np.isnan(disp_x_horiz) > 0):
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon_horiz, y=lat_horiz, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
