@@ -324,8 +324,8 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mi
             label1, label2 = '_nolabel_', '_nolabel_';
         axarr[1].plot([G[i], G[i]], [depth_inner[i], depth_outer[i]], color='red', linewidth=2);
         axarr[1].plot([G[i], G[i+1]], [depth_outer[i], depth_outer[i]], color='red', label=label1, linewidth=2);
-        axarr[1].plot([K[i], K[i]], [depth_inner[i], depth_outer[i]], color='black', linewidth=2);
-        axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2, linewidth=2);
+        axarr[1].plot([K[i], K[i]], [depth_inner[i], depth_outer[i]], color='black', linewidth=2, linestyle='--');
+        axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2, linewidth=2, linestyle='--');
     axarr[1].set_xlabel('Modulus (GPa)', fontsize=fontsize);
     axarr[1].legend(fontsize=fontsize-2);
     axarr[1].tick_params(labelsize=fontsize);

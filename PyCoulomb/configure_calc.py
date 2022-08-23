@@ -243,6 +243,7 @@ def modify_fault_object(default_fault, xstart=None, xfinish=None, ystart=None, y
     yfinish = default_fault.yfinish if yfinish is None else yfinish;
     rtlat = default_fault.rtlat if rtlat is None else rtlat;
     reverse = default_fault.reverse if reverse is None else reverse;
+    tensile = default_fault.tensile if tensile is None else tensile;
     potency = default_fault.potency if potency is None else potency;
     strike = default_fault.strike if strike is None else strike;
     dipangle = default_fault.dipangle if dipangle is None else dipangle;
