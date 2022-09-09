@@ -108,20 +108,44 @@ PR1 in the Coulomb input format is never used. Specifying Poisson's ratio should
 
 Set domain elastic parameters at the computation level through lame1 and mu in the config file.
 
-## Results: 
+## Example 1:
 
-Elastic_stresses_py reproduces the Coulomb outputs in the simple case of two vertical strike-slip faults, one source (green) and one receiver (blue):
-![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Python_Displacement_model.png)
+Running from the command line (from a location where the filepaths make sense):
+```bash
+elastic_stresses_driver.py my_config.txt
+```
+where my_config.txt is a text file in the local directory containing:
+```
+[io-config]
+exp_name = my_experiment
+input_file = examples/example_case/M6.8_2014.intxt
+output_dir = Outputs/
+plot_stress = 1
+plot_grd_disp = 1
+gps_disp_points = examples/example_case/CA_GPS_ll.txt
+aftershocks = examples/example_case/CA_aftershocks_2014.txt
+strain_file = 
 
-Python-produced Coulomb Stress Changes:
-![Python_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Python_test_case.png)
+[compute-config]
+strike_num_receivers = 10
+dip_num_receivers = 10
+mu = 30e9
+lame1 = 30e9
+B = 0
+fixed_rake = 
+```
 
-Coulomb-produced Coulomb Stress Changes:
-![Coulomb_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Coulomb_test_case.png)
+should produce files and plots such as:
+
+![Gallery](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/example_plots.png)
 
 
-In a real research application, a computation would look more like this: 
-![Ex_Coulomb_stresses](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/Coulomb_map.png)
+
+## Example 2:
+The code can also be used for larger numbers of source faults and receiver faults. The largest we have tried is 10,000 sources and 10,000 receivers. That application took about half an hour and the results were re-packaged into something like this:
+ 
+![NZ](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/nz_example.png)
+
 
 ## References: 
 

@@ -65,8 +65,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
 def map_vertical_def(params, inputs, outfile):
     """
     Simple map of grdfile with subsampled vertical deformation.
-    Currently mess, but a proof of concept!
-    Makes a grd file created by gmt surface from the xyz file written in this software.
+    Currently a proof of concept!
     """
     print("Mapping vertical deformation in %s " % outfile);
 

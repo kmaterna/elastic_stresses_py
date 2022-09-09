@@ -60,7 +60,7 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
             if v_labeling_interval:
                 label_int = v_labeling_interval;  # using default value
             else:
-                label_int = np.round(total_range/8, 3);
+                label_int = np.round(total_range/8, 5);
             cmap_interval = total_range/100;
             cmap_options = [np.nanmin(plotting_array)-bumper, np.nanmax(plotting_array)+bumper, cmap_interval];
             cbar_options = [np.nanmin(plotting_array)-bumper/2, np.nanmax(plotting_array)+bumper/2, label_int];
@@ -84,7 +84,6 @@ def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
     if not vmax:
         vmax = auto_bounds[1];
     return vmin, vmax;
-
 
 
 def define_vector_scale_size(model_dE, model_dN):

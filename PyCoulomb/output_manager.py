@@ -50,8 +50,10 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         write_disp_grd_files(inputs, params.outdir, 'xy_east.txt', 'xy_north.txt', 'xy_vert.txt');  # from txt files
         pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
     if out_object.receiver_profile:
-        write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile, params.outdir+"stresses_horiz_profile.txt");
-        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile, params.outdir+'horizontal_profile_stresses.png');
+        write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
+                            params.outdir+"stresses_horiz_profile.txt");
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
+                          params.outdir+'horizontal_profile_stresses.png');
     return;
 
 
