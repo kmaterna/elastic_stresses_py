@@ -1,14 +1,17 @@
 # Elastic_stresses_py
 
-This code uses Okada's (1992) DC3D function to compute elastic displacements, strains, stresses, and Coulomb failure stresses in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases, it reproduces the Coulomb outputs (see Examples). 
+This code uses Okada's (1992) DC3D function to compute elastic displacements, strains, stresses, and Coulomb failure stresses (e.g., King et al., 1994) in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases (in ```Examples/```), it reproduces the Coulomb outputs. 
 
 The equation being solved, following the sign conventions used in Coulomb, is:
 
 $$ \Delta CFS = \Delta\tau + \mu (\Delta\sigma_n - \Delta P) $$ 
 
-where pore pressure P is determined by B and the mean stress:
+where the instantaneous pore pressure change P is determined by the mean stress and the Skempton's coefficient (B):
 
-$$ \Delta P = {B \over 3} * (\sigma_{kk}) $$
+$$ \Delta P = {B} * {\sigma_{kk} \over 3} $$
+
+e.g., Beeler et al., 2000.
+
 
 ## Description
 
@@ -53,14 +56,13 @@ A complete description of the config file is shown below, with both required and
 
 
 ### Config Switches
-* If ```plot_grd_disp```: Will produce grid of 100x100 synthetic points and their surface displacements, in txt and grd and eps plots [default: True]
+* If ```plot_grd_disp```: Will produce grid of 100x100 synthetic points and their surface displacements, in txt/grd/plots [default: True]
 * If ```plot_stress```: Will compute and plot shear stress, normal stress, and Coulomb stress on receiver faults [default: True]
 
 ### Future work: 
 * Output computations at depths other than the surface
 * Read in full moment tensor (not just double couple focal mechanisms)
 * Read .inr files (like Coulomb)
-* Complete the separation of output stage from visualization stage
 
 ### Additional Input Formats beyond Coulomb Format: 
 Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. Each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
