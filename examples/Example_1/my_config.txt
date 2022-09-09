@@ -1,0 +1,17 @@
+[io-config]
+exp_name = my_experiment
+input_file = M6.8_2014.intxt
+output_dir = Outputs/
+plot_stress = 1
+plot_grd_disp = 1
+gps_disp_points = CA_GPS_ll.txt
+aftershocks = CA_aftershocks_2014.txt
+strain_file = 
+
+[compute-config]
+strike_num_receivers = 10
+dip_num_receivers = 10
+mu = 30e9
+lame1 = 30e9
+B = 0
+fixed_rake = 

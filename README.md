@@ -110,7 +110,7 @@ Set domain elastic parameters at the computation level through lame1 and mu in t
 
 ## Example 1:
 
-Running from the command line (from a location where the filepaths make sense):
+Running from the command line, running from ```examples/Example_1``` in this repository, type:
 ```bash
 elastic_stresses_driver.py my_config.txt
 ```
@@ -118,12 +118,12 @@ where my_config.txt is a text file in the local directory containing:
 ```
 [io-config]
 exp_name = my_experiment
-input_file = examples/example_case/M6.8_2014.intxt
+input_file = M6.8_2014.intxt
 output_dir = Outputs/
 plot_stress = 1
 plot_grd_disp = 1
-gps_disp_points = examples/example_case/CA_GPS_ll.txt
-aftershocks = examples/example_case/CA_aftershocks_2014.txt
+gps_disp_points = CA_GPS_ll.txt
+aftershocks = CA_aftershocks_2014.txt
 strain_file = 
 
 [compute-config]
@@ -142,7 +142,8 @@ should produce files and plots such as:
 
 
 ## Example 2:
-The code can also be used for larger numbers of source faults and receiver faults. The largest we have tried is 10,000 sources and 10,000 receivers. That application took about half an hour and the results were re-packaged into something like this:
+The code can also be used for larger numbers of source faults and receiver faults. 
+The largest we have tried is 10,000 sources and 10,000 receivers. That application took about half an hour and the results were compiled into something like this:
  
 ![NZ](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/nz_example.png)
 

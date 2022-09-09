@@ -1,5 +1,6 @@
 *.pyc
 Outputs/*
+examples/Example_1/Outputs/my_experiment/*
 PyCoulomb/__pycache__/*
 .idea*
 test/example_*.txt
@@ -7,3 +8,4 @@ dist/*
 Elastic_stresses_py.egg-info/*
 build/*
 *.pptx
+*.cpt
