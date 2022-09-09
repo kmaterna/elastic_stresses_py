@@ -68,10 +68,10 @@ def map_vertical_def(params, inputs, outfile):
     Currently mess, but a proof of concept!
     Makes a grd file created by gmt surface from the xyz file written in this software.
     """
-    print("Mapping vertical deformation in %s " % params.outdir);
+    print("Mapping vertical deformation in %s " % outfile);
 
     proj = 'M4i'
-    region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+    region = utilities.define_map_region(inputs);
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
@@ -100,7 +100,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
         return;
 
     proj = 'M4i'
-    region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
+    region = utilities.define_map_region(inputs);
 
     # Unpack modeled displacements, in meters
     model_dE = np.array([x.dE_obs for x in model_disp_points]);

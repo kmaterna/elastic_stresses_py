@@ -22,6 +22,8 @@ import numpy as np
 
 def coulomb_fault_to_fault_dict(source_object):
     """Convert a list of fault objects from Elastic_stresses_py into a list of internal dictionary objects"""
+    if not source_object:
+        return [];
     fault_dict_list = [];
     for src in source_object:
         if src.potency:

@@ -68,6 +68,25 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
     return [cmap_options, cbar_options];
 
 
+def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
+    """
+    Determine boundaries of a symmetric colormap object (like stress change), coding all the edge-case logic here
+    plotting_array: 1d array or None.
+    """
+    if not plotting_array:
+        return -1, 1;
+    auto_vmin = np.min(plotting_array);  # one number
+    auto_vmax = np.max(plotting_array);  # one number
+    auto_extreme = np.max(np.abs([auto_vmin, auto_vmax]));
+    auto_bounds = [-auto_extreme, auto_extreme];
+    if not vmin:
+        vmin = auto_bounds[0];
+    if not vmax:
+        vmax = auto_bounds[1];
+    return vmin, vmax;
+
+
+
 def define_vector_scale_size(model_dE, model_dN):
     """
     Based on the modeled displacements, determine an appropriate vector scale for map visualization
