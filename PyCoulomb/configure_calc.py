@@ -22,6 +22,8 @@ def configure_stress_calculation(config_file):
         if configobj.has_option('io-config', 'gps_disp_points') else None;
     strain_file = configobj.get('io-config', 'strain_file') \
         if configobj.has_option('io-config', 'strain_file') else None;
+    if output_dir[-1] != '/':
+        output_dir = output_dir + '/';
     output_dir = output_dir + exp_name + '/';
     if configobj.has_option('io-config', 'plot_stress'):
         plot_stress = configobj.getint('io-config', 'plot_stress');
