@@ -110,7 +110,7 @@ Set domain elastic parameters at the computation level through lame1 and mu in t
 
 ## Example 1: Command Line
 
-Running from the command line, running from ```examples/Example_1``` in this repository, type:
+Running from the command line, from ```examples/Example_1``` in this repository, type:
 ```bash
 elastic_stresses_driver.py my_config.txt
 ```
@@ -141,8 +141,9 @@ should produce files and plots such as:
 
 ## Example 2: Jupyter Notebook
 
-We can do the same calculation as above in ```examples/Example_2``` through a Jupyter Notebook. 
-This notebook is under development-- please check it out and see if you have feedback. It aims to explore ways to modify inputs and parameters through the Python API (in addition to the regular command line). 
+We can do the same calculation as above in ```examples/Example_2``` through a Jupyter Notebook, located [here](examples/Example_2/Run_Elastic_stresses_py.ipynb).    
+
+This notebook explores modifying the inputs and configuration parameters through the Python API (in addition to the regular command line).  This is more similar to a real research application.  
 
 
 
@@ -153,10 +154,12 @@ The largest we have tried is 10,000 sources and 10,000 receivers. That applicati
 ![NZ](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/nz_example.png)
 
 
-## References: 
+## References:
 
-* Okada, Y. (1992). Internal deformation due to shear and tensile faults in a half-space. Bulletin of the seismological society of America, 82(2), 1018-1040.
+* Beeler, N. M., Simpson, R. W., Hickman, S. H., & Lockner, D. A. (2000). Pore fluid pressure, apparent friction, and Coulomb failure. Journal of Geophysical Research: Solid Earth, 105(B11), 25533-25542.
 
 * King, G. C., Stein, R. S., & Lin, J. (1994). Static stress changes and the triggering of earthquakes. Bulletin of the Seismological Society of America, 84(3), 935-953.
 
-* Beeler, N. M., Simpson, R. W., Hickman, S. H., & Lockner, D. A. (2000). Pore fluid pressure, apparent friction, and Coulomb failure. Journal of Geophysical Research: Solid Earth, 105(B11), 25533-25542.
+* Okada, Y. (1992). Internal deformation due to shear and tensile faults in a half-space. Bulletin of the seismological society of America, 82(2), 1018-1040.
+
+* Wells, D. L., and K. J. Coppersmith (1994). New empirical relationships among magnitude, rupture length, rupture width, rupture area, and surface displacement. Bulletin of the seismological Society of America 84.4: 974-1002.
