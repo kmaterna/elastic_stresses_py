@@ -209,12 +209,12 @@ def write_valid_config_file(directory):
     configobj["io-config"] = {};
     ioconfig = configobj["io-config"];
     ioconfig["exp_name"] = 'my_experiment';
-    ioconfig["input_file"] = 'examples/example_case/M6.8_2014.inzero';
+    ioconfig["input_file"] = 'M6.8_2014.intxt';
     ioconfig["output_dir"] = 'Outputs/';
     ioconfig["plot_stress"] = '1'
     ioconfig["plot_grd_disp"] = '1'
-    ioconfig["gps_disp_points"] = 'examples/example_case/CA_GPS_ll.txt';
-    ioconfig["aftershocks"] = 'examples/example_case/CA_aftershocks_2014.txt';
+    ioconfig["gps_disp_points"] = 'CA_GPS_ll.txt';
+    ioconfig["aftershocks"] = 'CA_aftershocks_2014.txt';
     ioconfig["strain_file"] = ''
     configobj["compute-config"] = {};
     computeconfig = configobj["compute-config"];

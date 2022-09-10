@@ -108,7 +108,7 @@ PR1 in the Coulomb input format is never used. Specifying Poisson's ratio should
 
 Set domain elastic parameters at the computation level through lame1 and mu in the config file.
 
-## Example 1:
+## Example 1: Command Line
 
 Running from the command line, running from ```examples/Example_1``` in this repository, type:
 ```bash
@@ -139,9 +139,14 @@ should produce files and plots such as:
 
 ![Gallery](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/example_plots.png)
 
+## Example 2: Jupyter Notebook
+
+We can do the same calculation as above in ```examples/Example_2``` through a Jupyter Notebook. 
+This notebook is under development-- please check it out and see if you have feedback. It aims to explore ways to modify inputs and parameters through the Python API (in addition to the regular command line). 
 
 
-## Example 2:
+
+## Example 3: Real Application
 The code can also be used for larger numbers of source faults and receiver faults. 
 The largest we have tried is 10,000 sources and 10,000 receivers. That application took about half an hour and the results were compiled into something like this:
  

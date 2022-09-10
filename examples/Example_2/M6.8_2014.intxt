@@ -1,0 +1,12 @@
+# Source: strike rake dip magnitude faulting_type fault_corner_lon fault_corner_lat fault_corner_depth
+# Receivers: strike rake dip length width updip_corner_lon updip_corner_lat updip_corner_dep
+# General: PR1 FRIC lon_min lon_max lon_zero lat_min lat_max lat_zero
+# 
+# Example: M6.8 off Mendocino, 
+# Source retrieved from USGS moment tensor (https://earthquake.usgs.gov/earthquakes/eventpage/nc72182046/executive)
+# Receiver is a guess to the Cascadia megathrust
+
+General: 0.250 0.40 -125.80 -122.60 -124.50 39.30 41.70 40.30
+Source_WC: 228 -2 79.0 6.8 SS -125.134 40.829 16.4 # the catalog case.
+Receiver: 355 90 12 140 120 -124.56 40.3 10.8
+Receiver_Horizontal_Profile: 1 15 45 0 -124.8 40.3 100 100 0.5

@@ -7,8 +7,8 @@ import argparse
 import Elastic_stresses_py.PyCoulomb as PyCoulomb
 
 def welcome_and_parse_runstring():
-    print("\nWrite an empty config file for elastic_stresses_py. ");
-    parser = argparse.ArgumentParser(description='Write an empty config file into a specified directory',
+    print("\nWrite a default config file for elastic_stresses_py. ");
+    parser = argparse.ArgumentParser(description='Write a default config file into a specified directory',
                                      epilog='\U0001f600 \U0001f600 \U0001f600 ');
     parser.add_argument('directory', type=str, help='name of directory. Required.')
     args = parser.parse_args()

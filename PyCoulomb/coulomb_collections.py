@@ -66,6 +66,7 @@ def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, 
                               rake, zerolon, zerolat, top, bottom, Kode=100, comment=None):
     """
     Like a constructor for this named tuple.
+    The reason we have BOTH rake and rtlat/reverse is that rake can be specified for receivers, which have slip=0.
     You pass the required input parameters, and the remaining parameters are filled in.
     While keeping the interface simple,
     we are pre-computing some geometry parameters ONCE for each fault, for performance reasons.

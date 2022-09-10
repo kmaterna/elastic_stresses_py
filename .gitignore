@@ -1,6 +1,8 @@
 *.pyc
 Outputs/*
 examples/Example_1/Outputs/my_experiment/*
+examples/Example_2/Outputs/*
+examples/Example_2/my_config.txt
 PyCoulomb/__pycache__/*
 .idea*
 test/example_*.txt
