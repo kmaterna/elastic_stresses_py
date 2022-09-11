@@ -72,7 +72,9 @@ def surface_def_plot(out_object, outfile):
     print("Making plot of predicted displacement throughout model domain.")
     print("Max vertical displacement is %f m" % (out_object.w_disp.max()));
     # Plot of elastic surface deformation from the given input model.
-    plt.figure(figsize=(16, 16))
+    plt.rcParams['figure.dpi'] = 300;
+    plt.rcParams['savefig.dpi'] = 300;
+    plt.figure(figsize=(16, 16), dpi=300)
     plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp, cmap='jet');
     cb = plt.colorbar();
     cb.set_label('Vertical displacement (meters)', fontsize=22);
@@ -103,7 +105,7 @@ def surface_def_plot(out_object, outfile):
     plt.ylabel('Y (km)', fontsize=20)
     plt.gca().tick_params(labelsize=16)
     plt.title('Surface Displacement', fontsize=28)
-    plt.savefig(outfile)
+    plt.savefig(outfile, facecolor="w")
     plt.close();
     return;
 
@@ -133,7 +135,9 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
 
     # Figure of stresses.
-    plt.figure(figsize=(12, 10));
+    plt.rcParams['figure.dpi'] = 300;
+    plt.rcParams['savefig.dpi'] = 300;
+    plt.figure(figsize=(12, 10), dpi=300);
 
     for i in range(len(stress_component)):
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(out_object.receiver_object[i]);
@@ -174,7 +178,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     plt.xlabel('X (km)', fontsize=20);
     plt.ylabel('Y (km)', fontsize=20);
     plt.gca().tick_params(labelsize=16)
-    plt.savefig(outfile);
+    plt.savefig(outfile, facecolor="w");
     plt.close();
     return;
 
@@ -208,7 +212,9 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
 
     # Figure of stresses.
-    plt.figure(figsize=(17, 8));
+    plt.rcParams['figure.dpi'] = 300;
+    plt.rcParams['savefig.dpi'] = 300;
+    plt.figure(figsize=(17, 8), dpi=300);
     if writefile:
         print("Writing file %s" % writefile);
         ofile = open(writefile, 'w');
@@ -260,7 +266,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     plt.ylim([min(min_depth_array), max(max_depth_array)]);
     plt.gca().invert_yaxis();
     plt.gca().invert_xaxis();
-    plt.savefig(outfile);
+    plt.savefig(outfile, facecolor="w");
     plt.close();
     return;
 
@@ -275,7 +281,9 @@ def map_horiz_profile(horiz_profile, profile_results, outfile):
     coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape);
 
     # Figure of stresses.
-    plt.figure(figsize=(17, 8));
+    plt.rcParams['figure.dpi'] = 300;
+    plt.rcParams['savefig.dpi'] = 300;
+    plt.figure(figsize=(17, 8), dpi=300);
     plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r');
     plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
               str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km));
@@ -287,7 +295,7 @@ def map_horiz_profile(horiz_profile, profile_results, outfile):
     plt.xlabel('Longitude', fontsize=18)
     plt.ylabel('Latitude', fontsize=18)
     plt.gca().tick_params(labelsize=16)
-    plt.savefig(outfile);
+    plt.savefig(outfile, facecolor="w");
     return;
 
 
