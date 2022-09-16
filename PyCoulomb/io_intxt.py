@@ -49,42 +49,51 @@ def read_intxt(input_file, mu, lame1):
     return input_obj;
 
 
-def write_intxt(input_object, output_file, label=None):
+def write_intxt(input_object, output_file, label=None, mu=30e9, lame1=30e9):
     """
     :param input_object: cc.Input_object
     :param output_file: string, filename
     :param label: string, optional header
+    :param mu: float, shear modulus
+    :param lame1: float, first lame parameter
     """
     ofile = open(output_file, 'w');
     if label:
         ofile.write(label);
     ofile.write("# General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero\n");
     ofile.write("# Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m\n");
+    ofile.write("# Source_FM: strike rake dip lon lat depth_km magnitude\n");
     ofile.write("# Receiver: strike rake dip length_km width_km lon lat depth_km\n\n");
-    ofile.write("General: %f %f %f %f %f %f %f %f \n" % (input_object.PR1, input_object.FRIC, input_object.minlon,
-                                                         input_object.maxlon, input_object.zerolon, input_object.minlat,
-                                                         input_object.maxlat, input_object.zerolat) );
+    real_poissons_ratio = lame1 / (2 * (lame1 + mu) );
+    # WRITE POISSON'S RATIO FROM MU, LAME1
+    ofile.write("General: %.3f %.3f %f %f %f %f %f %f \n" % (real_poissons_ratio, input_object.FRIC,
+                                                             input_object.minlon, input_object.maxlon,
+                                                             input_object.zerolon, input_object.minlat,
+                                                             input_object.maxlat, input_object.zerolat) );
     for src in input_object.source_object:
         if not src.potency:  # write a finite source as a Source_Patch
             L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish);  # in km
             W = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle);  # in km
             fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
             slip = fault_vector_functions.get_vector_magnitude([src.rtlat, src.reverse]);  # in m
-            ofile.write("Source_Patch: %f %f %f %f %f %f %f %f %f\n" % (src.strike, src.rake, src.dipangle, L, W,
-                                                                        fault_lon, fault_lat, src.top, slip));
-        if src.potency:   # write a focal mechanism or point source
-            print("Warning: We are not yet prepared to write out Source_FM or Source_MT. Source will be ignored.")
-            continue;   # still working on this.
+            ofile.write("Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, src.dipangle,
+                                                                                L, W, fault_lon, fault_lat,
+                                                                                src.top, slip));
+        if src.potency:   # write a DC focal mechanism
+            fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
+            mag = get_mag_from_dc_potency(src.potency, mu, src.rake);
+            ofile.write("Source_FM: %.3f %.3f %.3f %f %f %.3f %.3f\n" % (src.strike, src.rake, src.dipangle,
+                                                                         fault_lon, fault_lat, src.top, mag) );
     for rec in input_object.receiver_object:
         L = fault_vector_functions.get_strike_length(rec.xstart, rec.xfinish, rec.ystart, rec.yfinish);  # in km
         W = fault_vector_functions.get_downdip_width(rec.top, rec.bottom, rec.dipangle);  # in km
         fault_lon, fault_lat = fault_vector_functions.xy2lonlat(rec.xstart, rec.ystart, rec.zerolon, rec.zerolat);
-        ofile.write("Receiver: %f %f %f %f %f %f %f %f \n" % (rec.strike, rec.rake, rec.dipangle, L, W, fault_lon,
-                                                              fault_lat, rec.top) );
+        ofile.write("Receiver: %.3f %.3f %.3f %f %f %f %f %.3f \n" % (rec.strike, rec.rake, rec.dipangle, L, W,
+                                                                      fault_lon, fault_lat, rec.top) );
     if input_object.receiver_horiz_profile:
         rec = input_object.receiver_horiz_profile;
         ofile.write("Receiver_Horizontal_Profile: ");
-        ofile.write("%f %f %f %f " % (rec.depth_km, rec.strike, rec.dip, rec.rake))
+        ofile.write("%.3f %.3f %.3f %.3f " % (rec.depth_km, rec.strike, rec.dip, rec.rake))
         ofile.write("%f %f " % (rec.centerlon, rec.centerlat) )
         ofile.write("%f %f %f\n" % (rec.length, rec.width, rec.inc) );
     ofile.close();
@@ -385,8 +394,12 @@ def get_mag_from_dc_potency(potency, mu, rake):
     Mu in Pascals
     """
     ss_moment = np.abs(potency[0]) * mu;
-    strike_slip_fraction, _ = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
-    dc_moment = ss_moment / abs(strike_slip_fraction);
+    ds_moment = np.abs(potency[1]) * mu;
+    strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake);
+    if ss_moment >= ds_moment:
+        dc_moment = ss_moment / abs(strike_slip_fraction);
+    else:  # in case the strike slip moment is zero
+        dc_moment = ds_moment / abs(dip_slip_fraction);
     Mw = moment_calculations.mw_from_moment(dc_moment);
     return Mw;
 

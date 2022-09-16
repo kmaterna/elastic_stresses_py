@@ -2,11 +2,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
+import matplotlib, os
+from subprocess import call
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
-from subprocess import call
-from . import conversion_math, io_inp, pygmt_plots, io_additionals, utilities, configure_calc
+from . import conversion_math, io_inp, pygmt_plots, io_additionals, utilities, configure_calc, io_intxt
 from .fault_slip_object import io_pycoulomb, io_slippy
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -16,9 +16,11 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     Passes the program into the right plotting and mapping routines.
     Reads parameter flags such as plot_stress and plot_grd_disp.
     """
-    call(['mkdir', '-p', params.outdir], shell=False);
+    if not os.path.exists(params.outdir):
+        os.makedirs(params.outdir)
     if params.config_file:
         configure_calc.write_params_into_config(params, params.outdir+"used_config.txt");  # for record-keeping
+    io_intxt.write_intxt(inputs, params.outdir + "used_inputs.txt", mu=params.mu, lame1=params.lame1);
     if params.input_file:
         call(['cp', params.input_file, params.outdir], shell=False);  # for record-keeping
 

@@ -24,7 +24,7 @@ To install Elastic_stresses_py, first clone this library onto your computer.
 This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/). The easiest way is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
 Then, from the conda environment you've just created, run ```python setup.py install``` from the directory where you've cloned the repository. 
 
-### Usage
+### Usage:
 The main executable is ```elastic_stresses_driver.py```, which takes a config file as the first argument.
 
 Most of the behavior of the program is controlled by the config text file.  From an experiment directory on your system, you can generate a default config file in the current working directory (.) with: 
@@ -38,36 +38,23 @@ Then, you call the program by passing the config file into the main executable:
 elastic_stresses_driver.py my_config.txt
 ```
 
-A complete description of the config file is shown below, with both required and optional arguments. Optional arguments can be omitted or be left blank.
+*New:* 
+To get the hang of the usage, check out our recently added calculation in ```examples/Example_2``` through a Jupyter Notebook, located [here](examples/Example_2/Run_Elastic_stresses_py.ipynb).
 
+### Config Parameters
+
+A complete description of the config file is shown below, with both required and optional arguments. Optional arguments can be omitted or be left blank.
 
 ![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/annotated_config.png)
 
-
-### Capabilities: 
-* Reads source and receiver faults from .inp formatted Coulomb input files.
-* Reads source and receiver faults from .intxt files, a more convenient input format where slip is specified by length/width or by Wells and Coppersmith (1994) scaling rules
-* Reads point sources and receiver faults from .inzero, a focal mechanism / moment tensor input format
-* Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
-* Computes elastic displacements and stresses due to slip on source faults.
-* Writes .inp formatted Coulomb files with split subfaults.
-* Maps the faults and stress values using PyGMT.
-* Produces output tables of stresses and displacements.
-
-
-### Config Switches
+#### Important Config Switches
 * If ```plot_grd_disp```: Will produce grid of 100x100 synthetic points and their surface displacements, in txt/grd/plots [default: True]
 * If ```plot_stress```: Will compute and plot shear stress, normal stress, and Coulomb stress on receiver faults [default: True]
 
-### Future work: 
-* Output computations at depths other than the surface
-* Read in full moment tensor (not just double couple focal mechanisms)
-* Read .inr files (like Coulomb)
-
-### Additional Input Formats beyond Coulomb Format: 
-Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. Each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
+### ```Intxt``` and ```Inzero``` Input Formats: 
+Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. In ```.inzero``` and ```.intxt``` text files, each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
 * **General Format:** Describes coordinate system and domain setup. Required.  
-    * "General: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero" 
+    * "General: poissons_ratio* friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero" 
 * **Receiver Format:** Describes receiver faults 
     * "Receiver: strike rake dip length_km width_km lon lat depth_km"
 * **Slip Format:** For slip distributions and fault patches. 
@@ -81,6 +68,10 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
 * **Horizontal Profile Format:** Specify an orientation and compute stresses on that plane/orientation over an area. Like a horizontal cross-section.
     * "Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km" 
     
+
+*PR1 in the intxt/inzero format is never actually used; it's just a placeholder from the old Coulomb format. 
+Specifying Poisson's ratio should be done at the computation level through lame1 and mu in the config file, thus altering alpha in the Okada formulation.
+On the output stage, the actual poisson's ratio from mu and lame1 will be calculated and written into ```used_inputs.txt```.
 
 For all finite sources (i.e., Patch, WC), lon/lat/depth refer to the back updip corner of the fault plane, the corner where one looks along the strike direction to see the fault's upper edge (start_x and start_y in the Aki and Richards (1980) diagram in Coulomb's documentation). 
 
@@ -104,9 +95,25 @@ By convention, right lateral strike slip is positive, and reverse dip slip is po
 
 For input files, strike/rake/dip have units of degrees. Length/width/depth have units of km. Slip has units of meters.   
 
-PR1 in the Coulomb input format is never used. Specifying Poisson's ratio should be done at the computation level through lame1 and mu in the config file, thus altering alpha in the Okada formulation.
-
 Set domain elastic parameters at the computation level through lame1 and mu in the config file.
+
+
+
+### List of Code Capabilities:
+* Reads source and receiver faults from .inp formatted Coulomb input files.
+* Reads source and receiver faults from .intxt files, a more convenient input format where slip is specified by length/width or by Wells and Coppersmith (1994) scaling rules
+* Reads point sources and receiver faults from .inzero, a focal mechanism / moment tensor input format
+* Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
+* Computes elastic displacements and stresses due to slip on source faults.
+* Writes .inp formatted Coulomb files with split subfaults.
+* Maps the faults and stress values using PyGMT.
+* Produces output tables of stresses and displacements.
+
+### Future work: 
+* Output computations at depths other than the surface
+* Read in full moment tensor (not just double couple focal mechanisms)
+* Read .inr files (like Coulomb)
+
 
 ## Example 1: Command Line
 
