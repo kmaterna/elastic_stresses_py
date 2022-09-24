@@ -1,4 +1,4 @@
-""""
+"""
 Functions for slippy IO of faults and slip distributions into list of fault_slip_object dictionaries
 
 Format slippy: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lateral[m] thrust[m] tensile[m]
@@ -6,6 +6,7 @@ Format slippy: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lat
 
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
+from . import fault_slip_object
 
 
 def read_slippy_distribution(infile, desired_segment=-1):
@@ -33,19 +34,17 @@ def read_slippy_distribution(infile, desired_segment=-1):
                                                                                            float, float, float)});
     for i in range(len(lon)):
         if desired_segment == -1 or desired_segment == num[i]:
-            one_fault = {"strike": strike[i], "dip": dip[i], "length": length[i] / 1000, "width": width[i] / 1000,
-                         "depth": -depth[i] / 1000};
-            center_lon = lon[i];
-            center_lat = lat[i];
-            x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, one_fault["length"] / 2,
-                                                                          one_fault["strike"] - 180);  # in km
+            l_km = length[i] / 1000;
+            w_km = width[i] / 1000;
+            depth_km = -depth[i] / 1000;
+            center_lon, center_lat = lon[i], lat[i];
+            x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, l_km / 2, strike[i] - 180);  # in km
             corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);
-            one_fault["lon"] = corner_lon;
-            one_fault["lat"] = corner_lat;
-            one_fault["rake"] = fault_vector_functions.get_rake(rtlat_strike_slip=-ll_slip[i], dip_slip=thrust_slip[i]);
-            one_fault["slip"] = fault_vector_functions.get_total_slip(ll_slip[i], thrust_slip[i]);
-            one_fault["tensile"] = 0;
-            one_fault["segment"] = 0;
+            rake = fault_vector_functions.get_rake(rtlat_strike_slip=-ll_slip[i], dip_slip=thrust_slip[i]);
+            total_slip = fault_vector_functions.get_total_slip(ll_slip[i], thrust_slip[i]);
+            one_fault = fault_slip_object.FaultDict(strike=strike[i], dip=dip[i], length=l_km, depth=depth_km,
+                                                    width=w_km, lon=corner_lon, lat=corner_lat, rake=rake,
+                                                    slip=total_slip, tensile=0, segment=0);
             fault_list.append(one_fault);
     return fault_list;
 
@@ -116,19 +115,15 @@ def read_stress_slippy_format(infile):
                                                                                        float, float, float, float,
                                                                                        float, float, float, float)});
     for i in range(len(lon)):
-        one_fault = {"strike": strike[i], "dip": dip[i], "length": length[i] / 1000, "width": width[i] / 1000,
-                     "depth": -depth[i] / 1000};
-        center_lon = lon[i];
-        center_lat = lat[i];
-        x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, one_fault["length"] / 2,
-                                                                      one_fault["strike"] - 180);  # in km
+        center_lon, center_lat = lon[i], lat[i];
+        l_km = length[i] / 1000;
+        w_km = width[i] / 1000;
+        depth_km = -depth[i] / 1000;
+        x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, l_km / 2, strike[i] - 180);  # in km
         corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);
-        one_fault["lon"] = corner_lon;
-        one_fault["lat"] = corner_lat;
-        one_fault["rake"] = rake[i];
-        one_fault["slip"] = 0;
-        one_fault["tensile"] = 0;
-        one_fault["segment"] = 0;
+        one_fault = fault_slip_object.FaultDict(strike=strike[i], dip=dip[i], length=l_km, width=w_km,
+                                                depth=depth_km, lon=corner_lon, lat=corner_lat, rake=rake[i],
+                                                slip=0, tensile=0, segment=0);
         fault_list.append(one_fault);
 
     return fault_list, shear, normal, coulomb;

@@ -3,7 +3,7 @@
 import numpy as np
 import pygmt
 import os
-from ..fault_slip_object import fault_slip_object
+from . import fault_slip_object
 from .. import utilities
 
 

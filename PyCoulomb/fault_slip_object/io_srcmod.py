@@ -1,9 +1,10 @@
-""""
+"""
 Functions for SRCMOD IO of faults and slip distributions into list of fault_slip_object dictionaries
 
 """
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
+from . import fault_slip_object
 
 
 def read_srcmod_distribution(infile):
@@ -66,18 +67,17 @@ def read_srcmod_line(line, overall_strike, overall_dip, total_len_km, total_widt
     patch_width = total_width_km / nz;
     depth_top, _ = fault_vector_functions.get_top_bottom_from_center(depth_top_center, patch_width, overall_dip)
     slip_m, rake = float(temp[5]), float(temp[rake_col]);   # RAKE IS COLUMN 6 FOR MULTISEGMENT
-    one_fault = {"strike": overall_strike, "dip": overall_dip, "length": total_len_km / nx, "width": patch_width,
-                 "depth": depth_top_center, "rake": rake, "slip": slip_m, "tensile": 0};
-    x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, one_fault["length"] / 2,
-                                                                  one_fault["strike"] - 180);  # in km
-    _downdip_width_proj = one_fault["width"] * np.cos(np.deg2rad(overall_dip));
+    strike, dip = overall_strike, overall_dip;
+    length = total_len_km / nx;
+    x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, length / 2, strike - 180);  # in km
+    _downdip_width_proj = patch_width * np.cos(np.deg2rad(overall_dip));
     # x_start, y_start = fault_vector_functions.add_vector_to_point(x_start, y_start, downdip_width_proj/2,
     #                                                               one_fault["strike"] - 90);
     # ^^ offset the fault location for center. Optional/unknown.
     corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, lon_top_center, lat_top_center);
-    one_fault["lon"] = corner_lon;
-    one_fault["lat"] = corner_lat;
-    one_fault["segment"] = segment;
+    one_fault = fault_slip_object.FaultDict(strike=strike, dip=dip, length=length, width=patch_width,
+                                            depth=depth_top_center, rake=rake, slip=slip_m, tensile=0, lon=corner_lon,
+                                            lat=corner_lat, segment=segment);
     return one_fault;
 
 

@@ -1,12 +1,11 @@
-""""
+"""
 Functions for slippy IO of faults and slip distributions into list of fault_slip_object dictionaries
-
 Format json: basis1, basis2, length(m), width(m), nlength, nwidth, strike, dip, position [lon, lat, dep], penalty
-Format slippy: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lateral[m] thrust[m] tensile[m]
 """
 
 import json
 from Tectonic_Utils.geodesy import fault_vector_functions
+from . import fault_slip_object
 
 
 def read_faults_json(infile):
@@ -24,21 +23,17 @@ def read_faults_json(infile):
     config_file = open(infile, 'r')
     config = json.load(config_file);
     for key in config.keys():
-        one_fault = {"strike": config[key]["strike"], "dip": config[key]["dip"],
-                     "length": config[key]["length"] / 1000.0,
-                     "width": config[key]["width"] / 1000.0};
+        length = config[key]["length"] / 1000.0;
+        width = config[key]["width"] / 1000.0;
         center_lon = config[key]["position"][0];
         center_lat = config[key]["position"][1];
-        x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, one_fault["length"] / 2,
-                                                                      one_fault["strike"] - 180);  # in km
-        corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);  #
-        one_fault["lon"] = corner_lon;
-        one_fault["lat"] = corner_lat;
-        one_fault["depth"] = -config[key]["position"][2] / 1000;
-        one_fault["rake"] = 0;
-        one_fault["slip"] = 0;
-        one_fault["tensile"] = 0;
-        one_fault["segment"] = 0;
+        x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, length / 2,
+                                                                      config[key]["strike"] - 180);  # in km
+        corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);
+        depth = -config[key]["position"][2] / 1000;
+        one_fault = fault_slip_object.FaultDict(strike=config[key]["strike"], dip=config[key]["dip"], depth=depth,
+                                                length=length, width=width, lon=corner_lon, lat=corner_lat,
+                                                rake=0, slip=0, tensile=0, segment=0);
         fault_list.append(one_fault);
     config_file.close();
     return fault_list;

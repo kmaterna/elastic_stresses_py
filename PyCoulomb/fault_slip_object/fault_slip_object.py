@@ -9,23 +9,6 @@ For all other formats, make sure you build read/write conversion AND TEST functi
     * Format(File): .fsp format, used by USGS fault distributions and srcmod database
     * Format(Memory): fault_dict dictionary with elements for a slip distribution (INTERNAL FORMAT FOR THIS LIBRARY)
     * Format(Memory): PyCoulomb format, a named tuple (For Elastic_stresses_py.PyCoulomb)
-
-The internal format here is a dictionary containing:
-Fault_Dict:
-{
-    strike(deg),
-    dip(deg),
-    length(km),
-    width(km),
-    lon(back top corner),
-    lat(back top corner),
-    depth(top, km),
-    rake(deg),
-    slip(m),
-    tensile(m)
-    segment(int)
-}
-If the fault is a receiver fault, we put slip = 0
 """
 
 from .io_pycoulomb import fault_dict_to_coulomb_fault
@@ -33,6 +16,37 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 from Tectonic_Utils.seismo import moment_calculations
 from .. import conversion_math
 import numpy as np
+from typing import TypedDict
+
+class FaultDict(TypedDict):
+    """
+    The internal format is a dictionary containing:  FaultDict:
+    {
+        strike(deg),
+        dip(deg),
+        length(km),
+        width(km),
+        lon(back top corner),
+        lat(back top corner),
+        depth(top, km),
+        rake(deg),
+        slip(m),
+        tensile(m)
+        segment(int)
+    }
+    If the fault is a receiver fault, we put slip = 0
+    """
+    strike: float
+    dip: float
+    length: float
+    width: float
+    lon: float
+    lat: float
+    depth: float
+    rake: float
+    slip: float
+    tensile: float
+    segment: int
 
 
 def get_four_corners_lon_lat(fault_dict_object):
@@ -108,17 +122,10 @@ def add_two_fault_dict_lists(list1, list2):
         ds_total = ds_1 + ds_2;  # reverse
         slip_total = fault_vector_functions.get_total_slip(ss_total, ds_total);
         rake_total = fault_vector_functions.get_rake(rtlat_strike_slip=ss_total, dip_slip=ds_total);
-        new_item = {"strike": item1["strike"],
-                    "dip": item1["dip"],
-                    "length": item1["length"],
-                    "width": item1["width"],
-                    "lon": item1["lon"],
-                    "lat": item1["lat"],
-                    "depth": item1["depth"],
-                    "tensile": item1["tensile"]+item2["tensile"],
-                    "slip": slip_total,
-                    "rake": rake_total,
-                    "segment": item1["segment"]};
+        new_item = FaultDict(strike=item1["strike"], dip=item1["dip"], length=item1["length"], width=item1["width"],
+                             lon=item1["lon"], lat=item1["lat"], depth=item1["depth"],
+                             tensile=item1["tensile"]+item2["tensile"], slip=slip_total, rake=rake_total,
+                             segment=item1["segment"])
         new_list.append(new_item);
     return new_list;
 
@@ -136,17 +143,9 @@ def change_fault_slip(fault_dict_list, new_slip, new_rake=None):
     for item in fault_dict_list:
         if new_rake is None:
             new_rake = item["rake"];
-        new_obj = {"strike": item["strike"],
-                   "dip": item["dip"],
-                   "length": item["length"],
-                   "width": item["width"],
-                   "lon": item["lon"],
-                   "lat": item["lat"],
-                   "depth": item["depth"],
-                   "tensile": item["tensile"],
-                   "slip": new_slip,
-                   "rake": new_rake,
-                   "segment": item["segment"]};
+        new_obj = FaultDict(strike=item["strike"], dip=item["dip"], length=item["length"], width=item["width"],
+                            lon=item["lon"], lat=item["lat"], depth=item["depth"], tensile=item["tensile"],
+                            slip=new_slip, rake=new_rake, segment=item["segment"]);
         new_list.append(new_obj);
     return new_list;
 

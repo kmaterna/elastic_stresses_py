@@ -2,10 +2,10 @@
 Functions to read and write STATIC1D input files for fault slip and displacement at GPS points
 """
 import numpy as np
+import matplotlib.pyplot as plt
 from Tectonic_Utils.geodesy import fault_vector_functions
 from . import fault_slip_object
 from .. import coulomb_collections as cc
-import matplotlib.pyplot as plt
 
 
 def write_static1D_source_file(fault_dict_list, disp_points, filename):
@@ -70,8 +70,7 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
     read a line from fred's format of faults into my format of faults
     for Visco1D, the slip field is pretty meaningless
     """
-    lower_lat_corner = float(line.split()[0]);  # in degrees
-    lower_lon_corner = float(line.split()[1]);  # in degrees
+    lower_lat_corner, lower_lon_corner = float(line.split()[0]), float(line.split()[1]);  # in degrees
     length = float(line.split()[2]);  # in km
     strike = float(line.split()[3]);  # in degrees
     rake = float(line.split()[4]);  # in degrees
@@ -85,8 +84,9 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
     fault_lon, fault_lat = fault_vector_functions.xy2lonlat_single(upper_corner_back_edge[0],
                                                                    upper_corner_back_edge[1], lower_lon_corner,
                                                                    lower_lat_corner);
-    new_fault = {"strike": strike, "dip": dip, "length": length, "rake": rake, "slip": slip / 100, "tensile": 0,
-                 "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat, "segment": 0};
+    new_fault = fault_slip_object.FaultDict(strike=strike, dip=dip, length=length, width=downdip_width, rake=rake,
+                                            slip=slip/100, tensile=0, depth=upper_depth, lon=fault_lon, lat=fault_lat,
+                                            segment=0);
     return new_fault;
 
 
@@ -235,8 +235,7 @@ def read_stat2C_geometry(infile):
             if len(temp) == 2:
                 upper_depth, lower_depth = float(temp[0]), float(temp[1]);
             elif len(temp) == 7:
-                lower_lat_corner = float(temp[0]);  # in degrees
-                lower_lon_corner = float(temp[1]);  # in degrees
+                lower_lat_corner, lower_lon_corner = float(temp[0]), float(temp[1]);  # in degrees
                 length = float(temp[2]);  # in km
                 strike = float(temp[3]);  # in degrees
                 rake = float(temp[4]);  # in degrees
@@ -254,9 +253,9 @@ def read_stat2C_geometry(infile):
                                                                                lower_lon_corner,
                                                                                lower_lat_corner);
 
-                new_fault = {"strike": strike, "dip": dip, "length": length, "rake": rake, "slip": slip, "tensile": 0,
-                             "depth": upper_depth, "width": downdip_width, "lon": fault_lon, "lat": fault_lat,
-                             "segment": 0};
+                new_fault = fault_slip_object.FaultDict(strike=strike, dip=dip, length=length, width=downdip_width,
+                                                        rake=rake, slip=slip, tensile=0, depth=upper_depth,
+                                                        lon=fault_lon, lat=fault_lat, segment=0);
                 faultlist.append(new_fault);
 
     return faultlist;
@@ -325,7 +324,8 @@ def plot_earth_model(radius_inner, radius_outer, _density, K, G, nu, outfile, mi
         axarr[1].plot([G[i], G[i]], [depth_inner[i], depth_outer[i]], color='red', linewidth=2);
         axarr[1].plot([G[i], G[i+1]], [depth_outer[i], depth_outer[i]], color='red', label=label1, linewidth=2);
         axarr[1].plot([K[i], K[i]], [depth_inner[i], depth_outer[i]], color='black', linewidth=2, linestyle='--');
-        axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2, linewidth=2, linestyle='--');
+        axarr[1].plot([K[i], K[i+1]], [depth_outer[i], depth_outer[i]], color='black', label=label2, linewidth=2,
+                      linestyle='--');
     axarr[1].set_xlabel('Modulus (GPa)', fontsize=fontsize);
     axarr[1].legend(fontsize=fontsize-2);
     axarr[1].tick_params(labelsize=fontsize);

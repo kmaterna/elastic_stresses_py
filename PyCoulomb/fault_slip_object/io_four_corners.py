@@ -1,10 +1,11 @@
-""""
+"""
 Function for conversion of faults and slip distributions
 from four corners into list of fault_slip_object dictionaries
 """
 
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
+from . import fault_slip_object
 
 
 def read_four_corners_fault_file(filename):
@@ -91,6 +92,7 @@ def get_fault_dict_from_four_corners(lons, lats, depths):
         updip_corner_lat = lats[idx1];
         updip_corner_depth = depths[idx1];
 
-    fault_object = {'strike': strike, 'slip': 0, 'tensile': 0, 'rake': 0, 'length': length, 'width': width, 'dip': dip,
-                    'lon': updip_corner_lon, 'lat': updip_corner_lat, 'depth': updip_corner_depth, 'segment': 0};
+    fault_object = fault_slip_object.FaultDict(strike=strike, slip=0, tensile=0, rake=0, length=length, width=width,
+                                               dip=dip, lon=updip_corner_lon, lat=updip_corner_lat,
+                                               depth=updip_corner_depth, segment=0);
     return fault_object;

@@ -1,4 +1,4 @@
-""""
+"""
 Functions for conversion of faults and slip distributions from PyCoulomb into list of fault_slip_object dictionaries
 
 Some of these faults may come in through .intxt files. Use io_intxt to read them.
@@ -18,6 +18,7 @@ Format intxt:
 from .. import coulomb_collections as cc
 from Tectonic_Utils.geodesy import fault_vector_functions
 import numpy as np
+from . import fault_slip_object
 
 
 def coulomb_fault_to_fault_dict(source_object):
@@ -29,17 +30,13 @@ def coulomb_fault_to_fault_dict(source_object):
         if src.potency:
             print("ERROR! Cannot convert a point source into a rectangular source. Skipping...");
             continue;
-        one_fault = {"strike": src.strike, "dip": src.dipangle, "depth": src.top,
-                     "rake": src.rake,
-                     "slip": fault_vector_functions.get_total_slip(src.rtlat, src.reverse),
-                     "tensile": src.tensile,
-                     "length": fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart,
-                                                                        src.yfinish),
-                     "width": fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle)};
         lon, lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
-        one_fault["lon"] = lon;
-        one_fault["lat"] = lat
-        one_fault["segment"] = 0;
+        slip = fault_vector_functions.get_total_slip(src.rtlat, src.reverse);
+        length = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish);
+        width = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle);
+        one_fault = fault_slip_object.FaultDict(strike=src.strike, dip=src.dipangle, depth=src.top, rake=src.rake,
+                                                slip=slip, length=length, width=width, tensile=src.tensile, lon=lon,
+                                                lat=lat, segment=0);
         fault_dict_list.append(one_fault);
     return fault_dict_list;
 
