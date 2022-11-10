@@ -11,6 +11,7 @@ Displacements are in meters
 """
 
 import matplotlib.path
+import numpy as np
 from .. import coulomb_collections as cc
 from Tectonic_Utils.geodesy import euler_pole
 
@@ -227,3 +228,11 @@ def translate_by_euler_pole(disp_points_list, euler_pole_components):
                                       meas_type=item.meas_type);
         new_disp_points_list.append(res1);
     return new_disp_points_list;
+
+
+def extract_region_from_disp_points(disp_points_list):
+    """Operates on a list of disp_points"""
+    lon = np.array([x.lon for x in disp_points_list]);
+    lat = np.array([x.lat for x in disp_points_list]);
+    region = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)];
+    return region;

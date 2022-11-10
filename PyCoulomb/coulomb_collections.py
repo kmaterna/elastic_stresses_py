@@ -23,7 +23,7 @@ Faults_object = collections.namedtuple('Faults_object', [
     'top', 'bottom', 'comment',
     'R', 'R2', 'W', 'L', 'strike_unit_vector', 'dip_unit_vector', 'plane_normal']);
 # rtlat, reverse, tensile are in units of meters.
-# Having both "rake" and "rtlat"/"reverse" in this object is a little redundant, but probably not harmful.
+# Having both "rake" and "rtlat"/"reverse" in this object seems a little redundant, but it's used for receivers.
 # See constructor below for the creating of this object.  We usually don't call this object directly.
 
 Input_object = collections.namedtuple('Input_object', [

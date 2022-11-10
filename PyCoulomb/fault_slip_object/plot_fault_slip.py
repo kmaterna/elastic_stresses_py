@@ -1,10 +1,10 @@
 """Functions to take a slip distribution and make a map. """
 
 import numpy as np
-import pygmt
-import os
+import pygmt, os
 from . import fault_slip_object
 from .. import utilities
+from ..disp_points_object import utilities as dpo_utils
 
 
 def unpack_disp_points(disp_points):
@@ -41,10 +41,27 @@ def write_patch_edges_for_plotting(fault_dict_list, colorby='slip'):
     return "tmp.txt", "tmp2.txt";
 
 
+def automatically_determine_map_region(region_given=None, fault_dict_list=None, disp_points=None, buffer_deg=0.15):
+    """
+    Automatically select a map region [W, E, S, N] for a given list of fault segments and disp_point_objects.
+    """
+    region = region_given;
+    if not region_given:  # automatically determine the region
+        if len(fault_dict_list) > 0:
+            minlon, maxlon, minlat, maxlat = fault_slip_object.get_four_corners_lon_lat_multiple(fault_dict_list);
+        elif len(disp_points) > 0:
+            minlon, maxlon, minlat, maxlat = dpo_utils.extract_region_from_disp_points(disp_points);
+        else:
+            raise ValueError("Error! Cannot automatically determine map region; no fault patches or disp_points.");
+        region = [minlon-buffer_deg, maxlon+buffer_deg, minlat-buffer_deg, maxlat+buffer_deg];
+    return region;
+
+
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
-                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=None, fault_traces=None,
-                                 fault_traces_from_dict=None, title="", plot_slip_colorbar=True,
-                                 vert_disp_units="m", vert_mult=1):
+                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=None,
+                                 fault_traces_from_memory=None, fault_traces_from_dict=None,
+                                 fault_traces_from_file=None, title="",
+                                 plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
     In order to use this function with other formats, like intxt or slippy, convert to the internal fault dict first.
@@ -55,8 +72,9 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param region: tuple of 4 numbers, (W, E, S, N)
     :param scale_arrow: tuple of 3 numbers
     :param v_labeling_interval: float
-    :param fault_traces: list of [lons, lats] for plotting fault trace
+    :param fault_traces_from_memory: list of [lons, lats] for plotting fault trace
     :param fault_traces_from_dict: a list of fault_dict objects that will be used for updip fault traces
+    :param fault_traces_from_file: string, optional filename with fault traces to be plotted
     :param title: string
     :param plot_slip_colorbar: bool, whether to show a color bar for fault slip
     :param vert_disp_units: string, describing the units of the vertical scale bar
@@ -65,36 +83,51 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     print("Plotting outfile %s " % outfile);
     proj = "M7i"
     if not region:  # automatically determine the region
-        if len(fault_dict_list) == 0:
-            raise ValueError("Error! Cannot automatically determine map region because no fault patches provided.");
-        buffer_deg = 0.15
-        minlon, maxlon, minlat, maxlat = fault_slip_object.get_four_corners_lon_lat_multiple(fault_dict_list);
-        region = [minlon-buffer_deg, maxlon+buffer_deg, minlat-buffer_deg, maxlat+buffer_deg];
+        region = automatically_determine_map_region(region, fault_dict_list, disp_points, buffer_deg=0.15);
     fig = pygmt.Figure();
     fig_width_deg = region[1] - region[0];
+    fig_height_deg = region[3] - region[2];
     fig.basemap(region=region, projection=proj, frame="+t\"" + title + "\"");
     fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame=str(fig_width_deg/5));
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='lightblue');
 
-    # Drawing fault slip with a color scale.
-    fault_colors = [_i["slip"] for _i in fault_dict_list];
-    [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors);
-    if len(fault_colors) > 0:
-        pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
-                      truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
-    # Write the source patches
-    if len(fault_colors) > 0:
-        file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='slip');  # write the source patches
-        fig.plot(data=file1, pen="0.2p,black", color="+z", cmap="mycpt.cpt");
-        fig.plot(data=file2, pen="0.6p,black");   # shallow edges
-        os.remove(file1); os.remove(file2);
-    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w25");
-    if fault_dict_list:
+    if len(fault_dict_list) > 0:
+        # Drawing fault slip with a color scale.
+        fault_colors = [_i["slip"] for _i in fault_dict_list];
+        [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors);
+        if len(fault_colors) > 0:
+            pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
+                          truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
+            # Write the source patches
+            file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='slip');  # write the source patches
+            fig.plot(data=file1, pen="0.2p,black", color="+z", cmap="mycpt.cpt");
+            fig.plot(data=file2, pen="0.6p,black");   # shallow edges
+            os.remove(file1); os.remove(file2);
         if plot_slip_colorbar:
             fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
                          truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
                          frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""]);
 
+    # Optional: lines you can draw on the plot
+    if fault_traces_from_memory:
+        for item in fault_traces_from_memory:
+            fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
+
+    # Optional: pre-written fault edges, with 1-m hardcoded colorscale
+    if fault_traces_from_file:
+        pygmt.makecpt(cmap="devon", series=str(0) + "/" + str(1.0) + "/" + str(0.01),
+                      truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
+        fig.plot(data=fault_traces_from_file, pen="0.2p,black", color="+z", cmap='mycpt.cpt');
+        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", truncate=str(0) + "/" + str(1.0),
+                     frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
+
+    # Optional: Draw the updip trace of each fault segment
+    if fault_traces_from_dict:
+        for item in fault_dict_list:
+            lons, lats = fault_slip_object.get_updip_corners_lon_lat(item);
+            fig.plot(x=lons, y=lats, pen="thickest,darkred");
+
+    # Vector displacements
     if len(disp_points) > 0:
         [lon, lat, _, _, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(disp_points);
         [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz] = unpack_horiz_disp_points_for_vectors(disp_points);
@@ -113,22 +146,14 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon_horiz, y=lat_horiz, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
                      direction=[disp_x_horiz, disp_y_horiz], pen="thin,black");
-            fig.plot(x=[region[0]+0.30], y=[region[2]+1.05],  style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
-                     direction=[[scale_arrow[1]], [0]],  pen="thin,black");  # scale vector
-            fig.text(x=[region[0]+0.45], y=[region[2]+1.15], text=scale_arrow[2],
+            fig.plot(x=[region[0]+0.1*fig_width_deg], y=[region[2]+0.1*fig_height_deg],
+                     style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
+                     direction=[[scale_arrow[1]], [0]], pen="thin,black");  # scale vector
+            fig.text(x=[region[0]+0.15*fig_width_deg], y=[region[2]+0.15*fig_height_deg], text=scale_arrow[2],
                      font='14p,Helvetica,black');  # scale label
 
-    # Optional lines you can draw on the plot
-    if fault_traces:
-        for item in fault_traces:
-            fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
-
-    # Draw the updip trace of each fault segment
-    if fault_traces_from_dict:
-        for item in fault_dict_list:
-            lons, lats = fault_slip_object.get_updip_corners_lon_lat(item);
-            fig.plot(x=lons, y=lats, pen="thickest,darkred");
-
+    # Map km scale
+    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w25");
     fig.savefig(outfile);
     return;
 

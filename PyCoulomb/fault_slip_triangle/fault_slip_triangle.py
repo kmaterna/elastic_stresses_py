@@ -19,9 +19,9 @@ class FaultDict(TypedDict):
     }
     If the fault is a receiver fault, we put slip = 0
     """
-    vertex1: np.array
-    vertex2: np.array
-    vertex3: np.array
+    vertex1: np.ndarray
+    vertex2: np.ndarray
+    vertex3: np.ndarray
     lon: float
     lat: float
     rtlat_slip: float
@@ -50,21 +50,43 @@ def write_gmt_plots_geographic(triangle_list, outfile):
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
             total_slip = get_total_slip(item);
-            # Convert m to km before coordinate conversion
-            lon1, lat1 = fault_vector_functions.xy2lonlat_single(item['vertex1'][0]/1000, item['vertex1'][1]/1000,
-                                                                 item['lon'], item['lat']);
-            lon2, lat2 = fault_vector_functions.xy2lonlat_single(item['vertex2'][0]/1000, item['vertex2'][1]/1000,
-                                                                 item['lon'], item['lat']);
-            lon3, lat3 = fault_vector_functions.xy2lonlat_single(item['vertex3'][0]/1000, item['vertex3'][1]/1000,
-                                                                 item['lon'], item['lat']);
+            vertex1, vertex2, vertex3 = get_ll_corners(item);
             ofile.write("> -Z%f \n" % total_slip);
-            ofile.write("%f %f \n" % (lon1, lat1));
-            ofile.write("%f %f \n" % (lon2, lat2));
-            ofile.write("%f %f \n" % (lon3, lat3));
-            ofile.write("%f %f \n" % (lon1, lat1));
+            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
+            ofile.write("%f %f \n" % (vertex2[0], vertex2[1]));
+            ofile.write("%f %f \n" % (vertex3[0], vertex3[1]));
+            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
     return;
+
+
+def get_ll_corners(triangle_fault):
+    # Convert m to km before coordinate conversion
+    # Returns 3 tuples (lon, lat)
+    lon1, lat1 = fault_vector_functions.xy2lonlat_single(triangle_fault['vertex1'][0] / 1000,
+                                                         triangle_fault['vertex1'][1] / 1000,
+                                                         triangle_fault['lon'], triangle_fault['lat']);
+    lon2, lat2 = fault_vector_functions.xy2lonlat_single(triangle_fault['vertex2'][0] / 1000,
+                                                         triangle_fault['vertex2'][1] / 1000,
+                                                         triangle_fault['lon'], triangle_fault['lat']);
+    lon3, lat3 = fault_vector_functions.xy2lonlat_single(triangle_fault['vertex3'][0] / 1000,
+                                                         triangle_fault['vertex3'][1] / 1000,
+                                                         triangle_fault['lon'], triangle_fault['lat']);
+    vertex1 = [lon1, lat1]; vertex2 = [lon2, lat2]; vertex3 = [lon3, lat3];
+    return vertex1, vertex2, vertex3;
 
 
 def get_total_slip(triangle_fault):
     total_slip = np.sqrt(np.square(triangle_fault['dip_slip']) + np.square(triangle_fault['rtlat_slip']));
     return total_slip;
+
+
+def check_consistent_reference_frame(triangle_fault_list):
+    """Returns True if all the triangles have the coordinate reference system"""
+    return_code = 1;  # default true
+    reflon, reflat = triangle_fault_list[0]['lon'], triangle_fault_list[0]['lat'];
+    for item in triangle_fault_list:
+        if item['lon'] != reflon or item['lat'] != reflat:
+            return_code = 0;
+    if return_code == 0:
+        print("Warning! Not all triangles have the same reference lon/lat");
+    return return_code;

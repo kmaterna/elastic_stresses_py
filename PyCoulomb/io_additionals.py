@@ -66,6 +66,7 @@ def read_disp_points(infile):
                                                     starttime=None, endtime=None, meas_type=None, refframe=None);
             disp_points_list.append(new_disp_point);
     ifile.close();
+    print("--> Read %d displacement points " % len(disp_points_list));
     return disp_points_list;
 
 
