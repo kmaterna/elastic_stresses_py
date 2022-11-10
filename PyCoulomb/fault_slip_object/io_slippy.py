@@ -46,6 +46,7 @@ def read_slippy_distribution(infile, desired_segment=-1):
                                                     width=w_km, lon=corner_lon, lat=corner_lat, rake=rake,
                                                     slip=total_slip, tensile=0, segment=0);
             fault_list.append(one_fault);
+    print("--> Returning %d fault patches " % len(fault_list));
     return fault_list;
 
 
@@ -125,5 +126,6 @@ def read_stress_slippy_format(infile):
                                                 depth=depth_km, lon=corner_lon, lat=corner_lat, rake=rake[i],
                                                 slip=0, tensile=0, segment=0);
         fault_list.append(one_fault);
+    print("--> Returning %d fault patches and stress values " % len(fault_list));
 
     return fault_list, shear, normal, coulomb;

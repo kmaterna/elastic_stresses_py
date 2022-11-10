@@ -14,6 +14,7 @@ def read_USGS_file(filename):
     for i in range(len(lon)):
         item = cc.Displacement_points(lon=lon[i], lat=lat[i], dE_obs=E[i]/1000,
                                       dN_obs=N[i]/1000, dU_obs=U[i]/1000,
-                                      Se_obs=E_sig[i]/1000, Sn_obs=N_sig[i]/1000, Su_obs=U_sig[i]/1000);
+                                      Se_obs=E_sig[i]/1000, Sn_obs=N_sig[i]/1000, Su_obs=U_sig[i]/1000, name='');
         list_of_disp_points.append(item);
+    print("Reading %s and returning %d points " % (filename, len(list_of_disp_points)) );
     return list_of_disp_points;

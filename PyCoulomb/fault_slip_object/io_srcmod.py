@@ -55,7 +55,7 @@ def read_srcmod_distribution(infile):
                                              segment=segnum, rake_col=rake_col);
                 fault_list.append(one_fault);
     ifile.close();
-    print("  -->Returning %d fault segments" % len(fault_list));
+    print("--> Returning %d fault patches" % len(fault_list));
     return fault_list;
 
 

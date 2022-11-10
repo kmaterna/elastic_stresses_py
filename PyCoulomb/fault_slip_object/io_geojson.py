@@ -20,6 +20,7 @@ def read_faults_json(infile):
     :rtype: list
     """
     fault_list = [];
+    print("Reading file %s " % infile);
     config_file = open(infile, 'r')
     config = json.load(config_file);
     for key in config.keys():
@@ -36,6 +37,7 @@ def read_faults_json(infile):
                                                 rake=0, slip=0, tensile=0, segment=0);
         fault_list.append(one_fault);
     config_file.close();
+    print("--> Returning %d fault patches " % len(fault_list));
     return fault_list;
 
 

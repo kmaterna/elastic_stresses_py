@@ -257,7 +257,7 @@ def read_stat2C_geometry(infile):
                                                         rake=rake, slip=slip, tensile=0, depth=upper_depth,
                                                         lon=fault_lon, lat=fault_lat, segment=0);
                 faultlist.append(new_fault);
-
+    print("--> Returning %d fault patches " % len(faultlist));
     return faultlist;
 
 

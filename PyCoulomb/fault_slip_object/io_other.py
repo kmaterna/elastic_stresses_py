@@ -25,6 +25,7 @@ def io_hamling_2017(filename):
                                                 depth=top_km[i], rake=rake[i], slip=slip[i], tensile=0,
                                                 segment=int(segment[i]), lon=corner_lon, lat=corner_lat);
         fault_dict_list.append(one_fault);
+    print("--> Returning %d fault patches " % len(fault_dict_list));
     return fault_dict_list;
 
 
@@ -60,4 +61,5 @@ def io_wallace_sse(filename):
                                                     slip=patch_slip_m, rake=rake, tensile=patch_tensile_m);
             fault_dict_list.append(new_fault);
     ifile.close();
+    print("--> Returning %d fault patches " % len(fault_dict_list));
     return fault_dict_list;
