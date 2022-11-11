@@ -44,7 +44,7 @@ def read_brawley_lohman_2005(filename):
                                 mat['zfault'][2][i]]);
         new_triangle = fault_slip_triangle.FaultDict(lon=reference_lon, lat=reference_lat, dip_slip=0, rtlat_slip=0,
                                                      tensile=0, segment=0, vertex1=first_vertex, vertex2=second_vertex,
-                                                     vertex3=third_vertex)
+                                                     vertex3=third_vertex, depth=first_vertex[2]/1000);
         triangle_list.append(new_triangle);
     print("--> Returning %d triangular fault patches" % len(triangle_list));
     return triangle_list;

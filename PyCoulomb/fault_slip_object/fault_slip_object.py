@@ -141,11 +141,11 @@ def change_fault_slip(fault_dict_list, new_slip, new_rake=None):
     """
     new_list = [];
     for item in fault_dict_list:
-        if new_rake is None:
-            new_rake = item["rake"];
+        desired_slip = item["slip"] if new_slip is None else new_slip;
+        desired_rake = item["rake"] if new_rake is None else new_rake;
         new_obj = FaultDict(strike=item["strike"], dip=item["dip"], length=item["length"], width=item["width"],
                             lon=item["lon"], lat=item["lat"], depth=item["depth"], tensile=item["tensile"],
-                            slip=new_slip, rake=new_rake, segment=item["segment"]);
+                            slip=desired_slip, rake=desired_rake, segment=item["segment"]);
         new_list.append(new_obj);
     return new_list;
 
