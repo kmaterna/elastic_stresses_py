@@ -61,7 +61,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                                  scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=None,
                                  fault_traces_from_memory=None, fault_traces_from_dict=None,
                                  fault_traces_from_file=None, title="",
-                                 plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1):
+                                 plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1, map_scale=25):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
     In order to use this function with other formats, like intxt or slippy, convert to the internal fault dict first.
@@ -79,6 +79,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param plot_slip_colorbar: bool, whether to show a color bar for fault slip
     :param vert_disp_units: string, describing the units of the vertical scale bar
     :param vert_mult: can turn verticals into mm by providing 1000 if you want (default is meters)
+    :param map_scale: int, in km
     """
     print("Plotting outfile %s " % outfile);
     proj = "M7i"
@@ -153,7 +154,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                      font='14p,Helvetica,black');  # scale label
 
     # Map km scale
-    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w25");
+    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w" +
+                                                                                              str(map_scale));
     fig.savefig(outfile);
     return;
 

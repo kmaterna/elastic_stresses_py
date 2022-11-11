@@ -28,7 +28,7 @@ class FaultDict(TypedDict):
         width(km),
         lon(back top corner),
         lat(back top corner),
-        depth(top, km),
+        depth(top, km), positive downwards
         rake(deg),
         slip(m),
         tensile(m)

@@ -5,7 +5,7 @@ Implementing Okada on a fault_slip_triangle object using Ben Thompson's cutde li
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
 from .. import coulomb_collections as cc
-import cutde.fullspace as HS
+import cutde.halfspace as HS
 from . import fault_slip_triangle
 
 
@@ -32,9 +32,9 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     resulting_model = np.zeros(np.shape(pts));
 
     for source in fault_triangles:
-        fault_pts = np.array([[source['vertex1'][0], source['vertex1'][1], source['vertex1'][2]],
-                              [source['vertex2'][0], source['vertex2'][1], source['vertex2'][2]],
-                              [source['vertex3'][0], source['vertex3'][1], source['vertex3'][2]]])  # vertex coordinates
+        fault_pts = np.array([[source['vertex1'][0], source['vertex1'][1], -source['vertex1'][2]],
+                              [source['vertex2'][0], source['vertex2'][1], -source['vertex2'][2]],
+                              [source['vertex3'][0], source['vertex3'][1], -source['vertex3'][2]]])  # vertex coords
         fault_tris = np.array([[0, 1, 2]], dtype=np.int64)  # triangles, indexing into vertices array
         src_tris = fault_pts[fault_tris];  # src_tris shape (Ntris, 3, 3)
         disp_mat = HS.disp_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio);  # disp_mat: shape (Npts, 3, Ntris, 3)

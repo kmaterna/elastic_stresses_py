@@ -2,14 +2,16 @@
 from typing import TypedDict
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
+from .. import conversion_math
+from ..fault_slip_object.io_pycoulomb import fault_dict_to_coulomb_fault
 
 class FaultDict(TypedDict):
     """
     The internal format is a dictionary for a triangular fault segment:
     {
-        vertex1 [x, y, z] in m,
-        vertex2 [x, y, z] in m,
-        vertex3 [x, y, z] in m,
+        vertex1 [x, y, z] in m, z is positive downward
+        vertex2 [x, y, z] in m, z is positive downward
+        vertex3 [x, y, z] in m, z is positive downward
         lon(coord reference),
         lat(coord reference),
         rt_lat slip(m),
@@ -90,3 +92,26 @@ def check_consistent_reference_frame(triangle_fault_list):
     if return_code == 0:
         print("Warning! Not all triangles have the same reference lon/lat");
     return return_code;
+
+
+def convert_rectangle_into_two_triangles(one_fault_dict):
+    """
+    Convert a fault_dict into two triangular fault dicts. The fault normals are expected to point up.
+    """
+    zerolon, zerolat = one_fault_dict['lon'], one_fault_dict['lat']
+    [source] = fault_dict_to_coulomb_fault([one_fault_dict]);
+    [x_all, y_all, _, _] = conversion_math.get_fault_four_corners(source);  # This is cartesian
+    top_depth, bottom_depth = source.top, source.bottom;
+    vertex1 = np.array([x_all[0]*1000, y_all[0]*1000, top_depth*1000]);
+    vertex2 = np.array([x_all[1]*1000, y_all[1]*1000, top_depth*1000]);
+    vertex3 = np.array([x_all[2]*1000, y_all[2]*1000, bottom_depth*1000]);
+    vertex4 = np.array([x_all[3]*1000, y_all[3]*1000, bottom_depth*1000]);
+    first_triangle = FaultDict(lon=zerolon, lat=zerolat, segment=0, tensile=source.tensile,
+                               vertex1=vertex1, vertex2=vertex3,
+                               vertex3=vertex2, dip_slip=source.reverse, rtlat_slip=source.rtlat);
+    second_triangle = FaultDict(lon=zerolon, lat=zerolat, segment=0, tensile=source.tensile,
+                                vertex1=vertex1, vertex2=vertex4,
+                                vertex3=vertex3, dip_slip=source.reverse, rtlat_slip=source.rtlat);
+    list_of_two_triangles = [first_triangle, second_triangle];
+
+    return list_of_two_triangles;
