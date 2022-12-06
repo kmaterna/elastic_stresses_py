@@ -45,8 +45,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
     fig = annotate_figure_with_sources(fig, inputs, params);
 
     # Plot the stress components
-    utilities.write_fault_edges_to_gmt_file(out_object.receiver_object, 'tmp.txt', colorcode='custom',
-                                            color_array=plotting_stress);
+    utilities.write_fault_edges_to_gmt_file(out_object.receiver_object, 'tmp.txt', color_array=plotting_stress);
     fig.plot(data='tmp.txt', pen="thick,black", color="+z", cmap="mycpt.cpt");
     os.remove('tmp.txt');
 
@@ -174,7 +173,7 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
         focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
         fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top);
     # draw the fault patches, no special color code
-    utilities.write_fault_edges_to_gmt_file(rect_sources, "tmp.txt", colorcode='None');
+    utilities.write_fault_edges_to_gmt_file(rect_sources, "tmp.txt");
     fig.plot(data='tmp.txt', pen="0.2p,black");
     os.remove('tmp.txt');
     return fig;

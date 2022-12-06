@@ -188,15 +188,14 @@ def separate_rectangular_from_point_sources(source_object):
     return rect_sources, point_sources;
 
 
-def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', colorcode='slip', color_array=None):
+def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=None):
     """
     This speeds up pygmt plotting
-    colorcode: string used for which parameter is going to be plotted.
-    colorcode can be 'custom' if a 1D color_array is provided
     """
     rect_sources, _ = separate_rectangular_from_point_sources(fault_object);
     fault_dict_list = fso.io_pycoulomb.coulomb_fault_to_fault_dict(fault_object);
-    fso.fault_slip_object.write_gmt_fault_file(fault_dict_list, outfile, colorcode=colorcode, color_array=color_array,
+    plotting_function = fso.fault_slip_object.get_total_slip;
+    fso.fault_slip_object.write_gmt_fault_file(fault_dict_list, outfile, plotting_function, color_array=color_array,
                                                verbose=False);
     return;
 

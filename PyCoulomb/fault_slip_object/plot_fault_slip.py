@@ -2,7 +2,7 @@
 
 import numpy as np
 import pygmt, os
-from . import fault_slip_object
+from . import fault_slip_object as fso
 from .. import utilities
 from ..disp_points_object import utilities as dpo_utils
 
@@ -36,8 +36,12 @@ def write_patch_edges_for_plotting(fault_dict_list, colorby='slip'):
     """
     Plot the full patches and the surface traces of a collection of rectangular faults.  Can colorcode by slip.
     """
-    fault_slip_object.write_gmt_fault_file(fault_dict_list, 'tmp.txt', colorcode=colorby, verbose=False);
-    fault_slip_object.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
+    if colorby == "slip":
+        plotting_function = fso.get_total_slip;
+    else:
+        plotting_function = fso.get_blank_fault;
+    fso.write_gmt_fault_file(fault_dict_list, 'tmp.txt', plotting_function=plotting_function, verbose=False);
+    fso.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
     return "tmp.txt", "tmp2.txt";
 
 
@@ -48,7 +52,7 @@ def automatically_determine_map_region(region_given=None, fault_dict_list=None, 
     region = region_given;
     if not region_given:  # automatically determine the region
         if len(fault_dict_list) > 0:
-            minlon, maxlon, minlat, maxlat = fault_slip_object.get_four_corners_lon_lat_multiple(fault_dict_list);
+            minlon, maxlon, minlat, maxlat = fso.get_four_corners_lon_lat_multiple(fault_dict_list);
         elif len(disp_points) > 0:
             minlon, maxlon, minlat, maxlat = dpo_utils.extract_region_from_disp_points(disp_points);
         else:
@@ -63,8 +67,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                                  fault_traces_from_file=None, title="",
                                  plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1, map_scale=25):
     """
-    Plot a map of slip distribution from fault_dict_list, a general format for slip distributions.
-    In order to use this function with other formats, like intxt or slippy, convert to the internal fault dict first.
+    Plot a map of slip distribution from fault_dict_list, a general format for slip distributions of rectangular faults.
+    In order to use this function with other fault formats, convert to the internal rectangular fault dict first.
 
     :param fault_dict_list: list of fault_dict objects
     :param outfile: string, name of file
@@ -116,16 +120,16 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
 
     # Optional: pre-written fault edges, with 1-m hardcoded colorscale
     if fault_traces_from_file:
-        pygmt.makecpt(cmap="devon", series=str(0) + "/" + str(1.0) + "/" + str(0.01),
-                      truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
+        pygmt.makecpt(cmap="polar", series=str(-1.0) + "/" + str(1.0) + "/" + str(0.01),
+                      truncate="-1/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
         fig.plot(data=fault_traces_from_file, pen="0.2p,black", color="+z", cmap='mycpt.cpt');
-        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", truncate=str(0) + "/" + str(1.0),
+        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", truncate=str(-1.0) + "/" + str(1.0),
                      frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
 
     # Optional: Draw the updip trace of each fault segment
     if fault_traces_from_dict:
         for item in fault_dict_list:
-            lons, lats = fault_slip_object.get_updip_corners_lon_lat(item);
+            lons, lats = fso.get_updip_corners_lon_lat(item);
             fig.plot(x=lons, y=lats, pen="thickest,darkred");
 
     # Vector displacements

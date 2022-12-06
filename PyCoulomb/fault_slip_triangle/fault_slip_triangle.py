@@ -35,12 +35,28 @@ class FaultDict(TypedDict):
     segment: int
 
 
-def write_gmt_plots_cartesian(triangle_list, outfile):
-    # Write triangle edges out to file for GMT plots, in cartesian space
+def get_total_slip(one_fault_dict):
+    """Helper function to return the total slip amount of a fault object (always > 0)"""
+    return np.sqrt(np.square(one_fault_dict['dip_slip']) + np.square(one_fault_dict['rtlat_slip']));
+
+def get_rtlat_slip(one_fault_dict):
+    """Helper function to return the right lateral slip amount of a fault object"""
+    return one_fault_dict['rtlat_slip'];
+
+def get_dip_slip(one_fault_dict):
+    """Helper function to return the dip slip amount of a fault object"""
+    return one_fault_dict['dip_slip'];
+
+
+def write_gmt_plots_cartesian(triangle_list, outfile, plotting_function=get_total_slip):
+    """
+    Write triangle edges out to file for GMT plots, in X-Y cartesian space in m
+    plotting_function is a simple function of one fault dictionary object that returns the plotting value
+    """
     print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
-            total_slip = get_total_slip(item);
+            total_slip = plotting_function(item);
             ofile.write("> -Z%f \n" % total_slip);
             ofile.write("%f %f \n" % (item['vertex1'][0], item['vertex1'][1]));
             ofile.write("%f %f \n" % (item['vertex2'][0], item['vertex2'][1]));
@@ -49,14 +65,17 @@ def write_gmt_plots_cartesian(triangle_list, outfile):
     return;
 
 
-def write_gmt_plots_geographic(triangle_list, outfile):
-    # Write triangle edges out to file for GMT plots, in lon/lat space assuming a cartesian-to-geographic transform
+def write_gmt_plots_geographic(triangle_list, outfile, plotting_function=get_total_slip):
+    """
+    Write triangle edges out to file for GMT plots, in lon/lat space assuming a cartesian-to-geographic transform
+    plotting_function is a simple function of one fault dictionary object that returns the plotting value
+    """
     print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
-            total_slip = get_total_slip(item);
+            slip_for_coloring = plotting_function(item);
             vertex1, vertex2, vertex3 = get_ll_corners(item);
-            ofile.write("> -Z%f \n" % total_slip);
+            ofile.write("> -Z%f \n" % slip_for_coloring);
             ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
             ofile.write("%f %f \n" % (vertex2[0], vertex2[1]));
             ofile.write("%f %f \n" % (vertex3[0], vertex3[1]));
@@ -78,11 +97,6 @@ def get_ll_corners(triangle_fault):
                                                          triangle_fault['lon'], triangle_fault['lat']);
     vertex1 = [lon1, lat1]; vertex2 = [lon2, lat2]; vertex3 = [lon3, lat3];
     return vertex1, vertex2, vertex3;
-
-
-def get_total_slip(triangle_fault):
-    total_slip = np.sqrt(np.square(triangle_fault['dip_slip']) + np.square(triangle_fault['rtlat_slip']));
-    return total_slip;
 
 
 def check_consistent_reference_frame(triangle_fault_list):

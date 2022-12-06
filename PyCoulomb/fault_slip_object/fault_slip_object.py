@@ -49,6 +49,33 @@ class FaultDict(TypedDict):
     segment: int
 
 
+def get_total_slip(one_fault_dict):
+    """Helper function to return the total slip amount of a fault object (always > 0)"""
+    return one_fault_dict["slip"];
+
+def get_rtlat_slip(one_fault_dict):
+    """Helper function to return the right lateral slip amount of a fault object"""
+    [rtlat, _] = fault_vector_functions.get_rtlat_dip_slip(one_fault_dict['slip'], one_fault_dict['rake']);
+    return rtlat;
+
+def get_dip_slip(one_fault_dict):
+    """Helper function to return the dip slip amount of a fault object"""
+    [_, dipslip] = fault_vector_functions.get_rtlat_dip_slip(one_fault_dict['slip'], one_fault_dict['rake']);
+    return dipslip;
+
+def get_fault_depth(one_fault_dict):
+    """Helper function to return the depth of a fault object"""
+    return one_fault_dict["depth"];
+
+def get_fault_rake(one_fault_dict):
+    """Helper function to return the depth of a fault object"""
+    return one_fault_dict["rake"];
+
+def get_blank_fault(_one_fault_dict):
+    """Helper function to an empty color palette"""
+    return "";
+
+
 def get_four_corners_lon_lat(fault_dict_object):
     """
     Return the lon/lat of all 4 corners of a fault_dict_object
@@ -190,30 +217,22 @@ def filter_by_segment(fault_dict_list, segment_num=0):
     return new_list;
 
 
-def write_gmt_fault_file(fault_dict_list, outfile, colorcode='slip', color_array=None, verbose=True):
+def write_gmt_fault_file(fault_dict_list, outfile, plotting_function=get_blank_fault,
+                         color_array=None, verbose=True):
     """
     Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT
-    By default, colors patches by slip on fault segment.
-    colorcode = ['slip', 'depth', 'custom', 'None']
-    color_array is 1d array for custom colorcode.
+    By default, does not provide color on the fault patches
+    color_array is 1d array for custom colors.
     """
     if verbose:
         print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
     for i, fault in enumerate(fault_dict_list):
         lons, lats = get_four_corners_lon_lat(fault);
-        if colorcode == 'depth':
-            color_string = "-Z"+str(fault['depth']);
-        elif colorcode == 'slip':
-            color_string = "-Z"+str(fault['slip'])
-        elif colorcode == 'rake':
-            color_string = "-Z" + str(fault['rake'])
-        elif colorcode == 'dip':
-            color_string = "-Z" + str(fault['dip'])
-        elif colorcode == 'custom':
-            color_string = "-Z"+str(color_array[i]);
-        else:   # no color attached
-            color_string = '';
+        if color_array:
+            color_string = "-Z"+str(color_array[i]);  # if separately providing the color array
+        else:
+            color_string = "-Z"+str(plotting_function(fault));
         ofile.write("> "+color_string+"\n");
         ofile.write("%f %f\n" % (lons[0], lats[0]));
         ofile.write("%f %f\n" % (lons[1], lats[1]));
@@ -240,7 +259,7 @@ def write_gmt_surface_trace(fault_dict_list, outfile, verbose=True):
     return;
 
 
-def write_gmt_vertical_fault_file(fault_dict_list, outfile):
+def write_gmt_vertical_fault_file(fault_dict_list, outfile, plotting_function=get_rtlat_slip):
     """
     Write the vertical coordinates of planar fault patches (length and depth, in local coords instead of lon/lat)
     and associated slip values into a multi-segment file for plotting in GMT.
@@ -272,10 +291,9 @@ def write_gmt_vertical_fault_file(fault_dict_list, outfile):
         [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
         deeper_offset = fault["width"]*np.sin(np.deg2rad(fault["dip"]));
         [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+fault["strike"]);
-        start_x = xprime[0];
-        finish_x = xprime[1];
-        [rtlat, _dipslip] = fault_vector_functions.get_rtlat_dip_slip(fault['slip'], fault['rake']);   # decision point
-        ofile.write("> -Z"+str(-rtlat)+"\n");  # currently writing left-lateral slip as positive
+        start_x, finish_x = xprime[0], xprime[1];
+        slip_amount = plotting_function(fault);
+        ofile.write("> -Z"+str(-slip_amount)+"\n");  # currently writing left-lateral slip as positive
         ofile.write("%f %f\n" % (start_x, -fault["depth"]));
         ofile.write("%f %f\n" % (finish_x, -fault["depth"]));
         ofile.write("%f %f\n" % (finish_x, -fault["depth"]-deeper_offset));
