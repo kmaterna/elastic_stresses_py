@@ -13,8 +13,8 @@ class FaultDict(TypedDict):
         vertex1 [x, y, z] in m, z is positive downward
         vertex2 [x, y, z] in m, z is positive downward
         vertex3 [x, y, z] in m, z is positive downward
-        lon(coord reference),
-        lat(coord reference),
+        lon(reference coord),
+        lat(reference coord),
         depth (km),
         rt_lat slip(m),
         dip_slip(m),
@@ -80,6 +80,36 @@ def write_gmt_plots_geographic(triangle_list, outfile, plotting_function=get_tot
             ofile.write("%f %f \n" % (vertex2[0], vertex2[1]));
             ofile.write("%f %f \n" % (vertex3[0], vertex3[1]));
             ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
+    return;
+
+
+def write_gmt_vertical_fault_file(fault_dict_list, outfile, plotting_function=get_rtlat_slip, strike=45):
+    """
+    Write the vertical coordinates of triangular fault patches (length and depth, in local coords instead of lon/lat)
+    and associated slip values into a multi-segment file for plotting in GMT.
+    Good for vertical faults.  Plots with depth as a negative number.
+    Works for only planar-esque fault segments.
+    Strike is the approximate strike of the fault
+    """
+    print("Writing file %s " % outfile);
+    origin_lon, origin_lat = fault_dict_list[0]["lon"], fault_dict_list[0]["lat"];
+
+    ofile = open(outfile, 'w');
+    for fault in fault_dict_list:
+        slip = plotting_function(fault);
+        vertex1, vertex2, vertex3 = get_ll_corners(fault);  # vertex1 = [lon1, lat1]
+        x1, y1 = fault_vector_functions.latlon2xy_single(vertex1[0], vertex1[1], origin_lon, origin_lat);
+        x2, y2 = fault_vector_functions.latlon2xy_single(vertex2[0], vertex2[1], origin_lon, origin_lat);
+        x3, y3 = fault_vector_functions.latlon2xy_single(vertex3[0], vertex3[1], origin_lon, origin_lat);
+        [xprime1, _] = conversion_math.rotate_points(x1, y1, 90+strike);
+        [xprime2, _] = conversion_math.rotate_points(x2, y2, 90 + strike);
+        [xprime3, _] = conversion_math.rotate_points(x3, y3, 90 + strike);
+        ofile.write("> -Z"+str(slip)+"\n");  # whatever slip value the user chooses
+        ofile.write("%f %f\n" % (xprime1[0], -fault["vertex1"][2]/1000));
+        ofile.write("%f %f\n" % (xprime2[0], -fault["vertex2"][2]/1000));
+        ofile.write("%f %f\n" % (xprime3[0], -fault["vertex3"][2]/1000));
+        ofile.write("%f %f\n" % (xprime1[0], -fault["vertex1"][2]/1000));
+    ofile.close();
     return;
 
 
