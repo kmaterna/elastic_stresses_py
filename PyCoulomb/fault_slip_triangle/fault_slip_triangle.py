@@ -175,15 +175,23 @@ def change_fault_slip(one_fault_dict, rtlat=None, dipslip=None, tensile=None):
     return new_fault_dict;
 
 
-def change_reference_loc(one_fault_dict):
-    """Move the reference to the location of vertex1"""
+def change_reference_loc(one_fault_dict, new_refcoords=None):
+    """Move the reference lon/lat.  If none given, moves it to the location of vertex1
+    :param one_fault_dict: one triangular fault
+    :param new_refcoords: tuple of (lon, lat).
+    """
     vertex1_ll, vertex2_ll, vertex3_ll = get_ll_corners(one_fault_dict);
-    x2, y2 = fault_vector_functions.latlon2xy(vertex2_ll[0], vertex2_ll[1], vertex1_ll[0], vertex1_ll[1]);
-    x3, y3 = fault_vector_functions.latlon2xy(vertex3_ll[0], vertex3_ll[1], vertex1_ll[0], vertex1_ll[1]);
-    vertex1_newref = np.array([0, 0, one_fault_dict['vertex1'][2]]);
+    if new_refcoords is None:
+        new_reflon, new_reflat = vertex1_ll[0], vertex1_ll[1];  # default behavior sends the reference to vertex1
+    else:
+        new_reflon, new_reflat = new_refcoords[0], new_refcoords[1];
+    x1, y1 = fault_vector_functions.latlon2xy(vertex1_ll[0], vertex1_ll[1], new_reflon, new_reflat);
+    x2, y2 = fault_vector_functions.latlon2xy(vertex2_ll[0], vertex2_ll[1], new_reflon, new_reflat);
+    x3, y3 = fault_vector_functions.latlon2xy(vertex3_ll[0], vertex3_ll[1], new_reflon, new_reflat);
+    vertex1_newref = np.array([x1*1000, y1*1000, one_fault_dict['vertex1'][2]]);
     vertex2_newref = np.array([x2*1000, y2*1000, one_fault_dict['vertex2'][2]]);
     vertex3_newref = np.array([x3*1000, y3*1000, one_fault_dict['vertex3'][2]]);
-    new_fault_dict = FaultDict(lon=vertex1_ll[0], lat=vertex1_ll[1], segment=one_fault_dict['segment'],
+    new_fault_dict = FaultDict(lon=new_reflon, lat=new_reflat, segment=one_fault_dict['segment'],
                                depth=one_fault_dict['depth'],
                                vertex1=vertex1_newref, vertex2=vertex2_newref,
                                vertex3=vertex3_newref, dip_slip=one_fault_dict['dip_slip'],

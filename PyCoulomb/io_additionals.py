@@ -104,8 +104,8 @@ def write_disp_points_results(disp_points, outfile):
     ofile.close();
     easts = [x.dE_obs for x in disp_points];
     norths = [x.dN_obs for x in disp_points];
-    print("Max disp_points east: %f" % np.max(easts));
-    print("Max disp_points north: %f" % np.max(norths));
+    print("Min, Max disp_points east: %f, %f m" % (np.min(easts), np.max(easts)));
+    print("Min, Max disp_points north: %f, %f m" % (np.min(norths), np.max(norths)));
     return;
 
 

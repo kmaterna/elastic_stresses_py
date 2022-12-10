@@ -111,6 +111,21 @@ def mult_disp_points_by(disp_points1, multiplier=-1):
     return residuals;
 
 
+def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
+    """Create a synthetic grid of disp_point objects, useful for forward-calculations of displacement."""
+    points = [];
+    x = np.linspace(W, E, int((E - W) / xinc));
+    y = np.linspace(S, N, int((N - S) / yinc));
+    [x2d, y2d] = np.meshgrid(x, y);
+    for ky in range(len(y)):
+        for kx in range(len(x)):
+            pt1 = cc.Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx], dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0,
+                                         Sn_obs=0, Su_obs=0, name='', starttime=None, endtime=None,
+                                         refframe=None, meas_type=None);
+            points.append(pt1);
+    return points;
+
+
 def filter_to_meas_type(obs_points, meas_type='continuous'):
     """Filter a list of disp_points into a list of disp_points with a certain value of meas_type"""
     keep_obs_points = [];
