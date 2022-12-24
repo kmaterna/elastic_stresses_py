@@ -7,12 +7,7 @@ Read the Coulomb or user-defined input files:
 * .inzero (My own definition, convenient for point sources)
 """
 
-from . import io_inp
-from . import io_inr
-from . import io_intxt
-from . import io_additionals
-from . import utilities
-
+from . import io_inp, io_inr, io_intxt, io_additionals, utilities
 
 def read_inputs(params):
     # Read source and receiver faults for calculation
@@ -35,6 +30,8 @@ def read_inputs(params):
         strain_points = io_additionals.read_disp_points(params.strain_file);
 
     assert input_object.source_object, ValueError("You have not specified any sources.");
+    assert input_object.xinc > 0, ValueError("Your cartesian coordinate system's x-increment defaults to zero.");
+    assert input_object.yinc > 0, ValueError("Your cartesian coordinate system's y-increment defaults to zero.");
     utilities.print_metrics_on_sources(input_object.source_object, params.mu);
     utilities.check_each_fault_has_same_coord_system(input_object.source_object + input_object.receiver_object,
                                                      input_object.zerolon, input_object.zerolat);

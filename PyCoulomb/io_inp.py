@@ -11,6 +11,7 @@ Read Coulomb input files in the .inp format. Important parameters are:
 
 from . import coulomb_collections as cc
 from Tectonic_Utils.geodesy import fault_vector_functions
+import subprocess
 
 
 def read_inp(input_file, fixed_rake):
@@ -24,6 +25,15 @@ def read_inp(input_file, fixed_rake):
     read_faults = 0;
     sources, receivers = [], [];
     PR1, FRIC, depth = 0, 0, 0;
+
+    try:  # if the rake is explicitly defined, as in USGS NEIC FFM Coulomb solution
+        grep_result = subprocess.check_output("grep netslip " + input_file, shell=True);
+    except subprocess.CalledProcessError:
+        grep_result = [];
+    if grep_result:
+        rake_is_explicit = 1;
+    else:
+        rake_is_explicit = 0;
 
     ifile = open(input_file);
     for line in ifile:
@@ -47,7 +57,7 @@ def read_inp(input_file, fixed_rake):
                 slip = abs(float(temp[6])) + abs(float(temp[7]));
                 if slip > 0.0000001:  # Here we have a source fault
                     [xstart, ystart, xfinish, yfinish, Kode, rtlat, reverse, strike, dipangle, top, bottom,
-                     comment] = read_fault_line(line);
+                     comment] = read_fault_line(line, rake_is_explicit=rake_is_explicit);
                     rake = fault_vector_functions.get_rake(rtlat_strike_slip=rtlat, dip_slip=reverse);
                     one_source_object = cc.construct_pycoulomb_fault(xstart=xstart, xfinish=xfinish, ystart=ystart,
                                                                      yfinish=yfinish, Kode=Kode, rtlat=rtlat,
@@ -77,15 +87,25 @@ def read_inp(input_file, fixed_rake):
     return input_obj;
 
 
-def read_fault_line(line):
+def read_fault_line(line, rake_is_explicit=0):
+    """
+    By default, we read #   X-start    Y-start     X-fin      Y-fin   Kode  rtlat  reverse  dip angle top  bot
+    If required, we read #   X-start    Y-start     X-fin      Y-fin   Kode  rake   netslip  dip angle top  bot
+    """
     temp = line.split();
     xstart = float(temp[1]);
     ystart = float(temp[2]);
     xfinish = float(temp[3]);
     yfinish = float(temp[4]);
     Kode = int(temp[5]);
-    rtlat = float(temp[6]);
-    reverse = float(temp[7]);
+    if rake_is_explicit:
+        rake = float(temp[6]);
+        netslip = float(temp[7]);
+        lftlat, reverse = fault_vector_functions.get_leftlat_reverse_slip(netslip, rake);
+        rtlat = -lftlat;
+    else:
+        rtlat = float(temp[6]);
+        reverse = float(temp[7]);
     dipangle = float(temp[8]);
     top = float(temp[9]);
     bottom = float(temp[10]);

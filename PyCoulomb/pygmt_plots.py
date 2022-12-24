@@ -75,7 +75,7 @@ def map_vertical_def(params, inputs, outfile):
     fig = pygmt.Figure();
     max_down, max_up = -0.045, 0.045;
     pygmt.makecpt(cmap="roma", series=str(max_down) + "/"+str(max_up)+"/0.001", background="o", output="mycpt.cpt");
-    fig.basemap(region=region, projection=proj, frame="+t\"Vertical Displacement\"");
+    fig.basemap(region=region, projection=proj, frame="+t\"Modeled Vertical Displacement\"");
     fig.grdimage(params.outdir+'/vert.grd', region=region, cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
               map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0");
