@@ -50,18 +50,19 @@ def read_slippy_distribution(infile, desired_segment=-1):
     return fault_list;
 
 
-def write_slippy_distribution(faults_list, outfile):
+def write_slippy_distribution(faults_list, outfile, slip_units='m'):
     """
     :param faults_list: a list of fault dictionaries
     :param outfile: name of output file.
-    Caveat: can only do one fault segment right now.  That part of the read/write cycle is lossy.
+    :param slip_units: string
+    Caveat: the fault segment part of the read/write cycle might be lossy.
     """
     if len(faults_list) == 0:
         return;
     print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
-    ofile.write("# lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees] length[m] width[m] left-lateral[m] "
-                "thrust[m] tensile[m] segment_num\n");
+    ofile.write("# lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees] length[m] width[m] left-lateral[" +
+                slip_units+"] thrust["+slip_units+"] tensile["+slip_units+"] segment_num\n");
     for item in faults_list:
         x_center, y_center = fault_vector_functions.add_vector_to_point(0, 0, item["length"] / 2, item["strike"]);
         center_lon, center_lat = fault_vector_functions.xy2lonlat(x_center, y_center, item["lon"], item["lat"]);

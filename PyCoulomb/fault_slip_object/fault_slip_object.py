@@ -53,6 +53,10 @@ def get_total_slip(one_fault_dict):
     """Helper function to return the total slip amount of a fault object (always > 0)"""
     return one_fault_dict["slip"];
 
+def get_total_slip_mm(one_fault_dict):
+    """Helper function to return the total slip amount of a fault object in mm (always > 0)"""
+    return one_fault_dict["slip"]*1000;
+
 def get_rtlat_slip(one_fault_dict):
     """Helper function to return the right lateral slip amount of a fault object"""
     [rtlat, _] = fault_vector_functions.get_rtlat_dip_slip(one_fault_dict['slip'], one_fault_dict['rake']);
