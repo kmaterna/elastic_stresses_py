@@ -11,14 +11,7 @@ For all other formats, make sure you build read/write conversion AND TEST functi
     * Format(Memory): PyCoulomb format, a named tuple (For Elastic_stresses_py.PyCoulomb)
 """
 
-# TODO write_gmt_fault_file
-# improvement would be: plotting_function can take a function() or an array of len(fault_dict_list).
-# Based on the type of that argument, write the color as color_array[i] or as func(item)
-# This would simplify the call string
-# (honestly, color_array=None is a confusing argument b/c it looks like it's
-# doing the same thing as plotting_function)
-# TODO total library:
-# create branch, turn fso into real class and fst into real class (then bump version when it works)
+# TODO total library: create branch, turn fso into class and fst into class (then bump version when it works)
 
 
 from .io_pycoulomb import fault_dict_to_coulomb_fault
@@ -27,6 +20,7 @@ from Tectonic_Utils.seismo import moment_calculations
 from .. import conversion_math
 import numpy as np
 from typing import TypedDict
+import collections.abc
 
 class FaultDict(TypedDict):
     """
@@ -302,22 +296,21 @@ def filter_by_segment(fault_dict_list, segment_num=0):
     return new_list;
 
 
-def write_gmt_fault_file(fault_dict_list, outfile, plotting_function=get_blank_fault,
-                         color_array=None, verbose=True):
+def write_gmt_fault_file(fault_dict_list, outfile, color_mappable=get_blank_fault, verbose=True):
     """
     Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT
     By default, does not provide color on the fault patches
-    color_array is 1d array for custom colors.
+    color_mappable can be 1d array of scalars, or a function of the object's class.
     """
     if verbose:
         print("Writing file %s " % outfile);
     ofile = open(outfile, 'w');
     for i, fault in enumerate(fault_dict_list):
         lons, lats = get_four_corners_lon_lat(fault);
-        if color_array:
-            color_string = "-Z"+str(color_array[i]);  # if separately providing the color array
+        if isinstance(color_mappable, collections.abc.Sequence):
+            color_string = "-Z"+str(color_mappable[i]);  # if separately providing the color array
         else:
-            color_string = "-Z"+str(plotting_function(fault));
+            color_string = "-Z"+str(color_mappable(fault));  # call the function that you've provided
         ofile.write("> "+color_string+"\n");
         ofile.write("%f %f\n" % (lons[0], lats[0]));
         ofile.write("%f %f\n" % (lons[1], lats[1]));
@@ -344,7 +337,7 @@ def write_gmt_surface_trace(fault_dict_list, outfile, verbose=True):
     return;
 
 
-def write_gmt_vertical_fault_file(fault_dict_list, outfile, plotting_function=get_rtlat_slip):
+def write_gmt_vertical_fault_file(fault_dict_list, outfile, color_mappable=get_rtlat_slip):
     """
     Write the vertical coordinates of planar fault patches (length and depth, in local coords instead of lon/lat)
     and associated slip values into a multi-segment file for plotting in GMT.
@@ -377,7 +370,7 @@ def write_gmt_vertical_fault_file(fault_dict_list, outfile, plotting_function=ge
         deeper_offset = fault["width"]*np.sin(np.deg2rad(fault["dip"]));
         [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+fault["strike"]);
         start_x, finish_x = xprime[0], xprime[1];
-        slip_amount = plotting_function(fault);
+        slip_amount = color_mappable(fault);
         ofile.write("> -Z"+str(-slip_amount)+"\n");  # currently writing left-lateral slip as positive
         ofile.write("%f %f\n" % (start_x, -fault["depth"]));
         ofile.write("%f %f\n" % (finish_x, -fault["depth"]));

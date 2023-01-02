@@ -40,7 +40,7 @@ def write_patch_edges_for_plotting(fault_dict_list, colorby='slip'):
         plotting_function = fso.get_total_slip;
     else:
         plotting_function = fso.get_blank_fault;
-    fso.write_gmt_fault_file(fault_dict_list, 'tmp.txt', plotting_function=plotting_function, verbose=False);
+    fso.write_gmt_fault_file(fault_dict_list, 'tmp.txt', color_mappable=plotting_function, verbose=False);
     fso.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
     return "tmp.txt", "tmp2.txt";
 

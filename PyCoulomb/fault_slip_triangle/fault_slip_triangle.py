@@ -207,15 +207,15 @@ def check_consistent_reference_frame(triangle_fault_list):
     return return_code;
 
 
-def write_gmt_plots_cartesian(triangle_list, outfile, plotting_function=get_total_slip):
+def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=get_total_slip):
     """
     Write triangle edges out to file for GMT plots, in X-Y cartesian space in m
-    plotting_function is a simple function of one fault dictionary object that returns the plotting value
+    color_mappable is a simple function of one fault dictionary object that returns the plotting value
     """
     print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
-            total_slip = plotting_function(item);
+            total_slip = color_mappable(item);
             ofile.write("> -Z%f \n" % total_slip);
             ofile.write("%f %f \n" % (item['vertex1'][0], item['vertex1'][1]));
             ofile.write("%f %f \n" % (item['vertex2'][0], item['vertex2'][1]));
@@ -224,15 +224,15 @@ def write_gmt_plots_cartesian(triangle_list, outfile, plotting_function=get_tota
     return;
 
 
-def write_gmt_plots_geographic(triangle_list, outfile, plotting_function=get_total_slip):
+def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=get_total_slip):
     """
     Write triangle edges out to file for GMT plots, in lon/lat space assuming a cartesian-to-geographic transform
-    plotting_function is a simple function of one fault dictionary object that returns the plotting value
+    color_mappable is a simple function of one fault dictionary object that returns the plotting value
     """
     print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
-            slip_for_coloring = plotting_function(item);
+            slip_for_coloring = color_mappable(item);
             vertex1, vertex2, vertex3 = get_ll_corners(item);
             ofile.write("> -Z%f \n" % slip_for_coloring);
             ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
@@ -242,7 +242,7 @@ def write_gmt_plots_geographic(triangle_list, outfile, plotting_function=get_tot
     return;
 
 
-def write_gmt_vertical_fault_file(fault_dict_list, outfile, plotting_function=get_rtlat_slip, strike=45):
+def write_gmt_vertical_fault_file(fault_dict_list, outfile, color_mappable=get_rtlat_slip, strike=45):
     """
     Write the vertical coordinates of triangular fault patches (length and depth, in local coords instead of lon/lat)
     and associated slip values into a multi-segment file for plotting in GMT.
@@ -255,7 +255,7 @@ def write_gmt_vertical_fault_file(fault_dict_list, outfile, plotting_function=ge
 
     ofile = open(outfile, 'w');
     for fault in fault_dict_list:
-        slip = plotting_function(fault);
+        slip = color_mappable(fault);
         vertex1, vertex2, vertex3 = get_ll_corners(fault);  # vertex1 = [lon1, lat1]
         x1, y1 = fault_vector_functions.latlon2xy_single(vertex1[0], vertex1[1], origin_lon, origin_lat);
         x2, y2 = fault_vector_functions.latlon2xy_single(vertex2[0], vertex2[1], origin_lon, origin_lat);
