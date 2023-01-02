@@ -4,7 +4,8 @@ Read other fault formats of rectangular patches into fault slip objects
 """
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
-from . import io_four_corners, fault_slip_object
+from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
+from . import io_four_corners
 
 
 def io_hamling_2017(filename):

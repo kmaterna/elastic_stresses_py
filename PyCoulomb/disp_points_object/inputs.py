@@ -18,3 +18,15 @@ def read_USGS_file(filename):
         list_of_disp_points.append(item);
     print("Reading %s and returning %d points " % (filename, len(list_of_disp_points)) );
     return list_of_disp_points;
+
+
+def read_pycoulomb_displacements(filename):
+    lon, lat, disp_x_Okada, disp_y_Okada, disp_z_Okada = np.loadtxt(filename, skiprows=1,
+                                                                    usecols=(0, 1, 2, 3, 4), unpack=True);
+    disp_points = [];
+    for i in range(len(lon)):
+        disp_point = cc.Displacement_points(lon=lon[i], lat=lat[i], dE_obs=disp_x_Okada[i], dN_obs=disp_y_Okada[i],
+                                            dU_obs=disp_z_Okada[i], Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan,
+                                            name="", starttime=None, endtime=None, meas_type=None, refframe=None);
+        disp_points.append(disp_point);
+    return disp_points;

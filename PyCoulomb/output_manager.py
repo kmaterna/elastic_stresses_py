@@ -1,5 +1,4 @@
 # output_manager
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib, os
@@ -7,7 +6,7 @@ from subprocess import call
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from . import conversion_math, io_inp, pygmt_plots, io_additionals, utilities, configure_calc, io_intxt
-from .fault_slip_object import io_pycoulomb, io_slippy
+from . import fault_slip_object as fso
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -32,10 +31,11 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
                                          params.outdir+"vector_plot.png");  # map point displacements
     if params.plot_stress:  # write the outputs of stress calculation, if doing a stress calculation
-        fault_dict_list = io_pycoulomb.coulomb_fault_to_fault_dict(out_object.receiver_object);
-        io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
-                                                     out_object.receiver_normal, out_object.receiver_coulomb,
-                                                     params.outdir+'stresses_full.txt');
+        fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_dict(out_object.receiver_object);
+        fso.file_io.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
+                                                                 out_object.receiver_normal,
+                                                                 out_object.receiver_coulomb,
+                                                                 params.outdir + 'stresses_full.txt');
         stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
         stress_plot(params, out_object, 'normal');
         stress_plot(params, out_object, 'coulomb');

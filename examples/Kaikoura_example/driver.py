@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # TO READ SRCMOD AND WRITE PYCOULOMB INPUTS
     # fault_dict_list = fso.io_other.io_hamling_2017(filedict["hamling_file"]);  # examples of other read functions
     # fault_dict_list = fso.io_other.io_wallace_sse(filedict["wallace_file2"]);  # examples of other read functions
-    fault_dict_list = fso.io_srcmod.read_srcmod_distribution(filedict["usgs_slip_file"]);  # read into internal format
+    fault_dict_list = fso.file_io.io_srcmod.read_srcmod_distribution(filedict["usgs_slip_file"]);  # read into internal format
     print("Moment Magnitude: ", seismo.moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list)));
     fso.plot_fault_slip.map_source_slip_distribution(fault_dict_list, "fault_slip_usgs.png");
 

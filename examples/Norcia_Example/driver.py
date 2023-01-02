@@ -20,7 +20,7 @@ def replace_inputs(demo_obj, fault_dict_list):
 
 def convert_norcia_to_pycoulomb(filedict):
     # DO ONCE: READ SRCMOD INTO FAULT_SLIP_OBBJECT, WRITE PYCOULOMB INTXT
-    italy_faults = fso.io_srcmod.read_srcmod_distribution(filedict["fault_slip_file"]);
+    italy_faults = fso.file_io.io_srcmod.read_srcmod_distribution(filedict["fault_slip_file"]);
     fso.plot_fault_slip.map_source_slip_distribution(italy_faults, "fault_slip.png", region=[12, 14, 41.7, 43.2]);
     Mw = seismo.moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(italy_faults))
     print("Moment Magnitude: ", Mw);

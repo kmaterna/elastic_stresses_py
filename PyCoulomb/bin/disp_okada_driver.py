@@ -2,8 +2,7 @@
 # An example pseudo-driver for elastic calculation. 
 # To forward-model displacements from a slip distribution at known locations
 
-from Elastic_stresses_py.PyCoulomb.fault_slip_object import io_slippy
-from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object as fso
+from Elastic_stresses_py.PyCoulomb import fault_slip_object as fso
 from Elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals
 
 filedict = {
@@ -16,8 +15,9 @@ filedict = {
 
 if __name__ == "__main__":
     # Input stage: Getting things into proper formats
-    fault_model_list = io_slippy.read_slippy_distribution(filedict['fault_model']);
-    coulomb_fault_model = fso.fault_dict_to_coulomb_fault(fault_model_list, filedict['lon0_sys'], filedict['lat0_sys']);
+    fault_model_list = fso.file_io.io_slippy.read_slippy_distribution(filedict['fault_model']);
+    coulomb_fault_model = fso.fault_slip_object.fault_dict_to_coulomb_fault(fault_model_list, filedict['lon0_sys'],
+                                                                            filedict['lat0_sys']);
     disp_points = io_additionals.read_disp_points(filedict['datafile']);
     params = configure_calc.configure_default_displacement_params();
     inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, filedict['lon0_sys'],

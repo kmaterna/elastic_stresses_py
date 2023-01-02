@@ -1,4 +1,3 @@
-
 import numpy as np
 from subprocess import call
 from Tectonic_Utils.seismo import moment_calculations
@@ -168,7 +167,7 @@ def print_metrics_on_sources(source_object, mu):
     if len(point_sources) > 0:
         print("Number of point sources: %d" % len(point_sources) );
     if len(rect_sources) > 0:
-        fault_dict_list = fso.io_pycoulomb.coulomb_fault_to_fault_dict(rect_sources);
+        fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_dict(rect_sources);
         # default mu = 30GPa
         Mw = moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list, mu=mu));
         print("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f" % (mu/1e9, Mw));
@@ -193,7 +192,7 @@ def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=N
     This speeds up pygmt plotting
     """
     rect_sources, _ = separate_rectangular_from_point_sources(fault_object);
-    fault_dict_list = fso.io_pycoulomb.coulomb_fault_to_fault_dict(fault_object);
+    fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_dict(fault_object);
     if color_array is None:
         color_mappable = fso.fault_slip_object.get_total_slip;  # put the total slip if nothing is provided
     else:

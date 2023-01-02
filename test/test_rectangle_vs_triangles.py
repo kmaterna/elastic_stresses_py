@@ -1,5 +1,3 @@
-
-
 import unittest
 import Elastic_stresses_py.PyCoulomb as PyCoulomb
 from Elastic_stresses_py.PyCoulomb import fault_slip_triangle as fst
@@ -16,7 +14,7 @@ class Tests(unittest.TestCase):
         test_rectangular_fault = fso.fault_slip_object.FaultDict(lon=zerolon, lat=zerolat, strike=50,
                                                                  dip=70, depth=3, segment=0, length=15, width=5,
                                                                  rake=170, slip=-0.2, tensile=0);
-        [pycoulomb_rectangle] = fso.io_pycoulomb.fault_dict_to_coulomb_fault([test_rectangular_fault]);
+        [pycoulomb_rectangle] = fso.fault_slip_object.fault_dict_to_coulomb_fault([test_rectangular_fault]);
         inputs = PyCoulomb.coulomb_collections.Input_object(zerolon=zerolon, zerolat=zerolat, finish_gridy=None,
                                                             finish_gridx=None, depth=None, FRIC=None, PR1=None,
                                                             maxlat=None, maxlon=None, minlat=None, minlon=None,

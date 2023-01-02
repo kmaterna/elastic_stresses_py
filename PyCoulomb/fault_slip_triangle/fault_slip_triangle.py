@@ -3,9 +3,10 @@ import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions, haversine
 from Tectonic_Utils.seismo import moment_calculations
 from .. import conversion_math
-from ..fault_slip_object.io_pycoulomb import fault_dict_to_coulomb_fault
+from Elastic_stresses_py.PyCoulomb.fault_slip_object.fault_slip_object import fault_dict_to_coulomb_fault
 
-class TriangleFaultDict:
+
+class TriangleFault:
     """
     The internal format is a dictionary for a triangular fault segment:
     {
@@ -96,9 +97,9 @@ class TriangleFaultDict:
         new_rtlat = self.rtlat_slip if rtlat is None else rtlat;
         new_dipslip = self.dip_slip if dipslip is None else dipslip;
         new_tensile = self.tensile if tensile is None else tensile;
-        new_fault_dict = TriangleFaultDict(lon=self.lon, lat=self.lat, segment=self.segment, depth=self.depth,
-                                           vertex1=self.vertex1, vertex2=self.vertex2, vertex3=self.vertex3,
-                                           dip_slip=new_dipslip, rtlat_slip=new_rtlat, tensile=new_tensile);
+        new_fault_dict = TriangleFault(lon=self.lon, lat=self.lat, segment=self.segment, depth=self.depth,
+                                       vertex1=self.vertex1, vertex2=self.vertex2, vertex3=self.vertex3,
+                                       dip_slip=new_dipslip, rtlat_slip=new_rtlat, tensile=new_tensile);
         return new_fault_dict;
 
     def change_reference_loc(self, new_refcoords=None):
@@ -117,9 +118,9 @@ class TriangleFaultDict:
         vertex1_newref = np.array([x1*1000, y1*1000, self.vertex1[2]]);
         vertex2_newref = np.array([x2*1000, y2*1000, self.vertex2[2]]);
         vertex3_newref = np.array([x3*1000, y3*1000, self.vertex3[2]]);
-        new_fault_dict = TriangleFaultDict(lon=new_reflon, lat=new_reflat, segment=self.segment, depth=self.depth,
-                                           vertex1=vertex1_newref, vertex2=vertex2_newref, vertex3=vertex3_newref,
-                                           dip_slip=self.dip_slip, rtlat_slip=self.rtlat_slip, tensile=self.tensile);
+        new_fault_dict = TriangleFault(lon=new_reflon, lat=new_reflat, segment=self.segment, depth=self.depth,
+                                       vertex1=vertex1_newref, vertex2=vertex2_newref, vertex3=vertex3_newref,
+                                       dip_slip=self.dip_slip, rtlat_slip=self.rtlat_slip, tensile=self.tensile);
         return new_fault_dict;
 
     def get_fault_area(self):
@@ -152,23 +153,16 @@ def convert_rectangle_into_two_triangles(one_fault_dict):
     vertex2 = np.array([x_all[1]*1000, y_all[1]*1000, top_depth*1000]);
     vertex3 = np.array([x_all[2]*1000, y_all[2]*1000, bottom_depth*1000]);
     vertex4 = np.array([x_all[3]*1000, y_all[3]*1000, bottom_depth*1000]);
-    first_triangle = TriangleFaultDict(lon=one_fault_dict['lon'], lat=one_fault_dict['lat'],
-                                       segment=one_fault_dict['segment'],
-                                       tensile=source.tensile, vertex1=vertex1, vertex2=vertex3,
-                                       vertex3=vertex2, dip_slip=source.reverse, rtlat_slip=source.rtlat,
-                                       depth=vertex1[2]/1000);
-    second_triangle = TriangleFaultDict(lon=one_fault_dict['lon'], lat=one_fault_dict['lat'],
-                                        segment=one_fault_dict['segment'],
-                                        tensile=source.tensile, vertex1=vertex1, vertex2=vertex4,
-                                        vertex3=vertex3, dip_slip=source.reverse, rtlat_slip=source.rtlat,
-                                        depth=vertex1[2]/1000);
+    first_triangle = TriangleFault(lon=one_fault_dict['lon'], lat=one_fault_dict['lat'],
+                                   segment=one_fault_dict['segment'], tensile=source.tensile, vertex1=vertex1,
+                                   vertex2=vertex3, vertex3=vertex2, dip_slip=source.reverse, rtlat_slip=source.rtlat,
+                                   depth=vertex1[2]/1000);
+    second_triangle = TriangleFault(lon=one_fault_dict['lon'], lat=one_fault_dict['lat'],
+                                    segment=one_fault_dict['segment'], tensile=source.tensile, vertex1=vertex1,
+                                    vertex2=vertex4, vertex3=vertex3, dip_slip=source.reverse, rtlat_slip=source.rtlat,
+                                    depth=vertex1[2]/1000);
     list_of_two_triangles = [first_triangle, second_triangle];
     return list_of_two_triangles;
-
-
-def return_total_slip(fault_dict):
-    """ lambda function to get the slip of the object, for plotting """
-    return fault_dict.get_total_slip();
 
 
 """
@@ -197,6 +191,11 @@ def check_consistent_reference_frame(triangle_fault_list):
     if return_code == 0:
         print("Warning! Not all triangles have the same reference lon/lat");
     return return_code;
+
+
+def return_total_slip(fault_dict):
+    """ lambda function to get the slip of the object, for plotting """
+    return fault_dict.get_total_slip();
 
 
 def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_total_slip):
@@ -252,7 +251,7 @@ def write_gmt_vertical_fault_file(fault_dict_list, outfile, color_mappable=retur
         x1, y1 = fault_vector_functions.latlon2xy_single(vertex1[0], vertex1[1], origin_lon, origin_lat);
         x2, y2 = fault_vector_functions.latlon2xy_single(vertex2[0], vertex2[1], origin_lon, origin_lat);
         x3, y3 = fault_vector_functions.latlon2xy_single(vertex3[0], vertex3[1], origin_lon, origin_lat);
-        [xprime1, _] = conversion_math.rotate_points(x1, y1, 90+strike);
+        [xprime1, _] = conversion_math.rotate_points(x1, y1, 90 + strike);
         [xprime2, _] = conversion_math.rotate_points(x2, y2, 90 + strike);
         [xprime3, _] = conversion_math.rotate_points(x3, y3, 90 + strike);
         ofile.write("> -Z"+str(slip)+"\n");  # whatever slip value the user chooses
