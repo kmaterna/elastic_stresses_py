@@ -15,8 +15,8 @@ filedict = {"usgs_slip_file": "../../_Data/files_MTMOD_WS/Kaikoura_usgs_finite_f
 def write_pycoulomb_input(filedict, fault_dict_list):
     params = PyCoulomb.configure_calc.configure_stress_calculation(filedict["demo_config"]);
     demo_obj = PyCoulomb.io_intxt.read_intxt(params.input_file, params.mu, params.lame1);
-    pycoulomb_faults = fso.fault_slip_object.fault_dict_to_coulomb_fault(fault_dict_list, demo_obj.zerolon,
-                                                                         demo_obj.zerolat);
+    pycoulomb_faults = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_dict_list, demo_obj.zerolon,
+                                                                           demo_obj.zerolat);
     inputs = PyCoulomb.configure_calc.modify_inputs_object(demo_obj, source_object=pycoulomb_faults);
     PyCoulomb.io_intxt.write_intxt(inputs, filedict["finished_input"], mu=params.mu, lame1=params.lame1);
     return;

@@ -16,8 +16,8 @@ filedict = {
 if __name__ == "__main__":
     # Input stage: Getting things into proper formats
     fault_model_list = fso.file_io.io_slippy.read_slippy_distribution(filedict['fault_model']);
-    coulomb_fault_model = fso.fault_slip_object.fault_dict_to_coulomb_fault(fault_model_list, filedict['lon0_sys'],
-                                                                            filedict['lat0_sys']);
+    coulomb_fault_model = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_model_list, filedict['lon0_sys'],
+                                                                              filedict['lat0_sys']);
     disp_points = io_additionals.read_disp_points(filedict['datafile']);
     params = configure_calc.configure_default_displacement_params();
     inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, filedict['lon0_sys'],

@@ -75,9 +75,9 @@ def read_srcmod_line(line, overall_strike, overall_dip, total_len_km, total_widt
     #                                                               one_fault["strike"] - 90);
     # ^^ offset the fault location for center. Optional/unknown.
     corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, lon_top_center, lat_top_center);
-    one_fault = fault_slip_object.FaultDict(strike=strike, dip=dip, length=length, width=patch_width,
-                                            depth=depth_top_center, rake=rake, slip=slip_m, tensile=0, lon=corner_lon,
-                                            lat=corner_lat, segment=segment);
+    one_fault = fault_slip_object.FaultSlipObject(strike=strike, dip=dip, length=length, width=patch_width,
+                                                  depth=depth_top_center, rake=rake, slip=slip_m, tensile=0,
+                                                  lon=corner_lon, lat=corner_lat, segment=segment);
     return one_fault;
 
 

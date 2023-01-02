@@ -19,11 +19,10 @@ def write_static1D_source_file(fault_dict_list, disp_points, filename):
 
     # Setting header information: top depth, bottom depth, and dip
     one_fault = fault_dict_list[0];
-    top, bottom = fault_vector_functions.get_top_bottom_from_top(one_fault["depth"], one_fault["width"],
-                                                                 one_fault["dip"]);
+    top, bottom = fault_vector_functions.get_top_bottom_from_top(one_fault.depth, one_fault.width, one_fault.dip);
     ofile.write("{0:<5.1f}".format(np.round(bottom, 1)));
     ofile.write("{0:<6.1f}".format(np.round(top, 1)));
-    ofile.write("{0:<6.1f}\n".format(np.round(one_fault["dip"], 1)));
+    ofile.write("{0:<6.1f}\n".format(np.round(one_fault.dip, 1)));
 
     ofile.write("%d \n" % len(fault_dict_list) );
     for fault in fault_dict_list:
@@ -84,9 +83,9 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
     fault_lon, fault_lat = fault_vector_functions.xy2lonlat_single(upper_corner_back_edge[0],
                                                                    upper_corner_back_edge[1], lower_lon_corner,
                                                                    lower_lat_corner);
-    new_fault = fault_slip_object.FaultDict(strike=strike, dip=dip, length=length, width=downdip_width, rake=rake,
-                                            slip=slip/100, tensile=0, depth=upper_depth, lon=fault_lon, lat=fault_lat,
-                                            segment=0);
+    new_fault = fault_slip_object.FaultSlipObject(strike=strike, dip=dip, length=length, width=downdip_width, rake=rake,
+                                                  slip=slip/100, tensile=0, depth=upper_depth, lon=fault_lon,
+                                                  lat=fault_lat, segment=0);
     return new_fault;
 
 
@@ -94,11 +93,11 @@ def write_fault_slip_line_static1d_visco1d(one_fault):
     """
     write a line of Fred's format of faults from internal fault_dictionary
     """
-    lons, lats = fault_slip_object.get_four_corners_lon_lat(one_fault);
+    lons, lats = one_fault.get_four_corners_lon_lat();
     fault_lon = lons[2];
     fault_lat = lats[2];  # the deeper edge towards the strike direction
-    writestring = (" %f %f %.2f %.2f %.2f %.2f \n" % (fault_lat, fault_lon, one_fault["length"], one_fault["strike"],
-                                                      one_fault["rake"], one_fault["slip"]*100) );  # lon/lat etc
+    writestring = (" %f %f %.2f %.2f %.2f %.2f \n" % (fault_lat, fault_lon, one_fault.length, one_fault.strike,
+                                                      one_fault.rake, one_fault.slip*100) );  # lon/lat etc
     # Slip written in cm
     return writestring;
 
@@ -204,11 +203,10 @@ def write_visco1D_source_file(fault_dict_list, filename):
 
     # Setting general information: top depth, bottom depth, and dip
     one_fault = fault_dict_list[0];
-    top, bottom = fault_vector_functions.get_top_bottom_from_top(one_fault["depth"], one_fault["width"],
-                                                                 one_fault["dip"]);
+    top, bottom = fault_vector_functions.get_top_bottom_from_top(one_fault.depth, one_fault.width, one_fault.dip);
     ofile.write("{0:<5.1f}".format(np.round(bottom, 1)));
     ofile.write("{0:<6.1f}".format(np.round(top, 1)));
-    ofile.write("{0:<6.1f}\n".format(np.round(one_fault["dip"], 1)));
+    ofile.write("{0:<6.1f}\n".format(np.round(one_fault.dip, 1)));
     ofile.write("1900. 1900. 2000. 1000. 500.0\n");  # Hard coding for simplicity:
     # earthquake cycle begins at 1900,
     # sample at year 1990 to 2000, the periodicity is 500 years.
@@ -253,9 +251,10 @@ def read_stat2C_geometry(infile):
                                                                                lower_lon_corner,
                                                                                lower_lat_corner);
 
-                new_fault = fault_slip_object.FaultDict(strike=strike, dip=dip, length=length, width=downdip_width,
-                                                        rake=rake, slip=slip, tensile=0, depth=upper_depth,
-                                                        lon=fault_lon, lat=fault_lat, segment=0);
+                new_fault = fault_slip_object.FaultSlipObject(strike=strike, dip=dip, length=length,
+                                                              width=downdip_width,
+                                                              rake=rake, slip=slip, tensile=0, depth=upper_depth,
+                                                              lon=fault_lon, lat=fault_lat, segment=0);
                 faultlist.append(new_fault);
     print("--> Returning %d fault patches " % len(faultlist));
     return faultlist;

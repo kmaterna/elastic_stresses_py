@@ -31,15 +31,21 @@ def unpack_horiz_disp_points_for_vectors(disp_points):
     disp_y_horiz = np.array([x.dN_obs for x in disp_points if ~np.isnan(x.dE_obs)]);
     return [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz];
 
+def get_total_slip_from_x(x):
+    return x.get_total_slip();
+
+def get_blank_slip_from_x(x):
+    return x.get_blank_fault();
+
 
 def write_patch_edges_for_plotting(fault_dict_list, colorby='slip'):
     """
     Plot the full patches and the surface traces of a collection of rectangular faults.  Can colorcode by slip.
     """
     if colorby == "slip":
-        plotting_function = fso.get_total_slip;
+        plotting_function = get_total_slip_from_x;
     else:
-        plotting_function = fso.get_blank_fault;
+        plotting_function = get_blank_slip_from_x;
     fso.write_gmt_fault_file(fault_dict_list, 'tmp.txt', color_mappable=plotting_function, verbose=False);
     fso.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
     return "tmp.txt", "tmp2.txt";
@@ -98,7 +104,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
 
     if len(fault_dict_list) > 0:
         # Drawing fault slip with a color scale.
-        fault_colors = [_i["slip"] for _i in fault_dict_list];
+        fault_colors = [_i.slip for _i in fault_dict_list];
         [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors);
         if len(fault_colors) > 0:
             pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
@@ -129,7 +135,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     # Optional: Draw the updip trace of each fault segment
     if fault_traces_from_dict:
         for item in fault_dict_list:
-            lons, lats = fso.get_updip_corners_lon_lat(item);
+            lons, lats = item.get_updip_corners_lon_lat();
             fig.plot(x=lons, y=lats, pen="thickest,darkred");
 
     # Vector displacements

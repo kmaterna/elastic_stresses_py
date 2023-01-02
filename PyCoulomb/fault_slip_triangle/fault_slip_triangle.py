@@ -3,12 +3,12 @@ import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions, haversine
 from Tectonic_Utils.seismo import moment_calculations
 from .. import conversion_math
-from Elastic_stresses_py.PyCoulomb.fault_slip_object.fault_slip_object import fault_dict_to_coulomb_fault
+from Elastic_stresses_py.PyCoulomb.fault_slip_object.fault_slip_object import fault_object_to_coulomb_fault
 
 
 class TriangleFault:
     """
-    The internal format is a dictionary for a triangular fault segment:
+    The internal format is a class for a triangular fault segment:
     {
         vertex1 [x, y, z] in m, z is positive downward
         vertex2 [x, y, z] in m, z is positive downward
@@ -146,19 +146,19 @@ def convert_rectangle_into_two_triangles(one_fault_dict):
     """
     Convert a fault_dict into two triangular fault dicts. The fault normals are expected to point up.
     """
-    [source] = fault_dict_to_coulomb_fault([one_fault_dict]);
+    [source] = fault_object_to_coulomb_fault([one_fault_dict]);
     [x_all, y_all, _, _] = conversion_math.get_fault_four_corners(source);  # This is cartesian
     top_depth, bottom_depth = source.top, source.bottom;
     vertex1 = np.array([x_all[0]*1000, y_all[0]*1000, top_depth*1000]);  # in meters
     vertex2 = np.array([x_all[1]*1000, y_all[1]*1000, top_depth*1000]);
     vertex3 = np.array([x_all[2]*1000, y_all[2]*1000, bottom_depth*1000]);
     vertex4 = np.array([x_all[3]*1000, y_all[3]*1000, bottom_depth*1000]);
-    first_triangle = TriangleFault(lon=one_fault_dict['lon'], lat=one_fault_dict['lat'],
-                                   segment=one_fault_dict['segment'], tensile=source.tensile, vertex1=vertex1,
+    first_triangle = TriangleFault(lon=one_fault_dict.lon, lat=one_fault_dict.lat,
+                                   segment=one_fault_dict.segment, tensile=source.tensile, vertex1=vertex1,
                                    vertex2=vertex3, vertex3=vertex2, dip_slip=source.reverse, rtlat_slip=source.rtlat,
                                    depth=vertex1[2]/1000);
-    second_triangle = TriangleFault(lon=one_fault_dict['lon'], lat=one_fault_dict['lat'],
-                                    segment=one_fault_dict['segment'], tensile=source.tensile, vertex1=vertex1,
+    second_triangle = TriangleFault(lon=one_fault_dict.lon, lat=one_fault_dict.lat,
+                                    segment=one_fault_dict.segment, tensile=source.tensile, vertex1=vertex1,
                                     vertex2=vertex4, vertex3=vertex3, dip_slip=source.reverse, rtlat_slip=source.rtlat,
                                     depth=vertex1[2]/1000);
     list_of_two_triangles = [first_triangle, second_triangle];

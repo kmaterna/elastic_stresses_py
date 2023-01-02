@@ -12,8 +12,8 @@ filedict = {"fault_slip_file": "s2016NORCIA01PIZZ.fsp",
 
 
 def replace_inputs(demo_obj, fault_dict_list):
-    pycoulomb_faults = fso.fault_slip_object.fault_dict_to_coulomb_fault(fault_dict_list, demo_obj.zerolon,
-                                                                         demo_obj.zerolat)
+    pycoulomb_faults = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_dict_list, demo_obj.zerolon,
+                                                                           demo_obj.zerolat)
     input_object = PyCoulomb.configure_calc.modify_inputs_object(demo_obj, source_object=pycoulomb_faults);
     return input_object;
 

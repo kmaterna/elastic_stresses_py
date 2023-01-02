@@ -31,7 +31,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
                                          params.outdir+"vector_plot.png");  # map point displacements
     if params.plot_stress:  # write the outputs of stress calculation, if doing a stress calculation
-        fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_dict(out_object.receiver_object);
+        fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(out_object.receiver_object);
         fso.file_io.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
                                                                  out_object.receiver_normal,
                                                                  out_object.receiver_coulomb,

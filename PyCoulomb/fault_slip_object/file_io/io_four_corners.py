@@ -92,7 +92,7 @@ def get_fault_dict_from_four_corners(lons, lats, depths):
         updip_corner_lat = lats[idx1];
         updip_corner_depth = depths[idx1];
 
-    fault_object = fault_slip_object.FaultDict(strike=strike, slip=0, tensile=0, rake=0, length=length, width=width,
-                                               dip=dip, lon=updip_corner_lon, lat=updip_corner_lat,
-                                               depth=updip_corner_depth, segment=0);
+    fault_object = fault_slip_object.FaultSlipObject(strike=strike, slip=0, tensile=0, rake=0, length=length,
+                                                     width=width, dip=dip, lon=updip_corner_lon, lat=updip_corner_lat,
+                                                     depth=updip_corner_depth, segment=0);
     return fault_object;

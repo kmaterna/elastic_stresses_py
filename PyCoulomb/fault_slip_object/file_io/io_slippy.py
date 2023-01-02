@@ -41,9 +41,9 @@ def read_slippy_distribution(infile, desired_segment=-1):
             corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);
             rake = fault_vector_functions.get_rake(rtlat_strike_slip=-ll_slip[i], dip_slip=thrust_slip[i]);
             total_slip = fault_vector_functions.get_total_slip(ll_slip[i], thrust_slip[i]);
-            one_fault = fault_slip_object.FaultDict(strike=strike[i], dip=dip[i], length=l_km, depth=depth_km,
-                                                    width=w_km, lon=corner_lon, lat=corner_lat, rake=rake,
-                                                    slip=total_slip, tensile=tensile[i], segment=num[i]);
+            one_fault = fault_slip_object.FaultSlipObject(strike=strike[i], dip=dip[i], length=l_km, depth=depth_km,
+                                                          width=w_km, lon=corner_lon, lat=corner_lat, rake=rake,
+                                                          slip=total_slip, tensile=tensile[i], segment=num[i]);
             fault_list.append(one_fault);
     print("--> Returning %d fault patches " % len(fault_list));
     return fault_list;
@@ -62,14 +62,14 @@ def write_slippy_distribution(faults_list, outfile, slip_units='m'):
     ofile.write("# lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees] length[m] width[m] left-lateral[" +
                 slip_units + "] thrust[" + slip_units + "] tensile[" + slip_units + "] segment_num\n");
     for item in faults_list:
-        x_center, y_center = fault_vector_functions.add_vector_to_point(0, 0, item["length"] / 2, item["strike"]);
-        center_lon, center_lat = fault_vector_functions.xy2lonlat(x_center, y_center, item["lon"], item["lat"]);
-        rtlat_slip, dip_slip = fault_vector_functions.get_rtlat_dip_slip(item["slip"], item["rake"]);
-        tensile_slip = 0;
-        ofile.write("%f %f %f " % (center_lon, center_lat, item["depth"] * -1000));
-        ofile.write("%f %f %f %f %f %f %f %d \n" % (item["strike"], item["dip"], item["length"] * 1000,
-                                                    item["width"] * 1000, -1 * rtlat_slip, dip_slip, tensile_slip,
-                                                    item["segment"]));
+        x_center, y_center = fault_vector_functions.add_vector_to_point(0, 0, item.length / 2, item.strike);
+        center_lon, center_lat = fault_vector_functions.xy2lonlat(x_center, y_center, item.lon, item.lat);
+        rtlat_slip, dip_slip = fault_vector_functions.get_rtlat_dip_slip(item.slip, item.rake);
+        tensile = 0;
+        ofile.write("%f %f %f " % (center_lon, center_lat, item.depth * -1000));
+        ofile.write("%f %f %f %f %f %f %f %d \n" % (item.strike, item.dip, item.length * 1000,
+                                                    item.width * 1000, -1 * rtlat_slip, dip_slip, tensile,
+                                                    item.segment));
     ofile.close();
     return;
 
@@ -91,11 +91,11 @@ def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outf
     ofile.write("# lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees] rake[degrees] length[m] width[m] "
                 "shear[KPa] normal[KPa] coulomb[KPa]\n");
     for i, item in enumerate(faults_list):
-        x_center, y_center = fault_vector_functions.add_vector_to_point(0, 0, item["length"] / 2, item["strike"]);
-        center_lon, center_lat = fault_vector_functions.xy2lonlat(x_center, y_center, item["lon"], item["lat"]);
-        ofile.write("%f %f %f " % (center_lon, center_lat, item["depth"] * -1000));
-        ofile.write("%f %f %f %f %f %f %f %f \n" % (item["strike"], item["dip"], item["rake"], item["length"] * 1000,
-                                                    item["width"] * 1000, shear[i], normal[i], coulomb[i]));
+        x_center, y_center = fault_vector_functions.add_vector_to_point(0, 0, item.length / 2, item.strike);
+        center_lon, center_lat = fault_vector_functions.xy2lonlat(x_center, y_center, item.lon, item.lat);
+        ofile.write("%f %f %f " % (center_lon, center_lat, item.depth * -1000));
+        ofile.write("%f %f %f %f %f %f %f %f \n" % (item.strike, item.dip, item.rake, item.length * 1000,
+                                                    item.width * 1000, shear[i], normal[i], coulomb[i]));
     ofile.close();
     return;
 
@@ -123,9 +123,9 @@ def read_stress_slippy_format(infile):
         depth_km = -depth[i] / 1000;
         x_start, y_start = fault_vector_functions.add_vector_to_point(0, 0, l_km / 2, strike[i] - 180);  # in km
         corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_start, y_start, center_lon, center_lat);
-        one_fault = fault_slip_object.FaultDict(strike=strike[i], dip=dip[i], length=l_km, width=w_km,
-                                                depth=depth_km, lon=corner_lon, lat=corner_lat, rake=rake[i],
-                                                slip=0, tensile=0, segment=0);
+        one_fault = fault_slip_object.FaultSlipObject(strike=strike[i], dip=dip[i], length=l_km, width=w_km,
+                                                      depth=depth_km, lon=corner_lon, lat=corner_lat, rake=rake[i],
+                                                      slip=0, tensile=0, segment=0);
         fault_list.append(one_fault);
     print("--> Returning %d fault patches and stress values " % len(fault_list));
 
