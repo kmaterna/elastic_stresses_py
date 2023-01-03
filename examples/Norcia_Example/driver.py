@@ -36,7 +36,7 @@ if __name__ == "__main__":
     convert_norcia_to_pycoulomb(filedict);
 
     # Steps of elastic_stresses_driver
-    params = PyCoulomb.configure_calc.configure_stress_calculation(filedict["config"]);
+    params = PyCoulomb.configure_calc.configure_stress_calculation(filedict["real_config"]);
     [inputs, obs_disp_points, _] = PyCoulomb.input_values.read_inputs(params);
     out_object = PyCoulomb.run_dc3d.do_stress_computation(params, inputs, obs_disp_points);
     PyCoulomb.output_manager.produce_outputs(params, inputs, obs_disp_points, (), out_object);

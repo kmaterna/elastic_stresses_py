@@ -52,7 +52,7 @@ class TriangleFault:
         """Helper function to return the dip slip amount of a fault object"""
         return self.dip_slip;
 
-    def get_depth(self):
+    def get_fault_depth(self):
         """Helper function to return the depth of a fault object"""
         return self.depth;
 
@@ -79,12 +79,13 @@ class TriangleFault:
         z_centroid = np.mean([self.vertex1[2], self.vertex2[2], self.vertex3[2]]);
         return np.array([x_centroid, y_centroid, z_centroid]);
 
-    def get_fault_element_distance(self, fault_dict2, threedimensional=True):
+    def get_fault_element_distance(self, fault_object2, threedimensional=True):
         """Return the distance between two triangular fault elements, in 3d, in km"""
         [xc1, yc1, zc1] = self.compute_triangle_centroid();
-        [xc2, yc2, zc2] = fault_dict2.compute_triangle_centroid();
+        [xc2, yc2, zc2] = fault_object2.compute_triangle_centroid();
         lon_t1, lat_t1 = fault_vector_functions.xy2lonlat_single(xc1/1000, yc1/1000, self.lon, self.lat)
-        lon_t2, lat_t2 = fault_vector_functions.xy2lonlat_single(xc2/1000, yc2/1000, fault_dict2.lon, fault_dict2.lat)
+        lon_t2, lat_t2 = fault_vector_functions.xy2lonlat_single(xc2/1000, yc2/1000, fault_object2.lon,
+                                                                 fault_object2.lat)
         h_distance = haversine.distance([lat_t1, lon_t1], [lat_t2, lon_t2]);
         if threedimensional:
             depth_distance = (zc1 - zc2)/1000;
@@ -97,10 +98,10 @@ class TriangleFault:
         new_rtlat = self.rtlat_slip if rtlat is None else rtlat;
         new_dipslip = self.dip_slip if dipslip is None else dipslip;
         new_tensile = self.tensile if tensile is None else tensile;
-        new_fault_dict = TriangleFault(lon=self.lon, lat=self.lat, segment=self.segment, depth=self.depth,
-                                       vertex1=self.vertex1, vertex2=self.vertex2, vertex3=self.vertex3,
-                                       dip_slip=new_dipslip, rtlat_slip=new_rtlat, tensile=new_tensile);
-        return new_fault_dict;
+        new_fault_obj = TriangleFault(lon=self.lon, lat=self.lat, segment=self.segment, depth=self.depth,
+                                      vertex1=self.vertex1, vertex2=self.vertex2, vertex3=self.vertex3,
+                                      dip_slip=new_dipslip, rtlat_slip=new_rtlat, tensile=new_tensile);
+        return new_fault_obj;
 
     def change_reference_loc(self, new_refcoords=None):
         """Move the reference lon/lat.  If none given, moves it to the location of vertex1
@@ -118,10 +119,10 @@ class TriangleFault:
         vertex1_newref = np.array([x1*1000, y1*1000, self.vertex1[2]]);
         vertex2_newref = np.array([x2*1000, y2*1000, self.vertex2[2]]);
         vertex3_newref = np.array([x3*1000, y3*1000, self.vertex3[2]]);
-        new_fault_dict = TriangleFault(lon=new_reflon, lat=new_reflat, segment=self.segment, depth=self.depth,
-                                       vertex1=vertex1_newref, vertex2=vertex2_newref, vertex3=vertex3_newref,
-                                       dip_slip=self.dip_slip, rtlat_slip=self.rtlat_slip, tensile=self.tensile);
-        return new_fault_dict;
+        new_fault_obj = TriangleFault(lon=new_reflon, lat=new_reflat, segment=self.segment, depth=self.depth,
+                                      vertex1=vertex1_newref, vertex2=vertex2_newref, vertex3=vertex3_newref,
+                                      dip_slip=self.dip_slip, rtlat_slip=self.rtlat_slip, tensile=self.tensile);
+        return new_fault_obj;
 
     def get_fault_area(self):
         """Compute area of a triangle: A = 1/2 (AB x AC), with all cartesian coordinates in meters. Units: sq-m."""
@@ -142,25 +143,23 @@ class TriangleFault:
         return moment;
 
 
-def convert_rectangle_into_two_triangles(one_fault_dict):
+def convert_rectangle_into_two_triangles(one_fault_obj):
     """
-    Convert a fault_dict into two triangular fault dicts. The fault normals are expected to point up.
+    Convert a rectangular fault_slip_object into two triangular faults. The fault normals are expected to point up.
     """
-    [source] = fault_object_to_coulomb_fault([one_fault_dict]);
+    [source] = fault_object_to_coulomb_fault([one_fault_obj]);
     [x_all, y_all, _, _] = conversion_math.get_fault_four_corners(source);  # This is cartesian
     top_depth, bottom_depth = source.top, source.bottom;
     vertex1 = np.array([x_all[0]*1000, y_all[0]*1000, top_depth*1000]);  # in meters
     vertex2 = np.array([x_all[1]*1000, y_all[1]*1000, top_depth*1000]);
     vertex3 = np.array([x_all[2]*1000, y_all[2]*1000, bottom_depth*1000]);
     vertex4 = np.array([x_all[3]*1000, y_all[3]*1000, bottom_depth*1000]);
-    first_triangle = TriangleFault(lon=one_fault_dict.lon, lat=one_fault_dict.lat,
-                                   segment=one_fault_dict.segment, tensile=source.tensile, vertex1=vertex1,
-                                   vertex2=vertex3, vertex3=vertex2, dip_slip=source.reverse, rtlat_slip=source.rtlat,
-                                   depth=vertex1[2]/1000);
-    second_triangle = TriangleFault(lon=one_fault_dict.lon, lat=one_fault_dict.lat,
-                                    segment=one_fault_dict.segment, tensile=source.tensile, vertex1=vertex1,
-                                    vertex2=vertex4, vertex3=vertex3, dip_slip=source.reverse, rtlat_slip=source.rtlat,
-                                    depth=vertex1[2]/1000);
+    first_triangle = TriangleFault(lon=one_fault_obj.lon, lat=one_fault_obj.lat, segment=one_fault_obj.segment,
+                                   tensile=source.tensile, vertex1=vertex1, vertex2=vertex3, vertex3=vertex2,
+                                   dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2]/1000);
+    second_triangle = TriangleFault(lon=one_fault_obj.lon, lat=one_fault_obj.lat, segment=one_fault_obj.segment,
+                                    tensile=source.tensile, vertex1=vertex1, vertex2=vertex4, vertex3=vertex3,
+                                    dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2]/1000);
     list_of_two_triangles = [first_triangle, second_triangle];
     return list_of_two_triangles;
 
@@ -170,13 +169,13 @@ Functions that work on lists of fault items
 """
 
 
-def get_total_moment(fault_dict_object_list, mu=30e9):
+def get_total_moment(fault_object_list, mu=30e9):
     """
     Return total moment of a list of triangle slip objects
     Moment in newton-meters
     """
     total_moment = 0;
-    for item in fault_dict_object_list:
+    for item in fault_object_list:
         total_moment += moment_calculations.moment_from_muad(mu, item.get_fault_area(), item.get_total_slip());
     return total_moment;
 
@@ -193,15 +192,15 @@ def check_consistent_reference_frame(triangle_fault_list):
     return return_code;
 
 
-def return_total_slip(fault_dict):
+def return_total_slip(fault_object):
     """ lambda function to get the slip of the object, for plotting """
-    return fault_dict.get_total_slip();
+    return fault_object.get_total_slip();
 
 
 def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_total_slip):
     """
     Write triangle edges out to file for GMT plots, in X-Y cartesian space in m
-    color_mappable is a simple function of one fault dictionary object that returns the plotting value
+    color_mappable is a simple function of one fault object that returns the plotting value
     """
     print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
     with open(outfile, 'w') as ofile:
@@ -218,7 +217,7 @@ def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_tota
 def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=return_total_slip):
     """
     Write triangle edges out to file for GMT plots, in lon/lat space assuming a cartesian-to-geographic transform
-    color_mappable is a simple function of one fault dictionary object that returns the plotting value
+    color_mappable is a simple function of one fault object that returns the plotting value
     """
     print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
     with open(outfile, 'w') as ofile:
@@ -233,7 +232,7 @@ def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=return_tot
     return;
 
 
-def write_gmt_vertical_fault_file(fault_dict_list, outfile, color_mappable=return_total_slip, strike=45):
+def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=return_total_slip, strike=45):
     """
     Write the vertical coordinates of triangular fault patches (length and depth, in local coords instead of lon/lat)
     and associated slip values into a multi-segment file for plotting in GMT.
@@ -242,10 +241,10 @@ def write_gmt_vertical_fault_file(fault_dict_list, outfile, color_mappable=retur
     Strike is the approximate strike of the fault
     """
     print("Writing file %s " % outfile);
-    origin_lon, origin_lat = fault_dict_list[0].lon, fault_dict_list[0].lat;
+    origin_lon, origin_lat = fault_object_list[0].lon, fault_object_list[0].lat;
 
     ofile = open(outfile, 'w');
-    for fault in fault_dict_list:
+    for fault in fault_object_list:
         slip = color_mappable(fault);
         vertex1, vertex2, vertex3 = fault.get_ll_corners();  # vertex1 = [lon1, lat1]
         x1, y1 = fault_vector_functions.latlon2xy_single(vertex1[0], vertex1[1], origin_lon, origin_lat);

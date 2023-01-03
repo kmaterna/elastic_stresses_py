@@ -107,11 +107,11 @@ class FaultSlipObject:
         lons, lats = fault_vector_functions.xy2lonlat(x_updip, y_updip, source.zerolon, source.zerolat);
         return lons, lats;
 
-    def get_fault_element_distance(self, fault_dict2, threedimensional=True):
+    def get_fault_element_distance(self, fault_object2, threedimensional=True):
         """Return the distance between two fault elements, in 3d, in km"""
-        h_distance = haversine.distance([self.lat, self.lon], [fault_dict2.lat, fault_dict2.lon]);
+        h_distance = haversine.distance([self.lat, self.lon], [fault_object2.lat, fault_object2.lon]);
         if threedimensional:
-            depth_distance = self.depth - fault_dict2.depth;
+            depth_distance = self.depth - fault_object2.depth;
         else:
             depth_distance = 0;
         distance_3d = np.sqrt(np.square(h_distance) + np.square(depth_distance))
@@ -169,17 +169,17 @@ class FaultSlipObject:
         fault_patch_string = fault_patch_string + str(self.slip) + " " + str(self.tensile) + " ";
         return fault_patch_string;
 
-    def add_slip_from_two_faults(self, fault_dict2):
+    def add_slip_from_two_faults(self, fault_object2):
         """Assuming identical fault_slip_object except for different slip amounts. Add slip amounts. """
         ss_1, ds_1 = fault_vector_functions.get_rtlat_dip_slip(self.slip, self.rake);
-        ss_2, ds_2 = fault_vector_functions.get_rtlat_dip_slip(fault_dict2.slip, fault_dict2.rake);
+        ss_2, ds_2 = fault_vector_functions.get_rtlat_dip_slip(fault_object2.slip, fault_object2.rake);
         ss_total = ss_1 + ss_2;  # rtlat
         ds_total = ds_1 + ds_2;  # reverse
         slip_total = fault_vector_functions.get_total_slip(ss_total, ds_total);
         rake_total = fault_vector_functions.get_rake(rtlat_strike_slip=ss_total, dip_slip=ds_total);
         new_item = FaultSlipObject(strike=self.strike, dip=self.dip, length=self.length, width=self.width,
                                    lon=self.lon, lat=self.lat, depth=self.depth, slip=slip_total, rake=rake_total,
-                                   tensile=self.tensile + fault_dict2.tensile,
+                                   tensile=self.tensile + fault_object2.tensile,
                                    segment=self.segment)
         return new_item;
 
@@ -192,7 +192,7 @@ Functions that work on lists of fault items
 def get_four_corners_lon_lat_multiple(fault_object_list):
     """
     Return the lon/lat of all 4 corners of a list of fault_objects
-    Basically the bounding box for this list of fault_dict_objects
+    Basically the bounding box for this list of fault_objects
     """
     lons_all, lats_all = [], [];
     for item in fault_object_list:
@@ -204,7 +204,7 @@ def get_four_corners_lon_lat_multiple(fault_object_list):
 
 def get_total_moment(fault_object_list, mu=30e9):
     """
-    Return the total moment of a list of slip objects, in fault_dict_object
+    Return the total moment of a list of slip objects, in fault_object
     Moment in newton-meters
     """
     total_moment = 0;
@@ -229,7 +229,7 @@ def get_total_moment_depth_dependent(fault_object_list, depths, mus):
 def add_two_fault_object_lists(list1, list2):
     """Assuming identical geometry in the two lists"""
     if len(list1) != len(list2):
-        raise Exception("Error! Two fault_dict lists are not identical");
+        raise Exception("Error! Two fault_object lists are not identical");
     new_list = [];
     for item1, item2 in zip(list1, list2):
         new_item = item1.add_slip_from_two_faults(item2);
@@ -239,7 +239,7 @@ def add_two_fault_object_lists(list1, list2):
 
 def change_fault_slip_list(fault_object_list, new_slip=None, new_rake=None):
     """
-    Set the fault slip on a list of fault_slip_dictionaries to something different.
+    Set the fault slip on a list of fault_slip_objects to something different.
     Can optionally also set the rake on all fault patches to a constant value; otherwise, leave rake unchanged.
 
     :param fault_object_list: list of fault_slip_objects
