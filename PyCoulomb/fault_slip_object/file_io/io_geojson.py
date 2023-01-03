@@ -10,13 +10,13 @@ from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
 
 def read_faults_json(infile):
     """
-    Read all faults from a json file (just geometry; no slip or rake) into a list of fault dictionaries.
+    Read all faults from a json file (just geometry; no slip or rake) into a list of fault slip objects.
     It has to convert from fault center to fault corner.
     Faults read from JSON have zero slip.
 
     :param infile: name of input json file
     :type infile: string
-    :returns: list of fault dictionaries
+    :returns: list of fault slip objects
     :rtype: list
     """
     fault_list = [];

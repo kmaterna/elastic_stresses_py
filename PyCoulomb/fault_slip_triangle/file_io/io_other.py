@@ -1,7 +1,7 @@
 import scipy.io
 import numpy as np
 from osgeo import osr  # gdal library, works inside pygmt environment
-from . import fault_slip_triangle
+from .. import fault_slip_triangle
 
 
 def convert_points_to_wgs84(x, y):

@@ -12,7 +12,7 @@ def read_four_corners_fault_file(filename):
     """
     Read fault file from Shengji Wei, EPSL, 2015.
     Provided: lat/lon/depth of each corner.
-    Read into an internal fault dictionary
+    Read into an internal fault object
     """
     print("Reading file %s" % filename);
     lons, lats, depths = [], [], [];
@@ -30,16 +30,16 @@ def read_four_corners_fault_file(filename):
     ifile.close();
 
     # check that you only pass 4 corners, not 5.
-    fault_dict = get_fault_dict_from_four_corners(lons[0:4], lats[0:4], depths[0:4]);
+    fault_dict = get_fault_object_from_four_corners(lons[0:4], lats[0:4], depths[0:4]);
     return fault_dict;
 
 
-def get_fault_dict_from_four_corners(lons, lats, depths):
+def get_fault_object_from_four_corners(lons, lats, depths):
     """
     :param lons: list of 4 longitudes
     :param lats: list of 4 latitudes
     :param depths: list of 4 depths
-    :returns: a fault_dict
+    :returns: a fault_slip_object
     """
 
     # Set up local coordinate system

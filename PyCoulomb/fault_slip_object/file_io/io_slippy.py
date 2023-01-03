@@ -1,5 +1,5 @@
 """
-Functions for slippy IO of faults and slip distributions into list of fault_slip_object dictionaries
+Functions for slippy IO of faults and slip distributions into list of fault_slip_objects
 
 Format slippy: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lateral[m] thrust[m] tensile[m] num[int]
 """
@@ -12,14 +12,14 @@ from .. import fault_slip_object
 def read_slippy_distribution(infile, desired_segment=-1):
     """
     Read a file from the Slippy inversion outputs (lon[degrees] lat[degrees] depth[m] strike[degrees] dip[degrees]
-    length[m] width[m] left-lateral[m] thrust[m] tensile[m] segment_num) into a list of fault dictionaries.
+    length[m] width[m] left-lateral[m] thrust[m] tensile[m] segment_num) into a list of fault slip objects.
     Lon/lat usually refer to the center top of the fault, so it must convert the lon/lat to the top left corner.
 
     :param infile: name of input slip distribution file
     :type infile: string
     :param desired_segment: starting at 0, which fault segment do we want to return? default of -1 means all.
     :type desired_segment: int
-    :returns: list of fault dictionaries
+    :returns: list of fault slip objects
     :rtype: list
     """
     print("Reading slippy distribution %s " % infile);
@@ -51,7 +51,7 @@ def read_slippy_distribution(infile, desired_segment=-1):
 
 def write_slippy_distribution(faults_list, outfile, slip_units='m'):
     """
-    :param faults_list: a list of fault dictionaries
+    :param faults_list: a list of fault slip objects
     :param outfile: name of output file.
     :param slip_units: string
     """
@@ -76,7 +76,7 @@ def write_slippy_distribution(faults_list, outfile, slip_units='m'):
 
 def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outfile):
     """
-    :param faults_list: a list of fault dictionaries
+    :param faults_list: a list of fault slip objects
     :param outfile: name of output file.
     :param shear: list of shear stress change on each element, kpa
     :param normal: list of normal stress, kpa
@@ -105,7 +105,7 @@ def read_stress_slippy_format(infile):
     Read stress results from CFS calculation
 
     :param infile: text file in full-stress format
-    :returns: fault_list (internal dictionary format). shear, normal, and coulomb are matching lists in KPa
+    :returns: fault_list (internal format). shear, normal, and coulomb are matching lists in KPa
     """
     print("Reading file %s " % infile);
     fault_list = [];

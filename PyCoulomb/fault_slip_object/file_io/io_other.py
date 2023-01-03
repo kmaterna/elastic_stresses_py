@@ -11,7 +11,7 @@ from . import io_four_corners
 def io_hamling_2017(filename):
     """Read Ian Hamling's 2017 Science paper fault model"""
     print("Reading file %s " % filename);
-    fault_dict_list = [];
+    fault_object_list = [];
     [centerlon, centerlat, strike, dip, rake, slip, l_km, top_km, bottom_km, segment] = np.loadtxt(filename,
                                                                                                    unpack=True,
                                                                                                    skiprows=8);
@@ -25,9 +25,9 @@ def io_hamling_2017(filename):
         one_fault = fault_slip_object.FaultSlipObject(strike=strike[i], dip=dip[i], length=l_km[i], width=width,
                                                       depth=top_km[i], rake=rake[i], slip=slip[i], tensile=0,
                                                       segment=int(segment[i]), lon=corner_lon, lat=corner_lat);
-        fault_dict_list.append(one_fault);
-    print("--> Returning %d fault patches " % len(fault_dict_list));
-    return fault_dict_list;
+        fault_object_list.append(one_fault);
+    print("--> Returning %d fault patches " % len(fault_object_list));
+    return fault_object_list;
 
 
 def io_wallace_sse(filename):
@@ -35,7 +35,7 @@ def io_wallace_sse(filename):
     Read Laura Wallace's slow slip event files for New Zealand
     """
     print("Reading file %s " % filename);
-    fault_dict_list = [];
+    fault_object_list = [];
     ifile = open(filename, 'r');
     for line in ifile:
         if line[0] == "#":
@@ -54,13 +54,13 @@ def io_wallace_sse(filename):
             depths = [-float(c1_depth), -float(c2_depth), -float(c3_depth), -float(c4_depth)];
             if np.sum(lons) == 0 and np.sum(lats) == 0 and np.sum(depths) == 0:  # skip pathological case
                 continue;
-            one_fault = io_four_corners.get_fault_dict_from_four_corners(lons, lats, depths);
+            one_fault = io_four_corners.get_fault_object_from_four_corners(lons, lats, depths);
             new_fault = fault_slip_object.FaultSlipObject(strike=one_fault.strike, dip=one_fault.dip,
                                                           lon=one_fault.lon, lat=one_fault.lat,
                                                           depth=one_fault.depth, length=one_fault.length,
                                                           width=one_fault.width, segment=one_fault.segment,
                                                           slip=patch_slip_m, rake=rake, tensile=patch_tensile_m);
-            fault_dict_list.append(new_fault);
+            fault_object_list.append(new_fault);
     ifile.close();
-    print("--> Returning %d fault patches " % len(fault_dict_list));
-    return fault_dict_list;
+    print("--> Returning %d fault patches " % len(fault_object_list));
+    return fault_object_list;

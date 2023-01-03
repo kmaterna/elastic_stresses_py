@@ -8,7 +8,7 @@ from .. import fault_slip_object
 from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
 
 
-def write_static1D_source_file(fault_dict_list, disp_points, filename):
+def write_static1D_source_file(fault_object_list, disp_points, filename):
     """
     Write a slip source and a list of GPS points into an input file for static1D
     Constraint: each fault in this fault_dict_list should have the same dip, top depth, and bottom depth
@@ -18,14 +18,14 @@ def write_static1D_source_file(fault_dict_list, disp_points, filename):
     ofile = open(filename, 'w');
 
     # Setting header information: top depth, bottom depth, and dip
-    one_fault = fault_dict_list[0];
+    one_fault = fault_object_list[0];
     top, bottom = fault_vector_functions.get_top_bottom_from_top(one_fault.depth, one_fault.width, one_fault.dip);
     ofile.write("{0:<5.1f}".format(np.round(bottom, 1)));
     ofile.write("{0:<6.1f}".format(np.round(top, 1)));
     ofile.write("{0:<6.1f}\n".format(np.round(one_fault.dip, 1)));
 
-    ofile.write("%d \n" % len(fault_dict_list) );
-    for fault in fault_dict_list:
+    ofile.write("%d \n" % len(fault_object_list) );
+    for fault in fault_object_list:
         line = write_fault_slip_line_static1d_visco1d(fault);
         ofile.write(line);
 
@@ -41,14 +41,14 @@ def read_static1D_source_file(filename, gps_filename=None, headerlines=0):
     """
     Read a number of static1d fault segments and gps station locations into objects.
     If the points are inside the same input file, you don't need the second argument
-    Object 1: fault dict, in the internal format.
+    Object 1: fault slip object, in the internal format.
     Object 2: disp points (lats and lons only since this is inputs)
     """
     if gps_filename:
         disp_points = read_static1d_disp_points(filename, gps_filename);
     else:
         disp_points = [];
-    fault_dict_list = [];
+    fault_object_list = [];
     ifile = open(filename);
     headerline = ifile.readline();
     for i in range(headerlines):
@@ -59,9 +59,9 @@ def read_static1D_source_file(filename, gps_filename=None, headerlines=0):
     for line in ifile:
         if len(line.split()) == 6:   # reading one fault segment
             new_fault = read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip);
-            fault_dict_list.append(new_fault);
+            fault_object_list.append(new_fault);
     ifile.close();
-    return fault_dict_list, disp_points;
+    return fault_object_list, disp_points;
 
 
 def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
@@ -91,7 +91,7 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
 
 def write_fault_slip_line_static1d_visco1d(one_fault):
     """
-    write a line of Fred's format of faults from internal fault_dictionary
+    write a line of Fred's format of faults from internal fault_slip_object
     """
     lons, lats = one_fault.get_four_corners_lon_lat();
     fault_lon = lons[2];

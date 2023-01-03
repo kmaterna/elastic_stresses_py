@@ -1,5 +1,5 @@
 """
-Functions for SRCMOD IO of faults and slip distributions into list of fault_slip_object dictionaries
+Functions for SRCMOD IO of faults and slip distributions into list of fault_slip_objects
 
 """
 import numpy as np
@@ -14,7 +14,7 @@ def read_srcmod_distribution(infile):
 
     :param infile: name of input slip distribution file, defined to be the '.fsp' file
     :type infile: string
-    :returns: list of fault dictionaries
+    :returns: list of fault slip objectss
     :rtype: list
     """
     print("Reading SRCMOD distribution %s " % infile);
