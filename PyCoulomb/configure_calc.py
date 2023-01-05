@@ -2,6 +2,7 @@
 
 import os, configparser
 from . import coulomb_collections as cc
+from . import conversion_math
 
 
 def configure_stress_calculation(config_file):
@@ -40,8 +41,9 @@ def configure_stress_calculation(config_file):
     mu = configobj.getfloat('compute-config', 'mu');
     lame1 = configobj.getfloat('compute-config', 'lame1');  # this is lambda
     B = configobj.getfloat('compute-config', 'B');
-    alpha = (lame1 + mu) / (lame1 + 2 * mu);
-    # alpha = parameter for Okada functions. It is 2/3 for simplest case. See DC3D.f documentation.
+    [poissons_ratio, alpha] = conversion_math.get_poissons_ratio_and_alpha(mu, lame1);
+    print("For this stress calculation:\n--> Poisson's ratio = %f, alpha = %f" % (poissons_ratio, alpha));
+    # alpha = parameter for Okada. It is 2/3 for nu=1/4. See DC3D.f docs.
     fixed_rake = configobj.get('compute-config', 'fixed_rake') \
         if configobj.has_option('compute-config', 'fixed_rake') else None;
     # on receiver faults, we need to specify rake globally if we're using .inp format. No effect for other file formats.
@@ -91,7 +93,7 @@ def write_params_into_config(params, outfile):
 def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_grd_disp=1, config_file=None,
                                           input_file=None, aftershocks=None, disp_points_file=None, strain_file=None,
                                           strike_num_receivers=1, dip_num_receivers=1, fixed_rake=0,
-                                          mu=30e9, lame1=30e9, B=0, alpha=2/3):
+                                          mu=30e9, lame1=30e9, B=0):
     """
     Build a default Params object used for displacement-only calculations.
     All arguments are optional.
@@ -100,6 +102,8 @@ def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_
     """
     if outdir[-1] != '/':
         outdir += '/';
+    [pr, alpha] = conversion_math.get_poissons_ratio_and_alpha(mu, lame1);  # derived from provided mu and lame1
+    print("For this stress calculation:\n--> Poisson's ratio = %f, alpha = %f" % (pr, alpha));
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                          disp_points_file=disp_points_file, strain_file=strain_file,
                          strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
@@ -110,7 +114,7 @@ def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_
 
 def modify_params_object(default_params, config_file=None, input_file=None, aftershocks=None, disp_points_file=None,
                          strain_file=None, strike_num_receivers=None, dip_num_receivers=None, fixed_rake=None,
-                         mu=None, lame1=None, B=None, alpha=None, plot_stress=None, plot_grd_disp=None, outdir=None):
+                         mu=None, lame1=None, B=None, plot_stress=None, plot_grd_disp=None, outdir=None):
     """
     Modify the fields in a Pycoulomb.Params named tuple
     By default, none of the properties will be altered.
@@ -127,7 +131,6 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
     :param mu: optional, float
     :param lame1: optional, float
     :param B: optional, float
-    :param alpha: optional, float
     :param plot_stress: optional, int
     :param plot_grd_disp: optional, int
     :param outdir: optional, float
@@ -143,12 +146,14 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
     mu = default_params.mu if mu is None else mu;
     lame1 = default_params.lame1 if lame1 is None else lame1;
     B = default_params.B if B is None else B;
-    alpha = default_params.alpha if alpha is None else alpha;
     plot_stress = default_params.plot_stress if plot_stress is None else plot_stress;
     plot_grd_disp = default_params.plot_grd_disp if plot_grd_disp is None else plot_grd_disp;
     outdir = default_params.outdir if outdir is None else outdir;
     if outdir[-1] != '/':
         outdir += '/';
+    [pr, alpha] = conversion_math.get_poissons_ratio_and_alpha(mu, lame1);  # derived from provided mu and lame1
+    print("For this stress calculation:\n--> Poisson's ratio = %f, alpha = %f" % (pr, alpha));
+
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                          disp_points_file=disp_points_file, strain_file=strain_file,
                          strike_num_receivers=str_num_receivers, fixed_rake=fixed_rake,

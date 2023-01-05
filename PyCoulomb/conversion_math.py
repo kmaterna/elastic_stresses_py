@@ -7,6 +7,15 @@ from Tectonic_Utils.seismo import moment_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
+def get_poissons_ratio_and_alpha(mu, lame1):
+    """
+    Return the poisson's ratio from a given mu (shear modulus) and lame1 (lame's first parameter)
+    """
+    poissons_ratio = lame1 / (2 * (lame1 + mu));
+    alpha = (lame1 + mu) / (lame1 + 2 * mu);
+    return [poissons_ratio, alpha];
+
+
 def get_strain_tensor(dUidUj):
     """
     Starts with displacement gradient tensor (3x3 2D array);

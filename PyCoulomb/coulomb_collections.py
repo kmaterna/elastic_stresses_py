@@ -12,7 +12,6 @@ Params = collections.namedtuple('Params', [
     'fixed_rake',
     'mu', 'lame1', 'B', 'alpha',
     'plot_stress', 'plot_grd_disp', 'outdir']);
-# outdir ends with a slash
 
 Faults_object = collections.namedtuple('Faults_object', [
     'xstart', 'xfinish',
