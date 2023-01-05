@@ -3,6 +3,7 @@ Read other fault formats of rectangular patches into fault slip objects
 
 """
 import numpy as np
+import scipy.io
 from Tectonic_Utils.geodesy import fault_vector_functions
 from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
 from . import io_four_corners
@@ -62,5 +63,25 @@ def io_wallace_sse(filename):
                                                           slip=patch_slip_m, rake=rake, tensile=patch_tensile_m);
             fault_object_list.append(new_fault);
     ifile.close();
+    print("--> Returning %d fault patches " % len(fault_object_list));
+    return fault_object_list;
+
+
+def io_dreger_finite_fault(filename):
+    """
+    Read Doug Dreger's .mat format for point-source faults
+    keys: 'dep', 'dip', 'lat', 'lon', 'rake', 'slip (cm)', 'str'.  Each is 2D array of 1km x 1km patches.
+    """
+    print("Reading file %s " % filename);
+    fault_object_list = [];
+    mat_data = scipy.io.loadmat(filename);  # loads into a dictionary.  Can print keys() to see it.
+    for i in range(len(mat_data['dep'])):  # for each row in the slip distribution (constant depth)
+        for j in range(len(mat_data['dep'][i])):  # for each elemnet inside the row
+            new_fault = fault_slip_object.FaultSlipObject(strike=mat_data['str'][i][j], dip=mat_data['dip'][i][j],
+                                                          rake=mat_data['rake'][i][j], depth=mat_data['dep'][i][j],
+                                                          lon=mat_data['lon'][i][j], lat=mat_data['lat'][i][j],
+                                                          slip=mat_data['slip'][i][j]*0.01,
+                                                          length=1, width=1, segment=0, tensile=0);
+            fault_object_list.append(new_fault);
     print("--> Returning %d fault patches " % len(fault_object_list));
     return fault_object_list;
