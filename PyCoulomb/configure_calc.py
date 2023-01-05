@@ -88,17 +88,23 @@ def write_params_into_config(params, outfile):
     return;
 
 
-def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_grd_disp=1):
+def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_grd_disp=1, config_file=None,
+                                          input_file=None, aftershocks=None, disp_points_file=None, strain_file=None,
+                                          strike_num_receivers=1, dip_num_receivers=1, fixed_rake=0,
+                                          mu=30e9, lame1=30e9, B=0, alpha=2/3):
     """
     Build a default Params object used for displacement-only calculations.
+    All arguments are optional.
     Displacement from Okada only uses alpha.  Stress uses alpha, mu, lame1, and B.
     Sends the output to an outdir directory.
     """
-    MyParams = cc.Params(config_file=None, input_file=None, aftershocks=None,
-                         disp_points_file=None, strain_file=None,
-                         strike_num_receivers=1, fixed_rake=0,
-                         dip_num_receivers=1, mu=30e9, lame1=30e9, B=0,
-                         alpha=2/3, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, outdir=outdir);
+    if outdir[-1] != '/':
+        outdir += '/';
+    MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
+                         disp_points_file=disp_points_file, strain_file=strain_file,
+                         strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
+                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
+                         alpha=alpha, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, outdir=outdir);
     return MyParams;
 
 
@@ -141,6 +147,8 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
     plot_stress = default_params.plot_stress if plot_stress is None else plot_stress;
     plot_grd_disp = default_params.plot_grd_disp if plot_grd_disp is None else plot_grd_disp;
     outdir = default_params.outdir if outdir is None else outdir;
+    if outdir[-1] != '/':
+        outdir += '/';
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                          disp_points_file=disp_points_file, strain_file=strain_file,
                          strike_num_receivers=str_num_receivers, fixed_rake=fixed_rake,

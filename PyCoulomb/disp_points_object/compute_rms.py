@@ -84,6 +84,15 @@ def compute_rms(disp_points):
     return np.sqrt(np.mean(np.square(values)));
 
 
+def compute_obs_vs_model_rms_misfit(obs_pts, model_pts):
+    """
+    Compute RMS misfit between two vectors
+    """
+    resid_pts = utilities.subtract_disp_points(obs_pts, model_pts);  # make residual points
+    rms = compute_rms(resid_pts);
+    return rms;
+
+
 # ----------- SPECIFIC IMPLEMENTATIONS OF MISFIT CALCULATIONS FOR SPECIFIC PROJECTS ------------------ #
 
 def obs_vs_model_L2_aggregate(obs_disp_points, model_disp_points):
