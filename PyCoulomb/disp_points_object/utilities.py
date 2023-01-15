@@ -217,7 +217,7 @@ def extract_particular_station_from_list(disp_points_list, station_lon, station_
 def station_vel_object_to_disp_points(velfield):
     """
     Convert from StationVel objects from GNSS Python library into disp_points
-    This is the opposite of GNSS_TimeSeries_Viewers.gps_tools.gps_vel_functions.disp_points_to_station_vels()
+    This is the opposite of GNSS_TimeSeries_Viewers.gps_tools.vel_functions.disp_points_to_station_vels()
     """
     disp_points_list = [];
     for item in velfield:

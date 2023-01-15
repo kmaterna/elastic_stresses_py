@@ -56,6 +56,10 @@ class TriangleFault:
         """Helper function to return the depth of a fault object"""
         return self.depth;
 
+    def get_centroid_depth(self):
+        """Helper function to return the computed depth of a fault object"""
+        return self.compute_triangle_centroid()[2];
+
     def get_segment(self):
         """Helper function to return the segment_num of a fault object"""
         return self.segment;
@@ -177,6 +181,19 @@ def get_total_moment(fault_object_list, mu=30e9):
     total_moment = 0;
     for item in fault_object_list:
         total_moment += moment_calculations.moment_from_muad(mu, item.get_fault_area(), item.get_total_slip());
+    return total_moment;
+
+
+def get_total_moment_depth_dependent(fault_object_list, depths, mus):
+    """Compute total moment using a depth-dependent G calculation"""
+    total_moment = 0;
+    for item in fault_object_list:
+        depth = item.get_centroid_depth();
+        idx = np.abs(depths - depth).argmin()
+        G = mus[idx];
+        A = item.get_fault_area();
+        d = item.get_total_slip();
+        total_moment += moment_calculations.moment_from_muad(G, A, d);
     return total_moment;
 
 
