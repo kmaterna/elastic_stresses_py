@@ -72,6 +72,10 @@ def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, 
     """
     if bottom < top:
         raise ValueError("Error! Provided bad fault- top depth (%f km) below bottom depth (%f km)" % (top, bottom) )
+    if dipangle > 90 or dipangle < 0:
+        raise ValueError("Error! Provided bad dip of %s (should be between 0 and 90) " % dipangle);
+    if strike > 360:
+        raise ValueError("Error! Provided bad strike of %s (should be between 0 and 360) " % strike);
     R, R2 = conversion_math.get_R_from_strike(strike);
     L = fault_vector_functions.get_strike_length(xstart, xfinish, ystart, yfinish);
     W = fault_vector_functions.get_downdip_width(top, bottom, dipangle);

@@ -7,6 +7,7 @@ import scipy.io
 from Tectonic_Utils.geodesy import fault_vector_functions
 from Elastic_stresses_py.PyCoulomb.fault_slip_object import fault_slip_object
 from . import io_four_corners
+import json
 
 
 def io_hamling_2017(filename):
@@ -83,5 +84,31 @@ def io_dreger_finite_fault(filename):
                                                           slip=mat_data['slip'][i][j]*0.01,
                                                           length=1, width=1, segment=0, tensile=0);
             fault_object_list.append(new_fault);
+    print("--> Returning %d fault patches " % len(fault_object_list));
+    return fault_object_list;
+
+
+def io_iceland_met_office(filename):
+    """
+    Read a Json that contains the iceland met office fault discritization
+    """
+    fault_object_list = [];
+    f = open(filename);
+    print("Reading file %s " % filename);
+    read_object = json.load(f)['fault1'];
+    X = read_object['X']/1000;  # x-coordinate in km
+    Y = read_object['Y']/1000   # y-coordinate in km
+    reflon = read_object['reflon']
+    reflat = read_object['reflat']
+    strike_slip, dip_slip = read_object['strike_slip'], read_object['dip_slip'];
+    new_fault = fault_slip_object.FaultSlipObject(strike=read_object['strike'], dip=-read_object['dip'],
+                                                  depth=read_object['depth']/1000,
+                                                  lon=fault_vector_functions.xy2lonlat_single(X, Y, reflon, reflat)[0],
+                                                  lat=fault_vector_functions.xy2lonlat_single(X, Y, reflon, reflat)[1],
+                                                  slip=fault_vector_functions.get_total_slip(strike_slip, dip_slip),
+                                                  rake=fault_vector_functions.get_rake(strike_slip, dip_slip),
+                                                  length=read_object['length']/1000, width=read_object['width']/1000,
+                                                  segment=0, tensile=0);
+    fault_object_list.append(new_fault);
     print("--> Returning %d fault patches " % len(fault_object_list));
     return fault_object_list;

@@ -27,6 +27,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");
     io_additionals.write_strain_results(obs_strain_points, out_object.strains, params.outdir+'ll_strains.txt');
     io_additionals.write_receiver_traces_gmt(out_object.receiver_object, params.outdir+"receiver_traces.txt");
+    io_additionals.write_receiver_traces_gmt(out_object.source_object, params.outdir + "source_traces.txt");
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
                                          params.outdir+"vector_plot.png");  # map point displacements
