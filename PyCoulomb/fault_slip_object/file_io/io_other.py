@@ -101,10 +101,14 @@ def io_iceland_met_office(filename):
     reflon = read_object['reflon']
     reflat = read_object['reflat']
     strike_slip, dip_slip = read_object['strike_slip'], read_object['dip_slip'];
+    x_start, y_start = fault_vector_functions.add_vector_to_point(X, Y, read_object['length'] / 2000,
+                                                                  read_object['strike'] - 180);  # in km
     new_fault = fault_slip_object.FaultSlipObject(strike=read_object['strike'], dip=-read_object['dip'],
                                                   depth=read_object['depth']/1000,
-                                                  lon=fault_vector_functions.xy2lonlat_single(X, Y, reflon, reflat)[0],
-                                                  lat=fault_vector_functions.xy2lonlat_single(X, Y, reflon, reflat)[1],
+                                                  lon=fault_vector_functions.xy2lonlat_single(x_start, y_start, reflon,
+                                                                                              reflat)[0],
+                                                  lat=fault_vector_functions.xy2lonlat_single(x_start, y_start, reflon,
+                                                                                              reflat)[1],
                                                   slip=fault_vector_functions.get_total_slip(strike_slip, dip_slip),
                                                   rake=fault_vector_functions.get_rake(strike_slip, dip_slip),
                                                   length=read_object['length']/1000, width=read_object['width']/1000,

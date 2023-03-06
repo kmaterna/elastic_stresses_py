@@ -183,6 +183,26 @@ class FaultSlipObject:
                                    segment=self.segment)
         return new_item;
 
+    def fault_object_to_coulomb_fault(self, zerolon_system=None, zerolat_system=None):
+        """
+        Convert an internal fault object into a source object for Elastic_stresses_py
+        By default, the bottom corner of the fault is the center of the coordinate system, but
+        Parameters zerolon_system and zerolat_system can be passed in
+        """
+        zerolon = self.lon if not zerolon_system else zerolon_system;
+        zerolat = self.lat if not zerolat_system else zerolat_system;
+        _top, bottom = fault_vector_functions.get_top_bottom_from_top(self.depth, self.width, self.dip);
+        [startx, starty] = fault_vector_functions.latlon2xy_single(self.lon, self.lat, zerolon, zerolat);
+
+        rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(self.slip, self.rake);
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(startx, starty, self.length, self.strike);
+        one_source = cc.construct_pycoulomb_fault(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish,
+                                                  Kode=100, rtlat=rtlat, reverse=reverse, tensile=self.tensile,
+                                                  potency=[], strike=self.strike, dipangle=self.dip,
+                                                  zerolon=zerolon, zerolat=zerolat, rake=self.rake,
+                                                  top=self.depth, bottom=bottom, comment='');
+        return one_source;
+
 
 """
 Functions that work on lists of fault items
@@ -417,18 +437,6 @@ def fault_object_to_coulomb_fault(fault_object_list, zerolon_system=None, zerola
     if len(fault_object_list) > 1 and zerolon_system is None:
         print("Warning! You are converting multiple faults to cartesian without defining a system coordinate system!");
     for onefault in fault_object_list:
-        zerolon = onefault.lon if not zerolon_system else zerolon_system;
-        zerolat = onefault.lat if not zerolat_system else zerolat_system;
-        _top, bottom = fault_vector_functions.get_top_bottom_from_top(onefault.depth, onefault.width, onefault.dip);
-        [startx, starty] = fault_vector_functions.latlon2xy_single(onefault.lon, onefault.lat, zerolon, zerolat);
-
-        rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(onefault.slip, onefault.rake);
-        xfinish, yfinish = fault_vector_functions.add_vector_to_point(startx, starty, onefault.length,
-                                                                      onefault.strike);
-        one_source = cc.construct_pycoulomb_fault(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish,
-                                                  Kode=100, rtlat=rtlat, reverse=reverse, tensile=onefault.tensile,
-                                                  potency=[], strike=onefault.strike, dipangle=onefault.dip,
-                                                  zerolon=zerolon, zerolat=zerolat, rake=onefault.rake,
-                                                  top=onefault.depth, bottom=bottom, comment='');
+        one_source = onefault.fault_object_to_coulomb_fault(zerolon_system, zerolat_system);
         source_object.append(one_source);
     return source_object;
