@@ -40,9 +40,12 @@ def write_static1D_source_file(fault_object_list, disp_points, filename):
 def read_static1D_source_file(filename, gps_filename=None, headerlines=0):
     """
     Read a number of static1d fault segments and gps station locations into objects.
-    If the points are inside the same input file, you don't need the second argument
-    Object 1: fault slip object, in the internal format.
-    Object 2: disp points (lats and lons only since this is inputs)
+    If the points are not desired, or are inside the same input file, you don't need the gps_filename argument
+
+    :param filename: string
+    :param gps_filename: string, optional
+    :param headerlines: int, default 0
+    :returns: list of fault slip objects, list of dips_points
     """
     if gps_filename:
         disp_points = read_static1d_disp_points(filename, gps_filename);
@@ -68,6 +71,12 @@ def read_fault_slip_line_static1d_visco1d(line, upper_depth, lower_depth, dip):
     """
     read a line from fred's format of faults into my format of faults
     for Visco1D, the slip field is pretty meaningless
+
+    :param line: string
+    :param upper_depth: float
+    :param lower_depth: float
+    :param dip: float
+    :returns: one fault_slip_object
     """
     lower_lat_corner, lower_lon_corner = float(line.split()[0]), float(line.split()[1]);  # in degrees
     length = float(line.split()[2]);  # in km
@@ -132,6 +141,9 @@ def read_latloninDEF(gps_filename):
 def read_disp_points_from_static1d(filename):
     """
     Read gps station locations from static1d inputs into a disp_points object.
+
+    :param filename: string
+    :returns: list of disp_point_objects
     """
     disp_points = [];
     ifile = open(filename, 'r');
