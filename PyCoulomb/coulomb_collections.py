@@ -56,7 +56,7 @@ Displacement_points = collections.namedtuple('Disp_Points', [
     'dE_obs', 'dN_obs', 'dU_obs',
     'Se_obs', 'Sn_obs', 'Su_obs',
     'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
-# Disp_points are now lists of individual disp_point elements
+# Disp_points are individual disp_point elements, can be put into lists of elements
 # Displacements in meters
 # Might want to ensure that -180 < lon < 180 in the future
 

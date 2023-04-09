@@ -1,5 +1,5 @@
 """
-The functions in this package operate on an internal format of faults/ slip distributions
+The functions in this package operate on an internal class for faults/slip distributions.
 For all other formats, make sure you build read/write conversion AND TEST functions into internal format.
 
     * Format(File): geojson format for Slippy input faults
@@ -7,7 +7,7 @@ For all other formats, make sure you build read/write conversion AND TEST functi
     * Format(File): static1d/visco1d, Fred Pollitz's STATIC1D code.
     * Format(File): four-corners, used for Wei et al. 2015
     * Format(File): .fsp format, used by USGS fault distributions and srcmod database
-    * Format(Memory): fault_object with elements for a slip distribution (INTERNAL FORMAT FOR THIS LIBRARY)
+    * Format(Memory): FaultSlipObject with elements for a slip distribution (INTERNAL CLASS FOR THIS LIBRARY)
     * Format(Memory): PyCoulomb format, a named tuple (For Elastic_stresses_py.PyCoulomb)
 """
 
@@ -154,6 +154,18 @@ class FaultSlipObject:
         :returns: bool
         """
         if upper_depth <= self.depth <= lower_depth:
+            return 1;
+        else:
+            return 0;
+
+    def is_within_bbox(self, bbox):
+        """
+        Filter fault_object if it falls within bounding box
+
+        :param bbox: list of four floats, [w, e, s, n]
+        :returns: bool
+        """
+        if bbox[0] <= self.lon <= bbox[1] and bbox[2] <= self.lat <= bbox[3]:
             return 1;
         else:
             return 0;

@@ -173,9 +173,8 @@ def filter_by_bounding_box(obs_points, bbox):
     """
     keep_obs_points = [];
     for item in obs_points:
-        if bbox[0] < item.lon < bbox[1]:
-            if bbox[2] < item.lat < bbox[3]:
-                keep_obs_points.append(item);
+        if is_within_bbox(item, bbox):
+            keep_obs_points.append(item);
     print("Filtering to within a bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
     return keep_obs_points;
 
@@ -189,11 +188,11 @@ def filter_to_exclude_bounding_box(obs_points, bbox):
     """
     keep_obs_points = [];
     for item in obs_points:
-        if bbox[0] < item.lon < bbox[1] and bbox[2] < item.lat < bbox[3]:
+        if is_within_bbox(item, bbox):
             continue;   # station is within exculded box. Ignore it.
         else:
             keep_obs_points.append(item);
-    print("Filtering to exculde bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
+    print("Filtering to exclude bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
     return keep_obs_points;
 
 
@@ -251,3 +250,16 @@ def extract_region_from_disp_points(disp_points_list):
     lat = np.array([x.lat for x in disp_points_list]);
     region = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)];
     return region;
+
+
+# ------------ PREDICATES -------------- #
+def is_within_bbox(disp_point, bbox):
+    """
+    :param disp_point: a disp_point object
+    :param bbox: [lonW, lonE, latS, latN] floats
+    :returns: bool
+    """
+    if bbox[0] <= disp_point.lon <= bbox[1] and bbox[2] <= disp_point.lat <= bbox[3]:
+        return 1;
+    else:
+        return 0;
