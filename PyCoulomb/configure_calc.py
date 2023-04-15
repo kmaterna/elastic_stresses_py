@@ -116,7 +116,7 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
                          strain_file=None, strike_num_receivers=None, dip_num_receivers=None, fixed_rake=None,
                          mu=None, lame1=None, B=None, plot_stress=None, plot_grd_disp=None, outdir=None):
     """
-    Modify the fields in a Pycoulomb.Params named tuple
+    Modify the fields in a Pycoulomb.Params named tuple.
     By default, none of the properties will be altered.
 
     :param default_params: (required) existing named tuple
@@ -167,8 +167,12 @@ def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, 
     """
     Build a default Input object for displacement-only calculations.
     Unused parameters get default values or None.
-    domainsize: in km. default is 20.
-    bbox: [w, e, s, n]
+
+    :param source_object: a PyCoulomb source object
+    :param zerolon: float
+    :param zerolat: float
+    :param domainsize: in km. default is 20.
+    :param bbox: [w, e, s, n]
     """
     inputs = cc.Input_object(PR1=0.25, FRIC=0.4, depth=0,
                              start_gridx=-domainsize, finish_gridx=domainsize,
@@ -186,7 +190,7 @@ def modify_inputs_object(default_inputs, PR1=None, FRIC=None, depth=None, start_
                          zerolon=None, minlat=None, maxlat=None, zerolat=None, source_object=None, receiver_object=None,
                          receiver_horiz_profile=None):
     """
-    Modify the fields in a PyCoulomb.Input_object namedtuple
+    Modify the fields in a PyCoulomb.Input_object namedtuple.
     """
 
     PR1 = default_inputs.PR1 if PR1 is None else PR1;
@@ -249,7 +253,7 @@ def modify_fault_object(default_fault, xstart=None, xfinish=None, ystart=None, y
                         reverse=None, tensile=None, potency=None, strike=None, dipangle=None, rake=None, zerolon=None,
                         zerolat=None, top=None, bottom=None):
     """
-    Modify the fields in a Pycoulomb.Faults_object namedtuple
+    Modify the fields in a Pycoulomb.Faults_object namedtuple.
     """
 
     xstart = default_fault.xstart if xstart is None else xstart;

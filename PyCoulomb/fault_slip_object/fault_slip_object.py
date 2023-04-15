@@ -1,14 +1,6 @@
 """
-The functions in this package operate on an internal class for faults/slip distributions.
+The functions in this package operate on an internal class for faults/slip distributions and read some common formats.
 For all other formats, make sure you build read/write conversion AND TEST functions into internal format.
-
-    * Format(File): geojson format for Slippy input faults
-    * Format(File): slippy format, output format for Elastic_stresses_py and Slippy
-    * Format(File): static1d/visco1d, Fred Pollitz's STATIC1D code.
-    * Format(File): four-corners, used for Wei et al. 2015
-    * Format(File): .fsp format, used by USGS fault distributions and srcmod database
-    * Format(Memory): FaultSlipObject with elements for a slip distribution (INTERNAL CLASS FOR THIS LIBRARY)
-    * Format(Memory): PyCoulomb format, a named tuple (For Elastic_stresses_py.PyCoulomb)
 """
 
 from .. import coulomb_collections as cc
@@ -20,21 +12,31 @@ import collections.abc
 
 class FaultSlipObject:
     """
-    The internal format is a class:
-    {
-        strike(deg),
-        dip(deg),
-        length(km),
-        width(km),
-        lon(back top corner),
-        lat(back top corner),
-        depth(top, km), positive downwards
-        rake(deg),
-        slip(m),
-        tensile(m)
-        segment(int)
-    }
-    If the fault is a receiver fault, we put slip = 0
+    An object for a rectangular fault patch, potentially with slip on it.
+    If the fault is a receiver fault, we put slip = 0.
+
+    :param strike: fault strike, in degrees,
+    :type strike: float
+    :param dip: dip, in degrees, 0<dip<90
+    :type dip: float
+    :param length: km
+    :type length: float
+    :param width: km
+    :type width: float
+    :param lon: longitude of back top corner (see Aki and Richards convention)
+    :type lon: float
+    :param lat: latitude of back top corner (see Aki and Richards convention)
+    :type lat: float
+    :param depth: depth of top of fault, in km, positive downwards
+    :type depth: float
+    :param rake: degrees.  Should be zero if slip is zero.
+    :type rake: float
+    :param slip: amount of slip, in meters
+    :type slip: float
+    :param tensile: amount of tensile opening, in meters
+    :type tensile: float
+    :param segment: segment number for this fault
+    :type segment: int
     """
 
     def __init__(self, strike, dip, length, width, lon, lat, depth, rake, slip, tensile=0, segment=0):
@@ -91,7 +93,7 @@ class FaultSlipObject:
 
     def get_four_corners_lon_lat(self):
         """
-        Return the lon/lat of all 4 corners of a fault_object
+        Return the lon/lat of all 4 corners of a fault_object.
         """
         [source] = fault_object_to_coulomb_fault([self]);
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
@@ -100,7 +102,7 @@ class FaultSlipObject:
 
     def get_updip_corners_lon_lat(self):
         """
-        Return the lon/lat of 2 shallow corners of a fault_object
+        Return the lon/lat of 2 shallow corners of a fault_object.
         """
         [source] = fault_object_to_coulomb_fault([self]);
         [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
@@ -108,7 +110,7 @@ class FaultSlipObject:
         return lons, lats;
 
     def get_fault_element_distance(self, fault_object2, threedimensional=True):
-        """Return the distance between two fault elements, in 3d, in km"""
+        """Return the distance between two fault elements, in 3d, in km."""
         h_distance = haversine.distance([self.lat, self.lon], [fault_object2.lat, fault_object2.lon]);
         if threedimensional:
             depth_distance = self.depth - fault_object2.depth;
@@ -118,12 +120,12 @@ class FaultSlipObject:
         return distance_3d;
 
     def get_fault_area(self):
-        """Return the area of a rectangular fault. Units: square meters"""
+        """Return the area of a rectangular fault. Units: square meters."""
         A = self.width * 1000 * self.length * 1000;
         return A;
 
     def get_fault_moment(self, mu=30e9):
-        """Get the moment for a fault patch. Units: Newton-meters"""
+        """Get the moment for a fault patch. Units: Newton-meters."""
         A = self.get_fault_area();
         d = self.slip;
         moment = moment_calculations.moment_from_muad(mu, A, d);
@@ -147,7 +149,7 @@ class FaultSlipObject:
 
     def is_within_depth_range(self, upper_depth, lower_depth):
         """
-        Filter fault_object if it falls within depth range [upper_depth, lower_depth]
+        Filter fault_object if it falls within depth range [upper_depth, lower_depth].
 
         :param upper_depth: float, km
         :param lower_depth: float, km
@@ -160,7 +162,7 @@ class FaultSlipObject:
 
     def is_within_bbox(self, bbox):
         """
-        Filter fault_object if it falls within bounding box
+        Filter fault_object if it falls within bounding box.
 
         :param bbox: list of four floats, [w, e, s, n]
         :returns: bool
@@ -197,9 +199,9 @@ class FaultSlipObject:
 
     def fault_object_to_coulomb_fault(self, zerolon_system=None, zerolat_system=None):
         """
-        Convert an internal fault object into a source object for Elastic_stresses_py
+        Convert an internal fault object into a source object for Elastic_stresses_py.
         By default, the bottom corner of the fault is the center of the coordinate system, but
-        Parameters zerolon_system and zerolat_system can be passed in
+        Parameters zerolon_system and zerolat_system can be passed in.
         """
         zerolon = self.lon if not zerolon_system else zerolon_system;
         zerolat = self.lat if not zerolat_system else zerolat_system;
@@ -288,7 +290,7 @@ def change_fault_slip_list(fault_object_list, new_slip=None, new_rake=None):
 
 def filter_by_depth(fault_object_list, upper_depth, lower_depth):
     """
-    Filter a list of fault_objects to only those that fall within the depth range [upper_depth, lower_depth]
+    Filter a list of fault_objects to only those that fall within the depth range [upper_depth, lower_depth].
 
     :param fault_object_list: list of fault_slip_objects
     :param upper_depth: float, km
@@ -304,7 +306,7 @@ def filter_by_depth(fault_object_list, upper_depth, lower_depth):
 
 def get_how_many_segments(fault_object_list):
     """
-    Reduce fault_object_list into the number of segments (often 1) and the number of individual fault patches
+    Reduce fault_object_list into the number of segments (often 1) and the number of individual fault patches.
 
     :param fault_object_list: list of fault_slip_objects
     """
@@ -316,7 +318,7 @@ def get_how_many_segments(fault_object_list):
 
 def filter_by_segment(fault_object_list, segment_num=0):
     """
-    Filter a list of fault_objects to only those that have segment=x
+    Filter a list of fault_objects to only those that have segment=x.
 
     :param fault_object_list: list of fault_slip_objects
     :param segment_num: int
@@ -335,8 +337,8 @@ def get_blank_fault_function(x):
 
 def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function, verbose=True):
     """
-    Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT
-    By default, does not provide color on the fault patches
+    Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT.
+    By default, does not provide color on the fault patches.
     color_mappable can be 1d array of scalars, or a function of the object's class.
     """
     if verbose:
@@ -360,7 +362,7 @@ def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fa
 
 def write_gmt_surface_trace(fault_object_list, outfile, verbose=True):
     """
-    Write the 2 updip corners of a rectangular fault into a multi-segment file for plotting in GMT
+    Write the 2 updip corners of a rectangular fault into a multi-segment file for plotting in GMT.
     """
     if verbose:
         print("Writing file %s " % outfile);
@@ -376,7 +378,7 @@ def write_gmt_surface_trace(fault_object_list, outfile, verbose=True):
 
 def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function):
     """
-    Write the vertical coordinates of planar fault patches (length and depth, in local coords instead of lon/lat)
+    Write the vertical coordinates of planar fault patches (length and depth, in local coords instead of lon/lat).
     and associated slip values into a multi-segment file for plotting in GMT.
     Good for vertical faults.  Plots with depth as a negative number.
     Works for only one planar fault segment.
@@ -420,7 +422,7 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
 
 
 def coulomb_fault_to_fault_object(source_object):
-    """Convert a list of fault objects from Elastic_stresses_py into a list of internal fault objects"""
+    """Convert a list of fault objects from Elastic_stresses_py into a list of internal fault objects."""
     if not source_object:
         return [];
     fault_object_list = [];
@@ -441,7 +443,7 @@ def coulomb_fault_to_fault_object(source_object):
 
 def fault_object_to_coulomb_fault(fault_object_list, zerolon_system=None, zerolat_system=None):
     """
-    Convert a list of internal fault objects into a list of source objects for Elastic_stresses_py
+    Convert a list of internal fault objects into a list of source objects for Elastic_stresses_py.
     By default, the bottom corner of the fault is the center of the coordinate system, but
     Parameters zerolon_system and zerolat_system can be passed in for system with 1+ faults.
     """

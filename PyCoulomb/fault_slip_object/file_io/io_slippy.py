@@ -1,7 +1,6 @@
 """
-Functions for slippy IO of faults and slip distributions into list of fault_slip_objects
-
-Format slippy: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lateral[m] thrust[m] tensile[m] num[int]
+IO of Slippy faults and slip distributions into list of fault_slip_objects.
+Slippy format: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lateral[m] thrust[m] tensile[m] num[int].
 """
 
 import numpy as np
@@ -52,7 +51,7 @@ def read_slippy_distribution(infile, desired_segment=-1):
 def write_slippy_distribution(faults_list, outfile, slip_units='m'):
     """
     :param faults_list: a list of fault slip objects
-    :param outfile: name of output file.
+    :param outfile: name of output files
     :param slip_units: string
     """
     if len(faults_list) == 0:
@@ -76,13 +75,14 @@ def write_slippy_distribution(faults_list, outfile, slip_units='m'):
 
 def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outfile):
     """
+    Caveat: This is ALMOST pure slippy format.
+    You will lose the fault segment number, and we add the rake column.
+
     :param faults_list: a list of fault slip objects
     :param outfile: name of output file.
     :param shear: list of shear stress change on each element, kpa
     :param normal: list of normal stress, kpa
     :param coulomb: list of coulomb stress, kpa
-    Caveat: This is ALMOST slippy format.
-    You will lose the fault segment number, and we add the rake column.
     """
     if len(faults_list) == 0:
         return;
@@ -102,7 +102,7 @@ def write_stress_results_slippy_format(faults_list, shear, normal, coulomb, outf
 
 def read_stress_slippy_format(infile):
     """
-    Read stress results from CFS calculation
+    Read stress results from CFS calculation.
 
     :param infile: text file in full-stress format
     :returns: fault_list (internal format). shear, normal, and coulomb are matching lists in KPa

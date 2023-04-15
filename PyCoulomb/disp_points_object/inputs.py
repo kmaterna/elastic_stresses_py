@@ -1,5 +1,5 @@
 """
-Special input functions for disp_point_objects
+Special input functions for disp_point_objects.
 More specific than the basic ones listed in io_additionals.py
 """
 

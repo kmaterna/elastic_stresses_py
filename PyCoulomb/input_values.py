@@ -10,7 +10,7 @@ Read the Coulomb or user-defined input files:
 from . import io_inp, io_inr, io_intxt, io_additionals, utilities
 
 def read_inputs(params):
-    # Read source and receiver faults for calculation
+    """Driver to read any format of source and receiver faults for calculation."""
     if '.inp' in params.input_file:
         input_object = io_inp.read_inp(params.input_file, params.fixed_rake);  # fixed rake format
     elif '.inr' in params.input_file:

@@ -21,9 +21,12 @@ Faults_object = collections.namedtuple('Faults_object', [
     'strike', 'dipangle', 'rake',
     'top', 'bottom', 'comment',
     'R', 'R2', 'W', 'L', 'strike_unit_vector', 'dip_unit_vector', 'plane_normal']);
-# rtlat, reverse, tensile are in units of meters.
-# Having both "rake" and "rtlat"/"reverse" in this object seems a little redundant, but it's used for receivers.
-# See constructor below for the creating of this object.  We usually don't call this object directly.
+"""
+rtlat, reverse, tensile are in units of meters.
+Having both "rake" and "rtlat/reverse" in this object seems a little redundant, but it's used for receiver rake.
+See constructor construct_pycoulomb_fault() for the creating of this object.  
+We usually don't call this object directly.
+"""
 
 Input_object = collections.namedtuple('Input_object', [
     'PR1', 'FRIC', 'depth',
@@ -36,8 +39,11 @@ Input_object = collections.namedtuple('Input_object', [
     'zerolat',
     'source_object',
     'receiver_object', 'receiver_horiz_profile'])
-# source_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system
-# receiver_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system
+"""
+Input object for the calculation of displacements and stresses. 
+source_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system.
+receiver_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system.
+"""
 
 Receiver_Horiz_Profile = collections.namedtuple('Receiver_Horiz_Profile', [
     'depth_km', 'strike', 'dip', 'rake', 'centerlon', 'centerlat', 'lon1d', 'lat1d',
@@ -51,14 +57,17 @@ Out_object = collections.namedtuple('Out_object', [
     'source_object', 'receiver_object',
     'receiver_normal', 'receiver_shear', 'receiver_coulomb', 'receiver_profile']);
 
-Displacement_points = collections.namedtuple('Disp_Points', [
+Displacement_points = collections.namedtuple('Displacement_points', [
     'lon', 'lat',
     'dE_obs', 'dN_obs', 'dU_obs',
     'Se_obs', 'Sn_obs', 'Su_obs',
     'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
-# Disp_points are individual disp_point elements, can be put into lists of elements
-# Displacements in meters
-# Might want to ensure that -180 < lon < 180 in the future
+"""
+Displacement_points are individual disp_point elements, can be put into lists of elements. 
+dE_obs, Se_obs, etc in meters. Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', etc.
+If starttime and endtime are used, they should be datetime objects. 
+Might want to ensure that -180 < lon < 180 in the future. 
+"""
 
 
 def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, tensile, potency, strike, dipangle,

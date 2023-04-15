@@ -1,13 +1,11 @@
 """
-The functions in this package operate on cc.disp_points objects
-Coulomb collections Displacement_points:
-Displacement_points = collections.namedtuple('Disp_Points', [
-    'lon', 'lat',
-    'dE_obs', 'dN_obs', 'dU_obs',
-    'Se_obs', 'Sn_obs', 'Su_obs',
-    'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
-Disp_points are now lists of individual disp_point elements
-Displacements are in meters
+The functions in this package operate on cc.disp_points objects.
+cc.Displacement_points = collections.namedtuple('Displacement_points', [
+'lon', 'lat', 'dE_obs', 'dN_obs', 'dU_obs', 'Se_obs', 'Sn_obs', 'Su_obs',
+'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
+
+Disp_points are lists of individual disp_point elements.
+Displacements are in meters.
 """
 
 import matplotlib.path
@@ -18,7 +16,7 @@ from Tectonic_Utils.geodesy import euler_pole
 
 def subtract_disp_points(disp_points1, disp_points2, target='all', tol=0.001):
     """
-    Subtract two lists of objects (1 minus 2) for the residuals
+    Subtract two lists of objects (1 minus 2) for the residuals.
     The metadata and uncertainties for object 1 will be retained.
     If target=='all', a 3-component correction is used.
     If target=='horizontal', only horizontal correction will be applied (disp_points2.dU is treated like 0).

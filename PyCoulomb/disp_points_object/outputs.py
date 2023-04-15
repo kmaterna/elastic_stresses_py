@@ -1,6 +1,6 @@
 """
-Special output functions for disp_point_objects
-More specific than the basic ones listed in io_additionals.py
+Special output functions for disp_point_objects.
+More specific than the basic ones listed in io_additionals.py.
 """
 
 
