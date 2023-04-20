@@ -6,28 +6,28 @@ from . import utilities
 
 def L2_on_vector(resid_vector, sigma_vector):
     """
-    Take the RMS on a simple vector. Chi2 is computed with associated sigmas. Pure math function.
+    Take RMS on a simple vector in any units. Chi2 is computed with associated sigmas in meters. Pure math function.
     """
-    rms_mm = np.multiply(np.sqrt(np.mean(np.square(resid_vector))), 1000);
+    rms = np.sqrt(np.mean(np.square(resid_vector)));
     added_sum = 0;
     for i in range(len(resid_vector)):
         chi2 = np.square(resid_vector[i]) / np.square(sigma_vector[i]);
         added_sum = added_sum + chi2
     reported_chi2 = np.sqrt(added_sum / len(sigma_vector));
-    return rms_mm, reported_chi2;
+    return rms, reported_chi2;
 
 
 def L1_on_vector(resid_vector, sigma_vector):
     """
-    Take the L1 norm on a simple vector. Chi2 is computed with associated sigmas. Pure math function.
+    Take L1 norm on a simple vector, in any units. Chi2 is computed with associated sigmas. Pure math function.
     """
-    rms_mm = np.multiply(np.mean(np.abs(resid_vector)), 1000);
+    rms = np.mean(np.abs(resid_vector));
     added_sum = 0;
     for i in range(len(resid_vector)):
         normalized = np.abs(resid_vector[i]) / sigma_vector[i];
         added_sum = added_sum + normalized
     reported_normalized = added_sum / len(sigma_vector);
-    return rms_mm, reported_normalized;
+    return rms, reported_normalized;
 
 
 def filter_disp_pts_to_vector(disp_points, components=("E", "N", "U")):
