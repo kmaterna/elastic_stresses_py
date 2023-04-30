@@ -1,17 +1,15 @@
 """
 The functions in this package operate on cc.disp_points objects.
-cc.Displacement_points = collections.namedtuple('Displacement_points', [
-'lon', 'lat', 'dE_obs', 'dN_obs', 'dU_obs', 'Se_obs', 'Sn_obs', 'Su_obs',
+cc.Displacement_points = ['lon', 'lat', 'dE_obs', 'dN_obs', 'dU_obs', 'Se_obs', 'Sn_obs', 'Su_obs',
 'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
 
 Disp_points are lists of individual disp_point elements.
 Displacements are in meters.
 """
-
 import matplotlib.path
 import numpy as np
 from .. import coulomb_collections as cc
-from Tectonic_Utils.geodesy import euler_pole
+from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions
 
 
 def subtract_disp_points(disp_points1, disp_points2, target='all', tol=0.001):
@@ -97,16 +95,7 @@ def mult_disp_points_by(disp_points1, multiplier=-1):
     Flip list of disp_points
     The metadata and uncertainties for object 1 will be retained.
     """
-    residuals = [];
-    for item in disp_points1:
-        res1 = cc.Displacement_points(lon=item.lon, lat=item.lat,
-                                      dE_obs=multiplier*item.dE_obs, dN_obs=multiplier*item.dN_obs,
-                                      dU_obs=multiplier*item.dU_obs, Se_obs=item.Se_obs, Sn_obs=item.Sn_obs,
-                                      Su_obs=item.Su_obs,
-                                      name=item.name, starttime=item.starttime, endtime=item.endtime,
-                                      refframe=item.refframe, meas_type=item.meas_type);
-        residuals.append(res1);
-    return residuals;
+    return [multiply_by_value(item, multiplier) for item in disp_points1];
 
 
 def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
@@ -229,17 +218,7 @@ def station_vel_object_to_disp_points(velfield):
 
 def translate_by_euler_pole(disp_points_list, euler_pole_components):
     """Rotate by euler pole"""
-    new_disp_points_list = [];
-    [ep_lon, ep_lat, omega] = euler_pole_components;
-    for item in disp_points_list:
-        [ep_ve, ep_vn, ep_vu] = euler_pole.point_rotation_by_Euler_Pole([item.lon, item.lat], [ep_lon, ep_lat, omega]);
-        res1 = cc.Displacement_points(lon=item.lon, lat=item.lat, dE_obs=item.dE_obs + ep_ve/1000,
-                                      dN_obs=item.dN_obs + ep_vn/1000, dU_obs=item.dU_obs + ep_vu/1000,
-                                      Se_obs=item.Se_obs, Sn_obs=item.Sn_obs, Su_obs=item.Su_obs, name=item.name,
-                                      starttime=item.starttime, endtime=item.endtime, refframe=item.refframe,
-                                      meas_type=item.meas_type);
-        new_disp_points_list.append(res1);
-    return new_disp_points_list;
+    return [translate_point_by_euler_pole(item, euler_pole_components) for item in disp_points_list];
 
 
 def extract_region_from_disp_points(disp_points_list):
@@ -248,6 +227,56 @@ def extract_region_from_disp_points(disp_points_list):
     lat = np.array([x.lat for x in disp_points_list]);
     region = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)];
     return region;
+
+def set_east(disp_points_list, east_array):
+    """
+    :param disp_points_list: list of disp_point_objects.
+    :param east_array: list of floats, matching length with disp_points_list.
+    """
+    new_array = [];
+    if len(disp_points_list) != len(east_array):
+        raise ValueError("Error! Length of east_array not equal to length of disp_points_list.");
+    for i in range(len(disp_points_list)):
+        item = change_east_value(disp_points_list[i], east_array[i]);
+        new_array.append(item);
+    return new_array;
+
+
+# ------------ INDIVIDUAL FUNCTIONS -------------- #
+def multiply_by_value(obj, value):
+    obj2 = cc.Displacement_points(lon=obj.lon, lat=obj.lat, dE_obs=value * obj.dE_obs, dN_obs=value * obj.dN_obs,
+                                  dU_obs=value * obj.dU_obs, Se_obs=obj.Se_obs, Sn_obs=obj.Sn_obs, Su_obs=obj.Su_obs,
+                                  name=obj.name, starttime=obj.starttime, endtime=obj.endtime,
+                                  refframe=obj.refframe, meas_type=obj.meas_type);
+    return obj2;
+
+def translate_point_by_euler_pole(obj, euler_pole_components):
+    [ep_lon, ep_lat, omega] = euler_pole_components;
+    [ep_ve, ep_vn, ep_vu] = euler_pole.point_rotation_by_Euler_Pole([obj.lon, obj.lat], [ep_lon, ep_lat, omega]);
+    obj2 = cc.Displacement_points(lon=obj.lon, lat=obj.lat, dE_obs=obj.dE_obs + ep_ve / 1000,
+                                  dN_obs=obj.dN_obs + ep_vn / 1000, dU_obs=obj.dU_obs + ep_vu / 1000,
+                                  Se_obs=obj.Se_obs, Sn_obs=obj.Sn_obs, Su_obs=obj.Su_obs, name=obj.name,
+                                  starttime=obj.starttime, endtime=obj.endtime, refframe=obj.refframe,
+                                  meas_type=obj.meas_type);
+    return obj2;
+
+def change_east_value(obj, east_value):
+    obj2 = cc.Displacement_points(lon=obj.lon, lat=obj.lat, dE_obs=east_value, dN_obs=obj.dN_obs, dU_obs=obj.dU_obs,
+                                  Se_obs=obj.Se_obs, Sn_obs=obj.Sn_obs, Su_obs=obj.Su_obs, name=obj.name,
+                                  starttime=obj.starttime, endtime=obj.endtime, refframe=obj.refframe,
+                                  meas_type=obj.meas_type);
+    return obj2;
+
+def project_into_los(obj, lkv_e, lkv_n, lkv_u):
+    """
+    :param obj: disp_points object
+    :param lkv_e: east look vector component from ground to satellite
+    :param lkv_n: north look vector component from ground to satellite
+    :param lkv_u: up look vector component from ground to satellite
+    """
+    flight_angle, incidence_angle = insar_vector_functions.look_vector2flight_incidence_angles(lkv_e, lkv_n, lkv_u);
+    los_defo = insar_vector_functions.def3D_into_LOS(obj.dE_obs, obj.dN_obs, obj.dU_obs, flight_angle, incidence_angle);
+    return los_defo;
 
 
 # ------------ PREDICATES -------------- #

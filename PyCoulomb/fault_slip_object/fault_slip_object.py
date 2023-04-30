@@ -131,19 +131,21 @@ class FaultSlipObject:
         moment = moment_calculations.moment_from_muad(mu, A, d);
         return moment;
 
-    def change_fault_slip(self, new_slip=None, new_rake=None):
+    def change_fault_slip(self, new_slip=None, new_rake=None, new_tensile=None):
         """
         Set the fault slip to something different.
         Can optionally also set the rake; otherwise, leave rake unchanged.
 
         :param new_slip: float, in meters
         :param new_rake: float, in degrees
+        :param new_tensile: float, in meters
         :returns: fault_slip_object
         """
         desired_slip = self.slip if new_slip is None else new_slip;
         desired_rake = self.rake if new_rake is None else new_rake;
+        desired_tensile = self.tensile if new_tensile is None else new_tensile;
         new_obj = FaultSlipObject(strike=self.strike, dip=self.dip, length=self.length, width=self.width, lon=self.lon,
-                                  lat=self.lat, depth=self.depth, tensile=self.tensile,
+                                  lat=self.lat, depth=self.depth, tensile=desired_tensile,
                                   slip=desired_slip, rake=desired_rake, segment=self.segment);
         return new_obj;
 

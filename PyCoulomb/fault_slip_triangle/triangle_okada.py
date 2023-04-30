@@ -11,7 +11,7 @@ from . import fault_slip_triangle
 
 def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio):
     """
-    Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points)
+    Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points). Only lon and lat of disp_points will be used.
     Requires all fault_triangles to have the same reference lon/lat
 
     :param fault_triangles: list
