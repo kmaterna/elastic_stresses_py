@@ -1,15 +1,12 @@
 """
 The functions in this package operate on cc.disp_points objects.
-cc.Displacement_points = ['lon', 'lat', 'dE_obs', 'dN_obs', 'dU_obs', 'Se_obs', 'Sn_obs', 'Su_obs',
+Displacement_points = ['lon', 'lat', 'dE_obs'[m], 'dN_obs'[m], 'dU_obs'[m], 'Se_obs'[m], 'Sn_obs'[m], 'Su_obs'[m],
 'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
-
 Disp_points are lists of individual disp_point elements.
-Displacements are in meters.
 """
 import matplotlib.path
 import numpy as np
-from .. import coulomb_collections as cc
-from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions
+from .disp_points_object import Displacement_points
 
 
 def subtract_disp_points(disp_points1, disp_points2, target='all', tol=0.001):
@@ -28,15 +25,14 @@ def subtract_disp_points(disp_points1, disp_points2, target='all', tol=0.001):
             raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
         if abs(disp_points1[i].lat - disp_points2[i].lat) > tol:
             raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
-        res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
-                                      dE_obs=disp_points1[i].dE_obs - disp_points2[i].dE_obs,
-                                      dN_obs=disp_points1[i].dN_obs - disp_points2[i].dN_obs,
-                                      dU_obs=disp_points1[i].dU_obs - vert_multiplier*disp_points2[i].dU_obs,
-                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
-                                      Su_obs=disp_points1[i].Su_obs, name="",
-                                      starttime=disp_points1[i].starttime,
-                                      endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
-                                      meas_type=disp_points1[i].meas_type);
+        res1 = Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
+                                   dE_obs=disp_points1[i].dE_obs - disp_points2[i].dE_obs,
+                                   dN_obs=disp_points1[i].dN_obs - disp_points2[i].dN_obs,
+                                   dU_obs=disp_points1[i].dU_obs - vert_multiplier*disp_points2[i].dU_obs,
+                                   Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
+                                   Su_obs=disp_points1[i].Su_obs, starttime=disp_points1[i].starttime,
+                                   endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
+                                   meas_type=disp_points1[i].meas_type);
         residuals.append(res1);
     return residuals;
 
@@ -52,15 +48,14 @@ def add_disp_points(disp_points1, disp_points2, tol=0.001):
             raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
         if abs(disp_points1[i].lat - disp_points2[i].lat) > tol:
             raise ValueError("Error! Lists of disp points not matching.  Cannot subtract.");
-        res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
-                                      dE_obs=disp_points1[i].dE_obs + disp_points2[i].dE_obs,
-                                      dN_obs=disp_points1[i].dN_obs + disp_points2[i].dN_obs,
-                                      dU_obs=disp_points1[i].dU_obs + disp_points2[i].dU_obs,
-                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
-                                      Su_obs=disp_points1[i].Su_obs, name="",
-                                      starttime=disp_points1[i].starttime,
-                                      endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
-                                      meas_type=disp_points1[i].meas_type);
+        res1 = Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
+                                   dE_obs=disp_points1[i].dE_obs + disp_points2[i].dE_obs,
+                                   dN_obs=disp_points1[i].dN_obs + disp_points2[i].dN_obs,
+                                   dU_obs=disp_points1[i].dU_obs + disp_points2[i].dU_obs,
+                                   Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
+                                   Su_obs=disp_points1[i].Su_obs, starttime=disp_points1[i].starttime,
+                                   endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
+                                   meas_type=disp_points1[i].meas_type);
         sum_disp_points.append(res1);
     return sum_disp_points;
 
@@ -77,15 +72,14 @@ def subtract_reference_from_disp_points(disp_points1, reference_disp_point, targ
     if target == 'horizontal':
         vert_multiplier = 0;
     for i in range(len(disp_points1)):
-        res1 = cc.Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
-                                      dE_obs=disp_points1[i].dE_obs - reference_disp_point.dE_obs,
-                                      dN_obs=disp_points1[i].dN_obs - reference_disp_point.dN_obs,
-                                      dU_obs=disp_points1[i].dU_obs - vert_multiplier*reference_disp_point.dU_obs,
-                                      Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
-                                      Su_obs=disp_points1[i].Su_obs, name="",
-                                      starttime=disp_points1[i].starttime,
-                                      endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
-                                      meas_type=disp_points1[i].meas_type);
+        res1 = Displacement_points(lon=disp_points1[i].lon, lat=disp_points1[i].lat,
+                                   dE_obs=disp_points1[i].dE_obs - reference_disp_point.dE_obs,
+                                   dN_obs=disp_points1[i].dN_obs - reference_disp_point.dN_obs,
+                                   dU_obs=disp_points1[i].dU_obs - vert_multiplier*reference_disp_point.dU_obs,
+                                   Se_obs=disp_points1[i].Se_obs, Sn_obs=disp_points1[i].Sn_obs,
+                                   Su_obs=disp_points1[i].Su_obs, starttime=disp_points1[i].starttime,
+                                   endtime=disp_points1[i].endtime, refframe=disp_points1[i].refframe,
+                                   meas_type=disp_points1[i].meas_type);
         new_station_vels.append(res1);
     return new_station_vels;
 
@@ -95,7 +89,7 @@ def mult_disp_points_by(disp_points1, multiplier=-1):
     Flip list of disp_points
     The metadata and uncertainties for object 1 will be retained.
     """
-    return [multiply_by_value(item, multiplier) for item in disp_points1];
+    return [item.multiply_by_value(multiplier) for item in disp_points1];
 
 
 def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
@@ -106,9 +100,8 @@ def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
     [x2d, y2d] = np.meshgrid(x, y);
     for ky in range(len(y)):
         for kx in range(len(x)):
-            pt1 = cc.Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx], dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0,
-                                         Sn_obs=0, Su_obs=0, name='', starttime=None, endtime=None,
-                                         refframe=None, meas_type=None);
+            pt1 = Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx], dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0,
+                                      Sn_obs=0, Su_obs=0);
             points.append(pt1);
     return points;
 
@@ -160,7 +153,7 @@ def filter_by_bounding_box(obs_points, bbox):
     """
     keep_obs_points = [];
     for item in obs_points:
-        if is_within_bbox(item, bbox):
+        if item.is_within_bbox(bbox):
             keep_obs_points.append(item);
     print("Filtering to within a bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
     return keep_obs_points;
@@ -175,7 +168,7 @@ def filter_to_exclude_bounding_box(obs_points, bbox):
     """
     keep_obs_points = [];
     for item in obs_points:
-        if is_within_bbox(item, bbox):
+        if item.is_within_bbox(bbox):
             continue;   # station is within exculded box. Ignore it.
         else:
             keep_obs_points.append(item);
@@ -207,18 +200,17 @@ def station_vel_object_to_disp_points(velfield):
     """
     disp_points_list = [];
     for item in velfield:
-        new_disp_point = cc.Displacement_points(lon=item.elon, lat=item.nlat, dE_obs=item.e/1000, dN_obs=item.n/1000,
-                                                dU_obs=item.u/1000, Se_obs=item.se/1000, Sn_obs=item.sn/1000,
-                                                Su_obs=item.su/1000, name=item.name, starttime=item.first_epoch,
-                                                endtime=item.last_epoch, meas_type=item.meas_type,
-                                                refframe=item.refframe);
+        new_disp_point = Displacement_points(lon=item.elon, lat=item.nlat, dE_obs=item.e/1000, dN_obs=item.n/1000,
+                                             dU_obs=item.u/1000, Se_obs=item.se/1000, Sn_obs=item.sn/1000,
+                                             Su_obs=item.su/1000, name=item.name, starttime=item.first_epoch,
+                                             endtime=item.last_epoch, meas_type=item.meas_type, refframe=item.refframe);
         disp_points_list.append(new_disp_point);
     return disp_points_list;
 
 
 def translate_by_euler_pole(disp_points_list, euler_pole_components):
     """Rotate by euler pole"""
-    return [translate_point_by_euler_pole(item, euler_pole_components) for item in disp_points_list];
+    return [item.translate_point_by_euler_pole(euler_pole_components) for item in disp_points_list];
 
 
 def extract_region_from_disp_points(disp_points_list):
@@ -227,6 +219,7 @@ def extract_region_from_disp_points(disp_points_list):
     lat = np.array([x.lat for x in disp_points_list]);
     region = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)];
     return region;
+
 
 def set_east(disp_points_list, east_array):
     """
@@ -237,56 +230,6 @@ def set_east(disp_points_list, east_array):
     if len(disp_points_list) != len(east_array):
         raise ValueError("Error! Length of east_array not equal to length of disp_points_list.");
     for i in range(len(disp_points_list)):
-        item = change_east_value(disp_points_list[i], east_array[i]);
+        item = disp_points_list[i].change_east_value(east_array[i]);
         new_array.append(item);
     return new_array;
-
-
-# ------------ INDIVIDUAL FUNCTIONS -------------- #
-def multiply_by_value(obj, value):
-    obj2 = cc.Displacement_points(lon=obj.lon, lat=obj.lat, dE_obs=value * obj.dE_obs, dN_obs=value * obj.dN_obs,
-                                  dU_obs=value * obj.dU_obs, Se_obs=obj.Se_obs, Sn_obs=obj.Sn_obs, Su_obs=obj.Su_obs,
-                                  name=obj.name, starttime=obj.starttime, endtime=obj.endtime,
-                                  refframe=obj.refframe, meas_type=obj.meas_type);
-    return obj2;
-
-def translate_point_by_euler_pole(obj, euler_pole_components):
-    [ep_lon, ep_lat, omega] = euler_pole_components;
-    [ep_ve, ep_vn, ep_vu] = euler_pole.point_rotation_by_Euler_Pole([obj.lon, obj.lat], [ep_lon, ep_lat, omega]);
-    obj2 = cc.Displacement_points(lon=obj.lon, lat=obj.lat, dE_obs=obj.dE_obs + ep_ve / 1000,
-                                  dN_obs=obj.dN_obs + ep_vn / 1000, dU_obs=obj.dU_obs + ep_vu / 1000,
-                                  Se_obs=obj.Se_obs, Sn_obs=obj.Sn_obs, Su_obs=obj.Su_obs, name=obj.name,
-                                  starttime=obj.starttime, endtime=obj.endtime, refframe=obj.refframe,
-                                  meas_type=obj.meas_type);
-    return obj2;
-
-def change_east_value(obj, east_value):
-    obj2 = cc.Displacement_points(lon=obj.lon, lat=obj.lat, dE_obs=east_value, dN_obs=obj.dN_obs, dU_obs=obj.dU_obs,
-                                  Se_obs=obj.Se_obs, Sn_obs=obj.Sn_obs, Su_obs=obj.Su_obs, name=obj.name,
-                                  starttime=obj.starttime, endtime=obj.endtime, refframe=obj.refframe,
-                                  meas_type=obj.meas_type);
-    return obj2;
-
-def project_into_los(obj, lkv_e, lkv_n, lkv_u):
-    """
-    :param obj: disp_points object
-    :param lkv_e: east look vector component from ground to satellite
-    :param lkv_n: north look vector component from ground to satellite
-    :param lkv_u: up look vector component from ground to satellite
-    """
-    flight_angle, incidence_angle = insar_vector_functions.look_vector2flight_incidence_angles(lkv_e, lkv_n, lkv_u);
-    los_defo = insar_vector_functions.def3D_into_LOS(obj.dE_obs, obj.dN_obs, obj.dU_obs, flight_angle, incidence_angle);
-    return los_defo;
-
-
-# ------------ PREDICATES -------------- #
-def is_within_bbox(disp_point, bbox):
-    """
-    :param disp_point: a disp_point object
-    :param bbox: [lonW, lonE, latS, latN] floats
-    :returns: bool
-    """
-    if bbox[0] <= disp_point.lon <= bbox[1] and bbox[2] <= disp_point.lat <= bbox[3]:
-        return 1;
-    else:
-        return 0;

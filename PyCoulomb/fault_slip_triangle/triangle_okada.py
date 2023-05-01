@@ -4,7 +4,7 @@ Implementing Okada on a fault_slip_triangle object using Ben Thompson's cutde li
 
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
-from .. import coulomb_collections as cc
+from ..disp_points_object.disp_points_object import Displacement_points
 import cutde.halfspace as HS
 from . import fault_slip_triangle
 
@@ -46,10 +46,9 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
 
     modeled_disp_points = [];
     for i, item in enumerate(disp_points):
-        new_disp_pt = cc.Displacement_points(lon=item.lon, lat=item.lat,
-                                             dE_obs=resulting_model[i][0], dN_obs=resulting_model[i][1],
-                                             dU_obs=resulting_model[i][2], Se_obs=0, Sn_obs=0, Su_obs=0,
-                                             endtime=item.endtime, starttime=item.starttime,
-                                             meas_type=item.meas_type, refframe=item.refframe, name=item.name);
+        new_disp_pt = Displacement_points(lon=item.lon, lat=item.lat, dE_obs=resulting_model[i][0],
+                                          dN_obs=resulting_model[i][1], dU_obs=resulting_model[i][2], Se_obs=0,
+                                          Sn_obs=0, Su_obs=0, endtime=item.endtime, starttime=item.starttime,
+                                          meas_type=item.meas_type, refframe=item.refframe, name=item.name);
         modeled_disp_points.append(new_disp_pt);
     return modeled_disp_points;

@@ -4,6 +4,7 @@ import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 from . import coulomb_collections as cc
 from . import conversion_math
+from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -191,9 +192,8 @@ def compute_ll_def(inputs, alpha, disp_points):
     for point in disp_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat);
         u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs.source_object, alpha, xi, yi);
-        model_point = cc.Displacement_points(lon=point.lon, lat=point.lat, dE_obs=u_disp[0], dN_obs=v_disp[0],
-                                             dU_obs=w_disp[0], Se_obs=0, Sn_obs=0, Su_obs=0, name=point.name,
-                                             starttime=None, endtime=None, meas_type=None, refframe=None);
+        model_point = Displacement_points(lon=point.lon, lat=point.lat, dE_obs=u_disp[0], dN_obs=v_disp[0],
+                                          dU_obs=w_disp[0], Se_obs=0, Sn_obs=0, Su_obs=0, name=point.name);
         model_disp_points.append(model_point);
     return model_disp_points;
 

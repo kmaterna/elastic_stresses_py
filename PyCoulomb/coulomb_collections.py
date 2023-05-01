@@ -3,6 +3,7 @@
 import collections
 from . import conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions
+from .disp_points_object import disp_points_object
 
 Params = collections.namedtuple('Params', [
     'config_file', 'input_file', 'aftershocks',
@@ -57,17 +58,12 @@ Out_object = collections.namedtuple('Out_object', [
     'source_object', 'receiver_object',
     'receiver_normal', 'receiver_shear', 'receiver_coulomb', 'receiver_profile']);
 
-Displacement_points = collections.namedtuple('Displacement_points', [
-    'lon', 'lat',
-    'dE_obs', 'dN_obs', 'dU_obs',
-    'Se_obs', 'Sn_obs', 'Su_obs',
-    'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
 """
 Displacement_points are individual disp_point elements, can be put into lists of elements. 
 dE_obs, Se_obs, etc in meters. Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', etc.
-If starttime and endtime are used, they should be datetime objects. 
-Might want to ensure that -180 < lon < 180 in the future. 
+If starttime and endtime are used, they should be datetime objects.  
 """
+Displacement_points = disp_points_object.Displacement_points;
 
 
 def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, tensile, potency, strike, dipangle,

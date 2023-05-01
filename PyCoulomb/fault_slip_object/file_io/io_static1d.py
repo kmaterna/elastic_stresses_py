@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Tectonic_Utils.geodesy import fault_vector_functions
 from .. import fault_slip_object
-from Elastic_stresses_py.PyCoulomb import coulomb_collections as cc
+from ...disp_points_object.disp_points_object import Displacement_points
 
 
 def write_static1D_source_file(fault_object_list, disp_points, filename):
@@ -130,9 +130,8 @@ def read_latloninDEF(gps_filename):
     disp_points = [];
     [lat, lon] = np.loadtxt(gps_filename, skiprows=1, unpack=True);
     for i in range(len(lon)):
-        disp_point = cc.Displacement_points(lon=lon[i], lat=lat[i], dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
-                                            Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="",
-                                            starttime=None, endtime=None, meas_type=None, refframe=None);
+        disp_point = Displacement_points(lon=lon[i], lat=lat[i], dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
+                                         Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan);
         disp_points.append(disp_point);
     print("Reading file %s... %d lat/lon pairs" % (gps_filename, len(disp_points)));
     return disp_points;
@@ -149,10 +148,9 @@ def read_disp_points_from_static1d(filename):
     ifile = open(filename, 'r');
     for line in ifile:
         if len(line.split()) == 2:
-            disp_point = cc.Displacement_points(lon=float(line.split()[1]), lat=float(line.split()[0]),
-                                                dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
-                                                Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan, name="",
-                                                starttime=None, endtime=None, meas_type=None, refframe=None);
+            disp_point = Displacement_points(lon=float(line.split()[1]), lat=float(line.split()[0]),
+                                             dE_obs=np.nan, dN_obs=np.nan, dU_obs=np.nan,
+                                             Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan);
             disp_points.append(disp_point);
     ifile.close();
     print("Reading file %s... %d lat/lon pairs" % (filename, len(disp_points)));
@@ -195,10 +193,9 @@ def read_static1D_output_file(output_filename, gps_input_filename):
     ifile.close();
     disp_points_only = read_static1d_disp_points(gps_input_filename, None);
     for i in range(len(disp_points_only)):
-        modeled_disp_point = cc.Displacement_points(lon=disp_points_only[i].lon, lat=disp_points_only[i].lat,
-                                                    dE_obs=xdisp[i], dN_obs=ydisp[i], dU_obs=zdisp[i], Se_obs=np.nan,
-                                                    Sn_obs=np.nan, Su_obs=np.nan, name="", starttime=None, endtime=None,
-                                                    meas_type=None, refframe=None);
+        modeled_disp_point = Displacement_points(lon=disp_points_only[i].lon, lat=disp_points_only[i].lat,
+                                                 dE_obs=xdisp[i], dN_obs=ydisp[i], dU_obs=zdisp[i], Se_obs=np.nan,
+                                                 Sn_obs=np.nan, Su_obs=np.nan);
         modeled_disp_points.append(modeled_disp_point);
     print("Reading file %s... %d points" % (output_filename, len(modeled_disp_points)));
     return modeled_disp_points;

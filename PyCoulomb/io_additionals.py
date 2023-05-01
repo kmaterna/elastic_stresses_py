@@ -2,7 +2,7 @@
 Reading aftershock tables and GPS lon/lat pairs
 """
 
-from . import coulomb_collections as cc
+from .disp_points_object.disp_points_object import Displacement_points
 from . import conversion_math
 import numpy as np
 
@@ -61,9 +61,8 @@ def read_disp_points(infile):
                 name = temp[-1];
                 dE_obs, dN_obs, dU_obs = float(temp[2]), float(temp[3]), float(temp[4]);
                 Se_obs, Sn_obs, Su_obs = float(temp[5]), float(temp[6]), float(temp[7]);
-            new_disp_point = cc.Displacement_points(lon=lon, lat=lat, dE_obs=dE_obs, dN_obs=dN_obs, dU_obs=dU_obs,
-                                                    Se_obs=Se_obs, Sn_obs=Sn_obs, Su_obs=Su_obs, name=name,
-                                                    starttime=None, endtime=None, meas_type=None, refframe=None);
+            new_disp_point = Displacement_points(lon=lon, lat=lat, dE_obs=dE_obs, dN_obs=dN_obs, dU_obs=dU_obs,
+                                                 Se_obs=Se_obs, Sn_obs=Sn_obs, Su_obs=Su_obs, name=name);
             disp_points_list.append(new_disp_point);
     ifile.close();
     print("--> Read %d displacement points " % len(disp_points_list));
