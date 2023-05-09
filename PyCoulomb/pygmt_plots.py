@@ -8,8 +8,7 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 
 def map_stress_plot(params, inputs, out_object, stress_component):
     """
-    Using PyGMT
-    Filling in fault patches with colors corresponding to their stress changes
+    Fill in mapped fault patches with colors corresponding to their stress changes.
     """
     if not out_object.receiver_object:
         return;
@@ -56,7 +55,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
 
     # Annotate with aftershock locations
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c');
-
+    print("Mapping stress in %s " % params.outdir + label + '_map.png');
     fig.savefig(params.outdir + label + '_map.png');
     return;
 
@@ -91,7 +90,7 @@ def map_vertical_def(params, inputs, outfile):
 
 def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points, outfile, vmin=None, vmax=None):
     """
-    Make a plot of modeled vector displacement from model_disp_points
+    Make a plot of modeled vector displacement from model_disp_points.
     obs_disp_points is a list of disp_points objects that can be used to also plot observations at the same points.
     """
     if len(model_disp_points) == 0:
@@ -149,10 +148,14 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
 
 def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="s0.3c"):
     """
-    Draw each source in inputs.source_object, a list of sources
-    Inputs and Params provide additional information about the calcuation.
-    dotstyle is for source dots
-    fmscale is for focal mechanism size
+    Draw each source in inputs.source_object, a list of sources.
+    Inputs and Params provide additional information about the calculation.
+
+    :param fig: pygmt figure
+    :param inputs: coulomb_collection.inputs_object, which has a list of sources in inputs.source_object
+    :param params: coulomb_collection.params object
+    :param fmscale: focal mechanism size
+    :param dotstyle: psxy style for source dots
     """
     if len(inputs.source_object) == 0:
         return fig;
@@ -181,7 +184,7 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
 
 def annotate_figure_with_aftershocks(fig, aftershocks_file=None, style='c0.02c', pen="0.1p,black", color="black"):
     """
-    Annotate a figure with aftershock locations
+    Annotate a figure with aftershock locations.
     """
     if aftershocks_file:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(aftershocks_file);

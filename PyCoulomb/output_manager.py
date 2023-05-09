@@ -298,15 +298,17 @@ def map_horiz_profile(horiz_profile, profile_results, outfile):
     plt.xlabel('Longitude', fontsize=18)
     plt.ylabel('Latitude', fontsize=18)
     plt.gca().tick_params(labelsize=16)
+    print("Saving figure %s " % outfile);
     plt.savefig(outfile, facecolor="w");
     return;
 
 
 def write_synthetic_grid_triplets(out_object, outdir, east_model_file, north_model_file, vert_model_file):
     """
-    Write lists of lon/lat/def for each component of deformation in synthetic grid
-    Used for GMT plots
+    Write lists of lon/lat/def for each component of deformation in synthetic grid.
+    Used for GMT plots.
     """
+    print("Writing synthetic grid into files %s etc." % outdir+east_model_file)
     ofile_w = open(outdir + vert_model_file, 'w');
     ofile_u = open(outdir + east_model_file, 'w');
     ofile_v = open(outdir + north_model_file, 'w');

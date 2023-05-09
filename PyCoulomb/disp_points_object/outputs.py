@@ -5,7 +5,13 @@ More specific than the basic ones listed in io_additionals.py.
 
 
 def write_disp_points_gmt(disp_points, filename, write_meas_type=False):
-    """Write disp_points in GMT psvelo format"""
+    """
+    Write disp_points in GMT psvelo format.
+
+    :param disp_points: list of disp_points_objects
+    :param filename: string
+    :param write_meas_type: bool, similar to 'verbose', to write an extra column with meas_type
+    """
     print("Writing %s " % filename);
     ofile = open(filename, 'w');
     ofile.write("# lon lat dE dN dU Se Sn Su name\n");

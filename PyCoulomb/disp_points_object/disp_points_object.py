@@ -1,18 +1,17 @@
 
-from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions
+from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions, utilities
 
 
 class Displacement_points:
     """
     Displacement_points are individual disp_point elements, can be put into lists of elements.
-    dE_obs, Se_obs, etc in meters.
-    Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', etc.
-    If starttime and endtime are used, they should be datetime objects.
-    Might want to ensure that -180 < lon < 180 in the future.
+    dE_obs, Se_obs, etc. in meters.
+    Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', 'insar', etc.
+    If starttime and endtime are used, they should be datetime objects.  Lon is between -180 and 180.
     """
     def __init__(self,  lon, lat, dE_obs, dN_obs, dU_obs, Se_obs, Sn_obs, Su_obs, name=None, starttime=None,
                  endtime=None, refframe=None, meas_type=None):
-        self.lon = lon;
+        self.lon = utilities.wrap_lon(lon);
         self.lat = lat;
         self.dE_obs = dE_obs;
         self.dN_obs = dN_obs;
@@ -58,6 +57,7 @@ class Displacement_points:
         :param lkv_e: east look vector component from ground to satellite
         :param lkv_n: north look vector component from ground to satellite
         :param lkv_u: up look vector component from ground to satellite
+        :returns: los_defo, float, in meters
         """
         flight_angle, incidence_angle = insar_vector_functions.look_vector2flight_incidence_angles(lkv_e, lkv_n, lkv_u);
         los_defo = insar_vector_functions.def3D_into_LOS(self.dE_obs, self.dN_obs, self.dU_obs, flight_angle,

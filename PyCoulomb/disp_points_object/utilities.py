@@ -1,7 +1,7 @@
 """
 The functions in this package operate on cc.disp_points objects.
 Displacement_points = ['lon', 'lat', 'dE_obs'[m], 'dN_obs'[m], 'dU_obs'[m], 'Se_obs'[m], 'Sn_obs'[m], 'Su_obs'[m],
-'name', 'starttime', 'endtime', 'refframe', 'meas_type'], defaults=(None,) * 13);
+'name', 'starttime', 'endtime', 'refframe', 'meas_type'];
 Disp_points are lists of individual disp_point elements.
 """
 import matplotlib.path
@@ -86,8 +86,8 @@ def subtract_reference_from_disp_points(disp_points1, reference_disp_point, targ
 
 def mult_disp_points_by(disp_points1, multiplier=-1):
     """
-    Flip list of disp_points
-    The metadata and uncertainties for object 1 will be retained.
+    Flip list of disp_points, or multiply by another value.
+    The metadata and uncertainties will be retained.
     """
     return [item.multiply_by_value(multiplier) for item in disp_points1];
 
@@ -107,7 +107,7 @@ def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
 
 
 def filter_to_meas_type(obs_points, meas_type='continuous'):
-    """Filter a list of disp_points into a list of disp_points with a certain value of meas_type"""
+    """Filter a list of disp_points into a list of disp_points with a certain value of meas_type."""
     keep_obs_points = [];
     for item in obs_points:
         if item.meas_type == meas_type:
@@ -116,7 +116,7 @@ def filter_to_meas_type(obs_points, meas_type='continuous'):
 
 
 def filter_to_meas_type_by_second_table(obs_points, second_table_obs_points, meas_type='continuous'):
-    """Keep points on first table if they are a certain meas_type in second table"""
+    """Keep points on first table if they are a certain meas_type in second table."""
     keep_obs_points = [];
     for i, item in enumerate(second_table_obs_points):
         if item.meas_type == meas_type:
@@ -126,7 +126,7 @@ def filter_to_meas_type_by_second_table(obs_points, second_table_obs_points, mea
 
 def filter_to_remove_near_fault(obs_points, fault_points, radius_km=5):
     """
-    Filter a list of disp_points to remove those that are very close to a fault, such as a creeping fault
+    Filter a list of disp_points to remove those that are very close to a fault, such as a creeping fault.
 
     :param obs_points: list of disp_point objects
     :param fault_points: list of 2-tuples, lon-lat vertices of fault trace in creeping section
@@ -146,7 +146,7 @@ def filter_to_remove_near_fault(obs_points, fault_points, radius_km=5):
 
 def filter_by_bounding_box(obs_points, bbox):
     """
-    Filter a set of points by bounding box
+    Filter a set of points by bounding box.
 
     :param obs_points: list of disp_points
     :param bbox: list [W, E, S, N]
@@ -161,7 +161,7 @@ def filter_by_bounding_box(obs_points, bbox):
 
 def filter_to_exclude_bounding_box(obs_points, bbox):
     """
-    Filter a set of points to exculde a particular bounding box (such as removing a small volcanic area)
+    Filter a set of points to exclude a particular bounding box (such as removing a small volcanic area).
 
     :param obs_points: list of disp_points
     :param bbox: list [W, E, S, N]
@@ -169,7 +169,7 @@ def filter_to_exclude_bounding_box(obs_points, bbox):
     keep_obs_points = [];
     for item in obs_points:
         if item.is_within_bbox(bbox):
-            continue;   # station is within exculded box. Ignore it.
+            continue;   # station is within excluded box. Ignore it.
         else:
             keep_obs_points.append(item);
     print("Filtering to exclude bounding box: Returning %d of %d points " % (len(keep_obs_points), len(obs_points)));
@@ -177,7 +177,7 @@ def filter_to_exclude_bounding_box(obs_points, bbox):
 
 
 def extract_particular_station_from_list(disp_points_list, station_lon, station_lat, tol=0.001):
-    """Pull one particular station out of a list of stations, with error handling"""
+    """Pull one particular station out of a list of stations, with error handling."""
     possible_reference_stations = [];
     for item in disp_points_list:
         if abs(item.lon-station_lon) < tol and abs(item.lat-station_lat) < tol:
@@ -195,8 +195,8 @@ def extract_particular_station_from_list(disp_points_list, station_lon, station_
 
 def station_vel_object_to_disp_points(velfield):
     """
-    Convert from StationVel objects from GNSS Python library into disp_points
-    This is the opposite of GNSS_TimeSeries_Viewers.gps_tools.vel_functions.disp_points_to_station_vels()
+    Convert from StationVel objects from GNSS Python library into disp_points.
+    This is the opposite of GNSS_TimeSeries_Viewers.gps_tools.vel_functions.disp_points_to_station_vels().
     """
     disp_points_list = [];
     for item in velfield:
@@ -209,12 +209,12 @@ def station_vel_object_to_disp_points(velfield):
 
 
 def translate_by_euler_pole(disp_points_list, euler_pole_components):
-    """Rotate by euler pole"""
+    """Rotate by euler pole."""
     return [item.translate_point_by_euler_pole(euler_pole_components) for item in disp_points_list];
 
 
 def extract_region_from_disp_points(disp_points_list):
-    """Operates on a list of disp_points"""
+    """Operates on a list of disp_points. Returns bbox [W, E, S, N]."""
     lon = np.array([x.lon for x in disp_points_list]);
     lat = np.array([x.lat for x in disp_points_list]);
     region = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)];

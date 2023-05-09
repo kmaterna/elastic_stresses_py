@@ -33,7 +33,7 @@ def read_disp_points(infile):
     """
     A file with lon/lat points that we are computing displacements.
     If the observed displacements are given in the additional columns,
-    then we add them to the object so we can plot them against the model later.
+    then we add them to the object for later plotting against the model.
     A slightly flexible-format read for:
     - "lon lat"
     - "lon lat de dn du se sn su name"

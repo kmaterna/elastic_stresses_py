@@ -149,6 +149,7 @@ class FaultSlipObject:
                                   slip=desired_slip, rake=desired_rake, segment=self.segment);
         return new_obj;
 
+    # ------------ PREDICATES -------------- #
     def is_within_depth_range(self, upper_depth, lower_depth):
         """
         Filter fault_object if it falls within depth range [upper_depth, lower_depth].
@@ -174,6 +175,7 @@ class FaultSlipObject:
         else:
             return 0;
 
+    # ------------ REGULAR FUNCTIONS -------------- #
     def construct_intxt_source_patch(self):
         """
         Turn a fault_slip_object into a string corresponding to a slip_patch in .intxt file.
