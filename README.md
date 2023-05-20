@@ -1,5 +1,7 @@
 # Elastic_stresses_py
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![DOI](https://zenodo.org/badge/141371162.svg)](https://zenodo.org/badge/latestdoi/141371162)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/kmaterna/Strain_2D/blob/dev/license.md)
 
 
 This code uses Okada's (1992) DC3D function to compute elastic displacements, strains, stresses, and Coulomb failure stresses (e.g., King et al., 1994) in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases (in ```Examples/```), it reproduces the Coulomb outputs. 
@@ -26,7 +28,16 @@ To install Elastic_stresses_py, first clone this library onto your computer.
 This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/). The easiest way is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
 Then, from the conda environment you've just created, run ```python setup.py install``` from the directory where you've cloned the repository. 
 
-### Usage:
+### Citing:
+If you use this code in your research, please cite the DOI for the current version:
+
+[![DOI](https://zenodo.org/badge/141371162.svg)](https://zenodo.org/badge/latestdoi/141371162)
+
+Example citation: Materna, K. (2023). Elastic_stresses_py (version 1.0.0). https://github.com/kmaterna/Elastic_stresses_py. Archived at DOI: 10.5281/zenodo.79751979.
+
+Also cite the underlying theoretical work behind elastic dislocations and Coulomb Failure Stress (Okada, 1992; King et al., 1994; and others). 
+
+## Software Usage:
 The main executable is ```elastic_stresses_driver.py```, which takes a config file as the first argument.
 
 Most of the behavior of the program is controlled by the config text file.  From an experiment directory on your system, you can generate a default config file in the current working directory (.) with: 
