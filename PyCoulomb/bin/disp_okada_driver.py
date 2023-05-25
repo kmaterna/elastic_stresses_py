@@ -20,8 +20,8 @@ if __name__ == "__main__":
                                                                               filedict['lat0_sys']);
     disp_points = io_additionals.read_disp_points(filedict['datafile']);
     params = configure_calc.configure_default_displacement_params();
-    inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, filedict['lon0_sys'],
-                                                                 filedict['lat0_sys'], filedict['bbox']);
+    inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, zerolon=filedict['lon0_sys'],
+                                                                 zerolat=filedict['lat0_sys'], bbox=filedict['bbox']);
     # Compute and Output
     outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=[]);
-    output_manager.produce_outputs(params, inputs, disp_points, [], outobj);
+    output_manager.produce_outputs(params, inputs, disp_points, obs_strain_points=[], out_object=outobj);
