@@ -163,7 +163,8 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
     return MyParams;
 
 
-def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20):
+def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20,
+                                         num_points_x=20, num_points_y=20):
     """
     Build a default Input object for displacement-only calculations.
     Unused parameters get default values or None.
@@ -171,13 +172,15 @@ def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, 
     :param source_object: a PyCoulomb source object
     :param zerolon: float
     :param zerolat: float
-    :param domainsize: in km. default is 20.
     :param bbox: [w, e, s, n]
+    :param domainsize: in km. default is 20.
+    :param num_points_x: default 20
+    :param num_points_y: default 20
     """
     inputs = cc.Input_object(PR1=0.25, FRIC=0.4, depth=0,
                              start_gridx=-domainsize, finish_gridx=domainsize,
                              start_gridy=-domainsize, finish_gridy=domainsize,
-                             xinc=domainsize/20, yinc=domainsize/20,
+                             xinc=domainsize/num_points_x, yinc=domainsize/num_points_y,
                              minlon=bbox[0], maxlon=bbox[1], zerolon=zerolon,
                              minlat=bbox[2], maxlat=bbox[3], zerolat=zerolat,
                              source_object=source_object, receiver_object=[],

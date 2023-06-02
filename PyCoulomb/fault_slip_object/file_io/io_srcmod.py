@@ -4,6 +4,7 @@ Functions for SRCMOD IO of faults and slip distributions into list of fault_slip
 """
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
+import Tectonic_Utils.seismo as seismo
 from .. import fault_slip_object
 
 
@@ -56,6 +57,7 @@ def read_srcmod_distribution(infile):
                 fault_list.append(one_fault);
     ifile.close();
     print("--> Returning %d fault patches" % len(fault_list));
+    print("Mw = ", seismo.moment_calculations.mw_from_moment(fault_slip_object.get_total_moment(fault_list)));
     return fault_list;
 
 

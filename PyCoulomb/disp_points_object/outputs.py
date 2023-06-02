@@ -23,3 +23,15 @@ def write_disp_points_gmt(disp_points, filename, write_meas_type=False):
         ofile.write("\n");
     ofile.close();
     return;
+
+
+def write_disp_points_lon_lat(disp_points, filename):
+    """
+    :param disp_points: a list of disp_points
+    :param filename: string
+    """
+    print("Writing %s " % filename);
+    with open(filename, 'w') as ofile:
+        for item in disp_points:
+            ofile.write("%f %f \n" % (item.lon, item.lat) );
+    return;

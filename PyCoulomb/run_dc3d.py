@@ -143,7 +143,7 @@ def compute_grid_def(inputs, params):
     if not params.plot_grd_disp:
         return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
 
-    print("Computing synthetic grid of dispalcements");
+    print("Computing synthetic grid of displacements");
     alpha = params.alpha;
     numrows = np.shape(u_displacements)[0]
     numcols = np.shape(u_displacements)[1]

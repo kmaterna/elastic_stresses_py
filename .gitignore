@@ -5,6 +5,7 @@ examples/Example_2/Outputs/*
 examples/Example_2/my_config.txt
 examples/Example_2/.ipynb_checkpoints/*.ipynb
 examples/Norcia_Example/Outputs/*
+examples/strike-slip-example/output/*
 PyCoulomb/__pycache__/*
 .idea*
 test/example_*.txt
