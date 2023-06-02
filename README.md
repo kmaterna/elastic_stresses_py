@@ -17,16 +17,42 @@ $$ \Delta P = {B} * {\sigma_{kk} \over 3} $$
 e.g., Beeler et al., 2000.
 
 
-## Description
+## Installation and Usage
+
+### Requirements:
+* Python 3.9+
+* gfortran and gcc (For mac/linux, this is done through brew, port, apt-get, whatever works for your system)
+* Ben Thompson's Python [Okada wrapper](https://github.com/tbenthompson/okada_wrapper). Install with ```pip install okada_wrapper```.
+* Kathryn Materna's [Tectonic_Utils](https://github.com/kmaterna/Tectonic_Utils).  Install with ```pip install Tectonic-Utils```.
+* Several standard Python libraries such as numpy, matplotlib, and [PYGMT](https://www.pygmt.org/dev/); these are listed in ```requirements.yml```.  
 
 
-### Dependencies: 
-This code requires you to have Ben Thompson's Okada Python wrapper on your pythonpath (https://github.com/tbenthompson/okada_wrapper). 
-It requires utility functions in Tectonic_Utils (https://github.com/kmaterna/Tectonic_Utils).  To get the utilities library, install with ```pip install Tectonic-Utils```.
-
+### Installation on command line
 To install Elastic_stresses_py, first clone this library onto your computer. 
-This code uses Python3, numpy, matplotlib, and Pygmt (https://www.pygmt.org/dev/). The easiest way is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
-Then, from the conda environment you've just created, run ```python setup.py install``` from the directory where you've cloned the repository. 
+The easiest way to gather all the dependencies is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
+Then, from the conda environment you've just created, run ```pip install``` for okada_wrapper and Tectonic-Utils.  
+Then, run ```python setup.py install``` from the directory where you've cloned the repository. 
+
+### Installation in Anaconda GUI:
+
+* Download the code's zip file from this Github page. Click Code --> Download Zip.  Save it somewhere onto your local disk. 
+  
+* Create a new Python environment in the Anaconda GUI. Environments Tab --> Import --> Local drive --> navigate to the local Elastic_stresses_py folder and select ```requirements.yml``` --> Open.  Select name=espy (or desired) --> Create environment.  This will take a few minutes. 
+  
+* Click the play button beside the espy environment name. Select 'Open Terminal'. Type ```pip install Tectonic-Utils``` 
+  
+* Also type ```pip install okada_wrapper```.  This assumes you already have properly working C and fortran compilers, such as gcc and gfortran. You might have to get those separately.   
+  
+* To install ```Elastic_stresses_py``` itself, we will work in the terminal once more. Move to the location where you downloaded the source code and type ```python setup.py install``` 
+  
+* In the Anaconda navigator, you will be able to see all the installed packages in your environment, including Elastic_stresses_py. 
+
+* On the Anaconda home tab, install Jupyter Notebook in your new environment by clicking the Install button.
+
+* Close all your terminals, notebooks, pythons, and anacondas. Then re-open.  
+
+* In the Anaconda Environments tab, click the play button beside the new espy environment and select "Open with Jupyter Notebook".  Navigate to the location of the Elastic_stresses_py package and then examples/Example_2/Run_Elastic_stresses_py.ipynb. Follow the notebook instructions! 
+
 
 ### Citing:
 If you use this code in your research, please cite the DOI for the current version:

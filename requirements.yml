@@ -17,3 +17,4 @@ dependencies:
  - gmt
  - pygmt
  - pip
+ - jinja2=3.0.3

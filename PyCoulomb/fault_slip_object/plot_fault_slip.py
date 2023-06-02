@@ -111,7 +111,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                           truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
             # Write the source patches
             file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='slip');  # write the source patches
-            fig.plot(data=file1, pen="0.2p,black", color="+z", cmap="mycpt.cpt");
+            fig.plot(data=file1, pen="0.2p,black", fill="+z", cmap="mycpt.cpt");
             fig.plot(data=file2, pen="0.6p,black");   # shallow edges
             os.remove(file1); os.remove(file2);
         if plot_slip_colorbar:
@@ -128,7 +128,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     if fault_traces_from_file:
         pygmt.makecpt(cmap="polar", series=str(-1.0) + "/" + str(1.0) + "/" + str(0.01),
                       truncate="-1/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
-        fig.plot(data=fault_traces_from_file, pen="0.2p,black", color="+z", cmap='mycpt.cpt');
+        fig.plot(data=fault_traces_from_file, pen="0.2p,black", fill="+z", cmap='mycpt.cpt');
         fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", truncate=str(-1.0) + "/" + str(1.0),
                      frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
 
@@ -142,14 +142,14 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     if len(disp_points) > 0:
         [lon, lat, _, _, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(disp_points);
         [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz] = unpack_horiz_disp_points_for_vectors(disp_points);
-        fig.plot(x=lon, y=lat, style='s0.07i', color='blue', pen="thin,black");
+        fig.plot(x=lon, y=lat, style='s0.07i', fill='blue', pen="thin,black");
         if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
             disp_z_vert = np.multiply(disp_z_vert, vert_mult);
             [v_cmap_opts, v_cbar_opts] = utilities.define_colorbar_series(disp_z_vert, tol=0.0001,
                                                                           v_labeling_interval=v_labeling_interval);
             series_str = str(v_cmap_opts[0])+"/" + str(v_cmap_opts[1]) + "/" + str(v_cmap_opts[2])
             pygmt.makecpt(cmap="roma", series=series_str, background="o", output="vert.cpt");
-            fig.plot(x=lon_vert, y=lat_vert, style='c0.3c', color=disp_z_vert, cmap='vert.cpt', pen="thin,black");
+            fig.plot(x=lon_vert, y=lat_vert, style='c0.3c', fill=disp_z_vert, cmap='vert.cpt', pen="thin,black");
             truncate_str = str(v_cbar_opts[0]) + "/" + str(v_cbar_opts[1]),
             fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="vert.cpt", truncate=truncate_str,
                          frame=["x"+str(v_cbar_opts[2]), "y+L\"Vert Disp("+vert_disp_units+")\""]);
@@ -193,7 +193,7 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                                                                           v_labeling_interval=v_labeling_interval);
                 series_str = str(cmap_opts[0]) + "/" + str(cmap_opts[1]) + "/" + str(cmap_opts[2]);
                 pygmt.makecpt(cmap="roma", series=series_str, background="o", output="vert.cpt");
-                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
+                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', fill=disp_z_vert,
                          cmap='vert.cpt', pen="0.1p,black");
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
@@ -214,12 +214,12 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             [lon_horiz, lat_horiz, dispx_horiz, dispy_horiz] = unpack_horiz_disp_points_for_vectors(model_disp_points);
 
             file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='None');
-            fig.plot(data=file1, pen="0.2p,black", color="white");  # annotate the rectangular fault patches
+            fig.plot(data=file1, pen="0.2p,black", fill="white");  # annotate the rectangular fault patches
             fig.plot(data=file2, pen="0.6p,black", projection=proj);  # annotate shallow edges of rect. fault patches
             os.remove(file1); os.remove(file2);
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
-                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
+                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', fill=disp_z_vert,
                          cmap='vert.cpt', pen="0.1p,black");
 
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
@@ -240,7 +240,7 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             [lon_horiz, lat_horiz, dispx_horiz, dispy_horiz] = unpack_horiz_disp_points_for_vectors(resid_disp_points);
 
             if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
-                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', color=disp_z_vert,
+                fig.plot(x=lon_vert, y=lat_vert, projection=proj, style='c'+str(point_size)+'c', fill=disp_z_vert,
                          cmap='vert.cpt', pen="0.1p,black");
                 fig.colorbar(position="JCR+w4.0i+v+o0.4i/0i", projection=proj, cmap="vert.cpt",
                              truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),

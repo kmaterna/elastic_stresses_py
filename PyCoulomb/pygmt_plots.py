@@ -45,7 +45,7 @@ def map_stress_plot(params, inputs, out_object, stress_component):
 
     # Plot the stress components
     utilities.write_fault_edges_to_gmt_file(out_object.receiver_object, 'tmp.txt', color_array=plotting_stress);
-    fig.plot(data='tmp.txt', pen="thick,black", color="+z", cmap="mycpt.cpt");
+    fig.plot(data='tmp.txt', pen="thick,black", fill="+z", cmap="mycpt.cpt");
     os.remove('tmp.txt');
 
     # Colorbar annotation
@@ -120,7 +120,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
     fig.basemap(region=region, projection=proj, frame="+t\"Coseismic Displacements\"");
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
               map_scale="n0.4/0.06+c" + str(region[2]) + "+w20", frame="1.0");
-    fig.plot(x=model_lon, y=model_lat, style='c0.3c', color=model_dU, cmap='mycpt.cpt', pen="thin,black");
+    fig.plot(x=model_lon, y=model_lat, style='c0.3c', fill=model_dU, cmap='mycpt.cpt', pen="thin,black");
 
     fig.plot(x=model_lon, y=model_lat, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
              direction=[model_dE, model_dN], pen="thin,black");
@@ -166,7 +166,7 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
         source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
                                                                   inputs.zerolat);
         eq_lon.append(source_lon); eq_lat.append(source_lat);
-    fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, color="purple", pen="thin,black");
+    fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, fill="purple", pen="thin,black");
 
     rect_sources, point_sources = utilities.separate_rectangular_from_point_sources(inputs.source_object);
     for source in point_sources:  # draw focal mechanisms
@@ -188,5 +188,5 @@ def annotate_figure_with_aftershocks(fig, aftershocks_file=None, style='c0.02c',
     """
     if aftershocks_file:
         [lon, lat, _, _, _] = io_additionals.read_aftershock_table(aftershocks_file);
-        fig.plot(x=lon, y=lat, style=style, color=color, pen=pen);
+        fig.plot(x=lon, y=lat, style=style, fill=color, pen=pen);
     return fig;
