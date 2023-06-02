@@ -39,19 +39,21 @@ Then, run ```python setup.py install``` from the directory where you've cloned t
   
 * Create a new Python environment in the Anaconda GUI. Environments Tab --> Import --> Local drive --> navigate to the local Elastic_stresses_py folder and select ```requirements.yml``` --> Open.  Select name=espy (or desired) --> Create environment.  This will take a few minutes. 
   
-* Click the play button beside the espy environment name. Select 'Open Terminal'. Type ```pip install Tectonic-Utils``` 
+* Click the play button beside the environment name for the environment you just created. Select 'Open Terminal'. Type ```pip install Tectonic-Utils``` 
   
 * Also type ```pip install okada_wrapper```.  This assumes you already have properly working C and fortran compilers, such as gcc and gfortran. You might have to get those separately.   
   
 * To install ```Elastic_stresses_py``` itself, we will work in the terminal once more. Move to the location where you downloaded the source code and type ```python setup.py install``` 
   
-* In the Anaconda navigator, you will be able to see all the installed packages in your environment, including Elastic_stresses_py. 
+* After refreshing the Anaconda navigator, you will be able to see all the installed packages in your new environment, including Elastic_stresses_py. 
 
 * On the Anaconda home tab, install Jupyter Notebook in your new environment by clicking the Install button.
-
+  
 * Close all your terminals, notebooks, pythons, and anacondas. Then re-open.  
 
-* In the Anaconda Environments tab, click the play button beside the new espy environment and select "Open with Jupyter Notebook".  Navigate to the location of the Elastic_stresses_py package and then examples/Example_2/Run_Elastic_stresses_py.ipynb. Follow the notebook instructions! 
+* In the Anaconda Environments tab, click the play button beside the new environment you just created, and select "Open with Jupyter Notebook".  This will open in a browser window and display the contents of your home directory.  Navigate to the location of the Elastic_stresses_py package and then examples/Example_2/. Open the Jupyter nobebook Run_Elastic_stresses_py.ipynb. 
+
+* You can use this Jupyter notebook by clicking each cell (i.e., any body of text or code) and executing it with shift+Enter. Start at the top and work your way down the tutorial. Some code lines will take a moment and produce screen output into the notebook. More information about using Jupyter notebooks can be found [here](https://www.dataquest.io/blog/jupyter-notebook-tutorial/).  
 
 
 ### Citing:
