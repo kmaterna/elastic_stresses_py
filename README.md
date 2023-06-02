@@ -41,9 +41,11 @@ Then, run ```python setup.py install``` from the directory where you've cloned t
   
 * Click the play button beside the environment name for the environment you just created. Select 'Open Terminal'. Type ```pip install Tectonic-Utils``` 
   
-* Also type ```pip install okada_wrapper```.  This assumes you already have properly working C and fortran compilers, such as gcc and gfortran. You might have to get those separately.   
+* Also type ```pip install okada_wrapper```  
+  * This step assumes you already have properly working C and fortran compilers, such as gcc and gfortran. You might have to get those separately.
+  * If you are working on Mac, you may need to ensure your Xcode installation is fully updated, including the command line tools. When Apple pushes out updates to the Xcode application, it often breaks the command line tools. To do so, run: ```xcode-select --install```
   
-* To install ```Elastic_stresses_py``` itself, we will work in the terminal once more. Move to the location where you downloaded the source code and type ```python setup.py install``` 
+* To install ```Elastic_stresses_py``` itself, we will use the terminal once more. Move to the location where you downloaded the source code and type ```python setup.py install``` 
   
 * After refreshing the Anaconda navigator, you will be able to see all the installed packages in your new environment, including Elastic_stresses_py. 
 
