@@ -26,6 +26,9 @@ def compute_surface_disp_point(sources, nu, x, y, compute_depth=0):
 
 def compute_disps_from_one_mogi(source, x, y, nu, compute_depth=0):
     """
+    Calculates surface deformation based on point source
+    References: Mogi 1958, Segall 2010 p.203
+
     Mogi source at x=source.xstart, y=source.ystart in km, volume = source.dV in m^3, depth=source.depth in km.
     Compute the displacement at (x, y) in km, at depth=compute_depth in km
     Returns in meters.

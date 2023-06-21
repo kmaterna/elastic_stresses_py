@@ -110,7 +110,7 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
     * "Source_MT: Mrr Mtt Mpp Mrt Mrp Mtp strike rake dip lon lat depth_km"
 * **Horizontal Profile Format:** Specify an orientation and compute stresses on that plane/orientation over an area. Like a horizontal cross-section.
     * "Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km" 
-* **Mogi Source Format:** Specify a location, depth in km, and volume change in meters^3
+* **Mogi Source Format:** Specify a location, depth in km, and volume change in meters^3.  **Only implemented for displacement at the moment**, not stresses and strains. 
     * "Source_Mogi: lon lat depth_km dV_m3"  
 
 *PR1 in the intxt/inzero format is never actually used; it's just a placeholder from the old Coulomb format. 
