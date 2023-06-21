@@ -3,7 +3,7 @@ Reading aftershock tables and GPS lon/lat pairs
 """
 
 from .disp_points_object.disp_points_object import Displacement_points
-from . import conversion_math
+from . import conversion_math, utilities
 import numpy as np
 
 
@@ -69,15 +69,17 @@ def read_disp_points(infile):
     return disp_points_list;
 
 
-def write_receiver_traces_gmt(receiver_object, outfile):
+def write_fault_traces_gmt(fault_list, outfile):
     """
-    Write the top edge of each receiver fault in GMT map coordinates
+    Write the top edge of each fault in GMT map coordinates
     """
-    if not receiver_object:
+    rectangles, points, mogis = utilities.separate_source_types(fault_list);
+    fault_list = rectangles + points;
+    if not fault_list:
         return;
     print("Writing %s" % outfile);
     ofile = open(outfile, 'w');
-    for fault in receiver_object:
+    for fault in fault_list:
         [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(fault, coords='geographic');
         ofile.write("> \n");
         ofile.write("%f %f\n" % (x_updip[0], y_updip[0]));

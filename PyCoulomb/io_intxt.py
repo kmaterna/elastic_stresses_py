@@ -6,6 +6,7 @@ using Wells and Coppersmith 1994, in the same way that Coulomb does.
 
 import numpy as np
 from . import coulomb_collections as cc
+from . import conversion_math
 from Tectonic_Utils.seismo import wells_and_coppersmith, moment_calculations, MT_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -38,6 +39,9 @@ def read_intxt(input_file, mu, lame1):
                 receivers.append(one_receiver_object);
             if temp[0] == 'Receiver_Horizontal_Profile:':
                 receiver_horiz_profile = get_receiver_profile(line);
+            if temp[0] == 'Source_Mogi:':  # Mogi Source
+                one_mogi_source = get_mogi_source(line, zerolon, zerolat);
+                sources.append(one_mogi_source);
     ifile.close();
 
     # Wrapping up the inputs.
@@ -64,26 +68,33 @@ def write_intxt(input_object, output_file, label=None, mu=30e9, lame1=30e9):
     ofile.write("# Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m\n");
     ofile.write("# Source_FM: strike rake dip lon lat depth_km magnitude\n");
     ofile.write("# Receiver: strike rake dip length_km width_km lon lat depth_km\n\n");
-    real_poissons_ratio = lame1 / (2 * (lame1 + mu) );
+    real_poissons_ratio, _ = conversion_math.get_poissons_ratio_and_alpha(mu, lame1);
+
     # WRITE POISSON'S RATIO FROM MU, LAME1
     ofile.write("General: %.3f %.3f %f %f %f %f %f %f \n" % (real_poissons_ratio, input_object.FRIC,
                                                              input_object.minlon, input_object.maxlon,
                                                              input_object.zerolon, input_object.minlat,
                                                              input_object.maxlat, input_object.zerolat) );
     for src in input_object.source_object:
-        if not src.potency:  # write a finite source as a Source_Patch
-            L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish);  # in km
-            W = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle);  # in km
-            fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
-            slip = fault_vector_functions.get_vector_magnitude([src.rtlat, src.reverse]);  # in m
-            ofile.write("Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, src.dipangle,
-                                                                                L, W, fault_lon, fault_lat,
-                                                                                src.top, slip));
-        if src.potency:   # write a DC focal mechanism
-            fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
-            mag = get_mag_from_dc_potency(src.potency, mu, src.rake);
-            ofile.write("Source_FM: %.3f %.3f %.3f %f %f %.3f %.3f\n" % (src.strike, src.rake, src.dipangle,
-                                                                         fault_lon, fault_lat, src.top, mag) );
+        if isinstance(src, cc.Mogi_Source):
+            src_lon, src_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
+            ofile.write("Source_Mogi: %.3f %.3f %.3f %.3f\n" % (src_lon, src_lat, src.depth, src.dV) );
+        if isinstance(src, cc.Faults_object):
+            if not src.potency:  # write a finite source as a Source_Patch
+                L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish);  # in km
+                W = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle);  # in km
+                fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
+                                                                        src.zerolon, src.zerolat);
+                slip = fault_vector_functions.get_vector_magnitude([src.rtlat, src.reverse]);  # in m
+                ofile.write("Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, src.dipangle,
+                                                                                    L, W, fault_lon, fault_lat,
+                                                                                    src.top, slip));
+            if src.potency:   # write a DC focal mechanism
+                fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
+                                                                        src.zerolon, src.zerolat);
+                mag = get_mag_from_dc_potency(src.potency, mu, src.rake);
+                ofile.write("Source_FM: %.3f %.3f %.3f %f %f %.3f %.3f\n" % (src.strike, src.rake, src.dipangle,
+                                                                             fault_lon, fault_lat, src.top, mag) );
     for rec in input_object.receiver_object:
         L = fault_vector_functions.get_strike_length(rec.xstart, rec.xfinish, rec.ystart, rec.yfinish);  # in km
         W = fault_vector_functions.get_downdip_width(rec.top, rec.bottom, rec.dipangle);  # in km
@@ -201,6 +212,14 @@ def get_MT_source(line, zerolon, zerolat, lame1, mu):
     return one_source_object;
 
 
+def get_mogi_source(line, zerolon, zerolat):
+    [lon, lat, depth, dV] = read_mogi_source_line(line);
+    [x_source, y_source] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat);
+    one_mogi_source = cc.Mogi_Source(xstart=x_source, ystart=y_source,
+                                     zerolon=zerolon, zerolat=zerolat, depth=depth, dV=dV);
+    return one_mogi_source;
+
+
 def get_receiver_profile(line):
     """
     Create a horizontal profile based on the provided params.
@@ -286,6 +305,11 @@ def read_moment_tensor_source_line(line):
     [strike, dip, rake] = [float(i) for i in line.split()[7:10]];
     [lon, lat, depth] = [float(i) for i in line.split()[10:13]];
     return [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth];
+
+def read_mogi_source_line(line):
+    """Format: lon lat depth dV"""
+    [lon, lat, depth_km, dV] = [float(i) for i in line.split()[1:5]];
+    return [lon, lat, depth_km, dV];
 
 
 # ------------------------------------

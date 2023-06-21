@@ -1,0 +1,17 @@
+[io-config]
+exp_name = mogi_exp
+input_file = mogi.intxt
+output_dir = Outputs/
+plot_stress = 0
+plot_grd_disp = 1
+gps_disp_points = 
+aftershocks = 
+strain_file = 
+
+[compute-config]
+strike_num_receivers = 10
+dip_num_receivers = 10
+mu = 30e9
+lame1 = 30e9
+B = 0
+fixed_rake = 

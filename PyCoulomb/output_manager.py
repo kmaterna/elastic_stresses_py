@@ -26,8 +26,8 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     # Write output files for GPS displacements and strains at specific lon/lat points (if used)
     io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");
     io_additionals.write_strain_results(obs_strain_points, out_object.strains, params.outdir+'ll_strains.txt');
-    io_additionals.write_receiver_traces_gmt(out_object.receiver_object, params.outdir+"receiver_traces.txt");
-    io_additionals.write_receiver_traces_gmt(out_object.source_object, params.outdir + "source_traces.txt");
+    io_additionals.write_fault_traces_gmt(out_object.receiver_object, params.outdir + "receiver_traces.txt");
+    io_additionals.write_fault_traces_gmt(out_object.source_object, params.outdir + "source_traces.txt");
     write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
                                          params.outdir+"vector_plot.png");  # map point displacements
@@ -87,7 +87,9 @@ def surface_def_plot(out_object, outfile):
         for j in np.arange(0, len(out_object.x), 5):
             plt.quiver(out_object.x2d[i][j], out_object.y2d[i][j], out_object.u_disp[i][j], out_object.v_disp[i][j],
                        units='width', scale=0.2)
-    for source in out_object.source_object:
+    rectangles, points, mogis = utilities.separate_source_types(out_object.source_object);
+    fault_sources = rectangles + points;
+    for source in fault_sources:
         [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
         plt.plot(x_total, y_total, 'k', linewidth=1);
         plt.plot(x_updip, y_updip, 'g', linewidth=3);

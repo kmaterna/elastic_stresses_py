@@ -4,6 +4,7 @@ import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 from . import coulomb_collections as cc
 from . import conversion_math
+from . import run_mogi, utilities
 from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -144,17 +145,19 @@ def compute_grid_def(inputs, params):
         return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
 
     print("Computing synthetic grid of displacements");
-    alpha = params.alpha;
     numrows = np.shape(u_displacements)[0]
     numcols = np.shape(u_displacements)[1]
+    rectangles, points, mogis = utilities.separate_source_types(inputs.source_object);
+    fault_sources = rectangles + points;
 
     for ky in range(numrows):
         for kx in range(numcols):
-            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs.source_object, alpha,
+            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(fault_sources, params.alpha,
                                                                    x2d[ky][kx], y2d[ky][kx]);
-            u_displacements[ky][kx] = u_disp;
-            v_displacements[ky][kx] = v_disp;
-            w_displacements[ky][kx] = w_disp;
+            u_mogi, v_mogi, w_mogi = run_mogi.compute_surface_disp_point(mogis, params.nu, x2d[ky][kx], y2d[ky][kx]);
+            u_displacements[ky][kx] = u_disp + u_mogi;
+            v_displacements[ky][kx] = v_disp + v_mogi;
+            w_displacements[ky][kx] = w_disp + w_mogi;
     return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements];
 
 
@@ -201,10 +204,13 @@ def compute_ll_def(inputs, alpha, disp_points):
 def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
     """
     A major compute loop for each source object at one x/y point.
-    x/y in the same coordinate system as the fault object.
-    Computes displacement and strain tensor.
-    Sources is a list of fault objects
-    Default depth is at surface of earth
+    x/y in the same coordinate system as the fault object. Computes displacement and strain tensor.
+
+    :param sources: list of fault objects
+    :param alpha: float
+    :param x: float
+    :param y: float
+    :param compute_depth: depth of observation. Default depth is at surface of earth
     """
     u_disp, v_disp, w_disp = 0, 0, 0;
     strain_tensor_total = np.zeros((3, 3));

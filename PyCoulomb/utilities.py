@@ -3,6 +3,7 @@ from subprocess import call
 from Tectonic_Utils.seismo import moment_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
+from . import coulomb_collections as cc
 
 
 def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_labeling_interval=None):
@@ -162,8 +163,8 @@ def print_metrics_on_sources(source_object, mu):
     """
     Print overall magnitude of rectangular source objects.
     """
-    print("Number of sources:", len(source_object));
-    rect_sources, point_sources = separate_rectangular_from_point_sources(source_object);
+    print("Number of total sources:", len(source_object));
+    rect_sources, point_sources, mogi_sources = separate_source_types(source_object);
     if len(point_sources) > 0:
         print("Number of point sources: %d" % len(point_sources) );
     if len(rect_sources) > 0:
@@ -171,28 +172,34 @@ def print_metrics_on_sources(source_object, mu):
         # default mu = 30GPa
         Mw = moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list, mu=mu));
         print("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f" % (mu/1e9, Mw));
+    if len(mogi_sources) > 0:
+        print("Number of Mogi sources: %d" % len(mogi_sources));
     return;
 
 
-def separate_rectangular_from_point_sources(source_object):
+def separate_source_types(source_object):
     """
-    Take a list of source objects and separate it into two lists: one of rectangular sources, one of point sources
+    Take a list of source objects and separate it into lists:
+    one of rectangular sources, one of point sources, one of mogi sources
     """
-    point_sources, rect_sources = [], [];
+    point_sources, rect_sources, mogi_sources = [], [], [];
     for source in source_object:
-        if source.potency:
-            point_sources.append(source);
-        else:
-            rect_sources.append(source);
-    return rect_sources, point_sources;
+        if isinstance(source, cc.Mogi_Source):
+            mogi_sources.append(source);
+        if isinstance(source, cc.Faults_object):
+            if source.potency:
+                point_sources.append(source);
+            else:
+                rect_sources.append(source);
+    return rect_sources, point_sources, mogi_sources;
 
 
 def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=lambda x: x.get_total_slip()):
     """
     This speeds up pygmt plotting.  Color_array can be a function of x, or a numpy array
     """
-    rect_sources, _ = separate_rectangular_from_point_sources(fault_object);
-    fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(fault_object);
+    rect_sources, _, _ = separate_source_types(fault_object);
+    fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(rect_sources);
     fso.fault_slip_object.write_gmt_fault_file(fault_dict_list, outfile, color_mappable=color_array, verbose=False);
     return;
 

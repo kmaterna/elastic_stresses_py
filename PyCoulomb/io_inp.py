@@ -10,6 +10,7 @@ Read Coulomb input files in the .inp format. Important parameters are:
 
 
 from . import coulomb_collections as cc
+from . import utilities
 from Tectonic_Utils.geodesy import fault_vector_functions
 import subprocess
 
@@ -177,7 +178,8 @@ def get_map_info(input_file):
 
 
 def write_inp(data_obj, outfile):
-    sources = data_obj.source_object;
+    rectangles, points, _ = utilities.separate_source_types(data_obj.source_object);
+    sources = rectangles + points;
     receivers = data_obj.receiver_object;
     num_faults = len(sources) + len(receivers);
     ofile = open(outfile, 'w');

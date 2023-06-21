@@ -53,7 +53,7 @@ def configure_stress_calculation(config_file):
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                          disp_points_file=gps_file, strain_file=strain_file,
                          strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
-                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
+                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, nu=poissons_ratio, B=B,
                          alpha=alpha, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp,
                          outdir=output_dir);
     print(MyParams);
@@ -107,7 +107,7 @@ def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                          disp_points_file=disp_points_file, strain_file=strain_file,
                          strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
-                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
+                         dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B, nu=pr,
                          alpha=alpha, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, outdir=outdir);
     return MyParams;
 
@@ -158,7 +158,7 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
                          disp_points_file=disp_points_file, strain_file=strain_file,
                          strike_num_receivers=str_num_receivers, fixed_rake=fixed_rake,
                          dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
-                         alpha=alpha, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp,
+                         alpha=alpha, nu=pr, plot_stress=plot_stress, plot_grd_disp=plot_grd_disp,
                          outdir=outdir);
     return MyParams;
 

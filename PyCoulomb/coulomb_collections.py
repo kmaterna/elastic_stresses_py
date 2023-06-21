@@ -11,7 +11,7 @@ Params = collections.namedtuple('Params', [
     'strike_num_receivers',
     'dip_num_receivers',
     'fixed_rake',
-    'mu', 'lame1', 'B', 'alpha',
+    'mu', 'lame1', 'B', 'alpha', 'nu',
     'plot_stress', 'plot_grd_disp', 'outdir']);
 
 Faults_object = collections.namedtuple('Faults_object', [
@@ -23,6 +23,7 @@ Faults_object = collections.namedtuple('Faults_object', [
     'top', 'bottom', 'comment',
     'R', 'R2', 'W', 'L', 'strike_unit_vector', 'dip_unit_vector', 'plane_normal']);
 """
+PyCoulomb faults object. 
 rtlat, reverse, tensile are in units of meters.
 Having both "rake" and "rtlat/reverse" in this object seems a little redundant, but it's used for receiver rake.
 See constructor construct_pycoulomb_fault() for the creating of this object.  
@@ -49,6 +50,11 @@ receiver_object = a list of Faults (pycoulomb format), with the same zerolon/zer
 Receiver_Horiz_Profile = collections.namedtuple('Receiver_Horiz_Profile', [
     'depth_km', 'strike', 'dip', 'rake', 'centerlon', 'centerlat', 'lon1d', 'lat1d',
     'width', 'length', 'inc', 'shape'])
+
+
+Mogi_Source = collections.namedtuple('Mogi_Source', ['xstart', 'ystart',
+                                                     'zerolon', 'zerolat', 'depth', 'dV']);
+
 
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',
