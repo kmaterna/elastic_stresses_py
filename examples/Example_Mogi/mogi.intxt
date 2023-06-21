@@ -3,5 +3,5 @@
 # General: PR1 FRIC lon_min lon_max lon_zero lat_min lat_max lat_zero
 # Source_Mogi: lon lat depth_km dV_m3
 
-General: 0.250 0.40 -120.0 -118.00 -119.00 34.0 36.0 35.0
-Source_Mogi: -119.2 34.9 3 1e6
+General: 0.250 0.40 -119.5 -118.50 -119.00 34.5 35.5 35.0
+Source_Mogi: -119.01 35.02 2.5 1e6

@@ -4,7 +4,7 @@ input_file = mogi.intxt
 output_dir = Outputs/
 plot_stress = 0
 plot_grd_disp = 1
-gps_disp_points = 
+gps_disp_points = gps_pts.txt
 aftershocks = 
 strain_file = 
 

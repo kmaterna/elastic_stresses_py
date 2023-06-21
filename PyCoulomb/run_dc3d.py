@@ -23,7 +23,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
 
     # Computes here.
     [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params);
-    model_disp_points = compute_ll_def(subfaulted_inputs, params.alpha, disp_points);
+    model_disp_points = compute_ll_def(subfaulted_inputs, params, disp_points);
     strain_tensor_results = compute_ll_strain(subfaulted_inputs, params.alpha, strain_points);
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs);
     receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs);
@@ -184,7 +184,7 @@ def compute_ll_strain(inputs, alpha, strain_points):
     return strain_tensor_results;
 
 
-def compute_ll_def(inputs, alpha, disp_points):
+def compute_ll_def(inputs, params, disp_points):
     """
     Loop through a list of lon/lat and compute their displacements due to all sources put together.
     """
@@ -194,16 +194,21 @@ def compute_ll_def(inputs, alpha, disp_points):
     print("Number of disp_points:", len(disp_points));
     for point in disp_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat);
-        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs.source_object, alpha, xi, yi);
-        model_point = Displacement_points(lon=point.lon, lat=point.lat, dE_obs=u_disp[0], dN_obs=v_disp[0],
-                                          dU_obs=w_disp[0], Se_obs=0, Sn_obs=0, Su_obs=0, name=point.name);
+        rectangles, points, mogis = utilities.separate_source_types(inputs.source_object);
+        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(rectangles + points, params.alpha, xi, yi);
+        u_mogi, v_mogi, w_mogi = run_mogi.compute_surface_disp_point(mogis, params.nu, xi, yi);
+        model_point = Displacement_points(lon=point.lon, lat=point.lat,
+                                          dE_obs=u_disp+u_mogi,
+                                          dN_obs=v_disp+v_mogi,
+                                          dU_obs=w_disp+w_mogi,
+                                          Se_obs=0, Sn_obs=0, Su_obs=0, name=point.name);
         model_disp_points.append(model_point);
     return model_disp_points;
 
 
 def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
     """
-    A major compute loop for each source object at one x/y point.
+    A major compute loop for each fault source object at one x/y point.
     x/y in the same coordinate system as the fault object. Computes displacement and strain tensor.
 
     :param sources: list of fault objects
@@ -211,6 +216,7 @@ def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
     :param x: float
     :param y: float
     :param compute_depth: depth of observation. Default depth is at surface of earth
+    :returns: three floats
     """
     u_disp, v_disp, w_disp = 0, 0, 0;
     strain_tensor_total = np.zeros((3, 3));
@@ -224,9 +230,9 @@ def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
         strain_tensor_total = np.add(strain_tensor, strain_tensor_total);
 
         # Update the displacements from all sources
-        u_disp = u_disp + desired_coords_u[0];
-        v_disp = v_disp + desired_coords_u[1];
-        w_disp = w_disp + desired_coords_u[2];  # vertical
+        u_disp = u_disp + desired_coords_u[0][0];
+        v_disp = v_disp + desired_coords_u[1][0];
+        w_disp = w_disp + desired_coords_u[2][0];  # vertical
 
     return u_disp, v_disp, w_disp, strain_tensor_total;
 

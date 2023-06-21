@@ -162,13 +162,13 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
 
     # Draw dots for EQ sources
     eq_lon, eq_lat = [], [];
-    for source in inputs.source_object:
+    for source in inputs.source_object:  # Plotting all types of sources
         source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
                                                                   inputs.zerolat);
         eq_lon.append(source_lon); eq_lat.append(source_lat);
     fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, fill="purple", pen="thin,black");
 
-    rect_sources, point_sources,_ = utilities.separate_source_types(inputs.source_object);
+    rect_sources, point_sources, _ = utilities.separate_source_types(inputs.source_object);
     for source in point_sources:  # draw focal mechanisms
         [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);

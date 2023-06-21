@@ -9,8 +9,10 @@ class Tests(unittest.TestCase):
     def test_okada_rect_vs_tri(self):
         obs_disp_points = PyCoulomb.io_additionals.read_disp_points("test/example_disp_field.txt");
         zerolon, zerolat = -115.68, 33.1012233;
-        alpha = 2/3;
+        test_params = PyCoulomb.configure_calc.configure_default_displacement_params(mu=30e9, lame1=30e9);
+        _, pr = PyCoulomb.conversion_math.get_poissons_ratio_and_alpha(mu=30e9, lame1=30e9)
         pr = 0.25;
+
         test_rectangular_fault = fso.fault_slip_object.FaultSlipObject(lon=zerolon, lat=zerolat, strike=50,
                                                                        dip=70, depth=3, segment=0, length=15, width=5,
                                                                        rake=170, slip=-0.2, tensile=0);
@@ -24,7 +26,7 @@ class Tests(unittest.TestCase):
 
         tri_faults = fst.fault_slip_triangle.convert_rectangle_into_two_triangles(test_rectangular_fault);
         modeled_tri_points = fst.triangle_okada.compute_disp_points_from_triangles(tri_faults, obs_disp_points, pr);
-        modeled_rect_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, alpha, obs_disp_points);
+        modeled_rect_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points);
 
         # # Optional: Visualizing the faults
         # fst.fault_slip_triangle.write_gmt_plots_geographic(tri_faults, "test/temp-outfile.txt");
