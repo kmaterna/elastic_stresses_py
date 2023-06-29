@@ -18,3 +18,6 @@ dependencies:
  - pygmt
  - pip
  - jinja2=3.0.3
+ - jupyterlab
+ - jupyter
+

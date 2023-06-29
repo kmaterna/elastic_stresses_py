@@ -28,10 +28,14 @@ e.g., Beeler et al., 2000.
 
 
 ### Installation on command line
-To install Elastic_stresses_py, first clone this library onto your computer. 
+To install Elastic_stresses_py, first clone this library onto your computer with ```git clone ``` and the address of the git repository (see the green **Code** button). 
 The easiest way to gather all the dependencies is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
-Then, from the conda environment you've just created, run ```pip install``` for okada_wrapper and Tectonic-Utils.  
+Then, from the conda environment you've just created, run ```pip install okada_wrapper``` and ```pip install Tectonic-Utils```.  
 Then, run ```python setup.py install``` from the directory where you've cloned the repository. 
+
+**NOTE 1:** Mac users switching from Intel architecture to M1 architecture may experience some errors when compiling code on their new architectures for the first time.  
+Such errors may appear as ```(mach-o file, but is an incompatible architecture)``` or similar.  If this happens, please re-install Xcode on your new architecture with ```xcode-select --install``` and try again.
+
 
 ### Installation in Anaconda GUI:
 
@@ -43,7 +47,7 @@ Then, run ```python setup.py install``` from the directory where you've cloned t
   
 * Also type ```pip install okada_wrapper```  
   * This step assumes you already have properly working C and fortran compilers, such as gcc and gfortran. You might have to get those separately.
-  * If you are working on Mac, you may need to ensure your Xcode installation is fully updated, including the command line tools. When Apple pushes out updates to the Xcode application, it often breaks the command line tools. To do so, run: ```xcode-select --install```
+  * **NOTE 1 AGAIN:** If you are working on Mac, you may need to ensure your Xcode installation is fully updated, including the command line tools. When Apple pushes out updates to the Xcode application, it often breaks the command line tools. To do so, run: ```xcode-select --install```
   
 * To install ```Elastic_stresses_py``` itself, we will use the terminal once more. Move to the location where you downloaded the source code and type ```python setup.py install``` 
   
