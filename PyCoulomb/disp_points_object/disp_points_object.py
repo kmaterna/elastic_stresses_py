@@ -9,7 +9,7 @@ class Displacement_points:
     Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', 'insar', etc.
     If starttime and endtime are used, they should be datetime objects.  Lon is between -180 and 180.
     """
-    def __init__(self,  lon, lat, dE_obs, dN_obs, dU_obs, Se_obs, Sn_obs, Su_obs, name=None, starttime=None,
+    def __init__(self,  lon, lat, dE_obs, dN_obs, dU_obs, Se_obs=0, Sn_obs=0, Su_obs=0, name=None, starttime=None,
                  endtime=None, refframe=None, meas_type=None):
         self.lon = utilities.wrap_lon(lon);
         self.lat = lat;
