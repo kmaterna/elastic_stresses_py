@@ -28,3 +28,24 @@ def read_pycoulomb_displacements(filename):
                                          dU_obs=disp_z_Okada[i], Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan);
         disp_points.append(disp_point);
     return disp_points;
+
+
+def read_nota_offsets_file(filename):
+    """Read the kalts file created by NOTA for each earthquake."""
+    disp_points = [];
+    start = 0;
+    with open(filename) as ifile:
+        for oneline in ifile:
+            if ' mm ' in oneline and ' deg ' in oneline:
+                start = 1;
+                continue;
+            if start and len(oneline.split()) > 1:
+                oneline = oneline.split();
+                lon, lat, dE, dN = float(oneline[0]), float(oneline[1]), float(oneline[2])/1000, float(oneline[3])/1000;
+                Se, Sn = float(oneline[4])/1000, float(oneline[5])/1000;
+                dU, Su = float(oneline[7])/1000, float(oneline[8])/1000;
+                name = oneline[9];
+                new_disp = Displacement_points(lon=lon, lat=lat, dE_obs=dE, dN_obs=dN, Se_obs=Se, Sn_obs=Sn,
+                                               dU_obs=dU, Su_obs=Su, name=name);
+                disp_points.append(new_disp);
+    return disp_points;
