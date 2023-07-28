@@ -1,5 +1,6 @@
 
-from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions, utilities
+from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions
+from Tectonic_Utils.geodesy import utilities as geod_utilities
 
 
 class Displacement_points:
@@ -11,14 +12,14 @@ class Displacement_points:
     """
     def __init__(self,  lon, lat, dE_obs, dN_obs, dU_obs, Se_obs=0, Sn_obs=0, Su_obs=0, name=None, starttime=None,
                  endtime=None, refframe=None, meas_type=None):
-        self.lon = utilities.wrap_lon(lon);
+        self.lon = geod_utilities.wrap_lon(lon);
         self.lat = lat;
-        self.dE_obs = dE_obs;
-        self.dN_obs = dN_obs;
-        self.dU_obs = dU_obs;
-        self.Se_obs = Se_obs;
-        self.Sn_obs = Sn_obs;
-        self.Su_obs = Su_obs;
+        self.dE_obs = dE_obs;  # meters
+        self.dN_obs = dN_obs;  # meters
+        self.dU_obs = dU_obs;  # meters
+        self.Se_obs = Se_obs;  # meters
+        self.Sn_obs = Sn_obs;  # meters
+        self.Su_obs = Su_obs;  # meters
         self.name = name;
         self.starttime = starttime;
         self.endtime = endtime;
@@ -36,7 +37,13 @@ class Displacement_points:
         else:
             return 0;
 
-    # ------------ REGULAR FUNCTIONS -------------- #
+    def is_meas_type(self, target_meas_type):
+        if self.meas_type == target_meas_type:
+            return 1;
+        else:
+            return 0;
+
+    # ------------ REGULAR OBJECT FUNCTIONS -------------- #
 
     def change_east_value(self, east_value):
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=east_value, dN_obs=self.dN_obs,
@@ -65,6 +72,8 @@ class Displacement_points:
         return los_defo;
 
     def translate_point_by_euler_pole(self, euler_pole_components):
+        """Rotate a point around a given euler pole.  Euler pole contains (ep_lon, ep_lat, omega).
+        Euler pole is in degrees and degrees/Ma."""
         [ep_lon, ep_lat, omega] = euler_pole_components;
         [ep_ve, ep_vn, ep_vu] = euler_pole.point_rotation_by_Euler_Pole([self.lon, self.lat], [ep_lon, ep_lat, omega]);
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=self.dE_obs + ep_ve / 1000,

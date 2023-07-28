@@ -9,6 +9,22 @@ import numpy as np
 from .disp_points_object import Displacement_points
 
 
+# ------- LIST COMPREHENSIONS AND WRAPPERS ---------- #
+
+def translate_by_euler_pole(disp_points_list, euler_pole_components):
+    """Rotate by euler pole."""
+    return [item.translate_point_by_euler_pole(euler_pole_components) for item in disp_points_list];
+
+
+def mult_disp_points_by(disp_points1, multiplier=-1):
+    """
+    Flip list of disp_points, or multiply by another value. The metadata and uncertainties will be retained.
+    """
+    return [item.multiply_by_value(multiplier) for item in disp_points1];
+
+
+# ------- REGULAR UTILITY FUNCTIONS ---------- #
+
 def subtract_disp_points(disp_points1, disp_points2, target='all', tol=0.001):
     """
     Subtract two lists of objects (1 minus 2) for the residuals.
@@ -84,14 +100,6 @@ def subtract_reference_from_disp_points(disp_points1, reference_disp_point, targ
     return new_station_vels;
 
 
-def mult_disp_points_by(disp_points1, multiplier=-1):
-    """
-    Flip list of disp_points, or multiply by another value.
-    The metadata and uncertainties will be retained.
-    """
-    return [item.multiply_by_value(multiplier) for item in disp_points1];
-
-
 def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
     """Create a synthetic grid of disp_point objects, useful for forward-calculations of displacement."""
     points = [];
@@ -100,9 +108,8 @@ def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
     [x2d, y2d] = np.meshgrid(x, y);
     for ky in range(len(y)):
         for kx in range(len(x)):
-            pt1 = Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx], dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0,
-                                      Sn_obs=0, Su_obs=0);
-            points.append(pt1);
+            points.append(Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx], dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0,
+                                              Sn_obs=0, Su_obs=0));
     return points;
 
 
@@ -110,17 +117,8 @@ def filter_to_meas_type(obs_points, meas_type='continuous'):
     """Filter a list of disp_points into a list of disp_points with a certain value of meas_type."""
     keep_obs_points = [];
     for item in obs_points:
-        if item.meas_type == meas_type:
+        if item.is_meas_type(meas_type):
             keep_obs_points.append(item);
-    return keep_obs_points;
-
-
-def filter_to_meas_type_by_second_table(obs_points, second_table_obs_points, meas_type='continuous'):
-    """Keep points on first table if they are a certain meas_type in second table."""
-    keep_obs_points = [];
-    for i, item in enumerate(second_table_obs_points):
-        if item.meas_type == meas_type:
-            keep_obs_points.append(obs_points[i]);
     return keep_obs_points;
 
 
@@ -206,11 +204,6 @@ def station_vel_object_to_disp_points(velfield):
                                              endtime=item.last_epoch, meas_type=item.meas_type, refframe=item.refframe);
         disp_points_list.append(new_disp_point);
     return disp_points_list;
-
-
-def translate_by_euler_pole(disp_points_list, euler_pole_components):
-    """Rotate by euler pole."""
-    return [item.translate_point_by_euler_pole(euler_pole_components) for item in disp_points_list];
 
 
 def extract_region_from_disp_points(disp_points_list):

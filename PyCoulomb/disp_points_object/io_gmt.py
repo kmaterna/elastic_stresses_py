@@ -1,7 +1,30 @@
 """
-Special output functions for disp_point_objects.
+Special i/o functions for disp_point_objects.
 More specific than the basic ones listed in io_additionals.py.
 """
+
+
+from .disp_points_object import Displacement_points
+
+def read_disp_points_gmt(filename):
+    """
+    Read disp_points from GMT psvelo format.
+    # lon lat dE dN dU Se Sn Su name\n
+
+    :param filename: string
+    """
+    disp_pts = [];
+    ifile = open(filename, 'r');
+    for line in ifile:
+        if line.split()[0] == "#":
+            continue;
+        else:
+            temp = line.split();
+            new_disp = Displacement_points(lon=float(temp[0]), lat=float(temp[1]), dE_obs=float(temp[2]),
+                                           dN_obs=float(temp[3]), Se_obs=float(temp[4]), Sn_obs=0,
+                                           dU_obs=0, Su_obs=0, name=temp[8]);
+            disp_pts.append(new_disp);
+    return disp_pts;
 
 
 def write_disp_points_gmt(disp_points, filename, write_meas_type=False):
