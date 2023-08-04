@@ -3,7 +3,6 @@ Special i/o functions for disp_point_objects.
 More specific than the basic ones listed in io_additionals.py.
 """
 
-
 from .disp_points_object import Displacement_points
 
 def read_disp_points_gmt(filename):
@@ -13,6 +12,7 @@ def read_disp_points_gmt(filename):
 
     :param filename: string
     """
+    print("Reading file %s " % filename);
     disp_pts = [];
     ifile = open(filename, 'r');
     for line in ifile:
@@ -20,9 +20,10 @@ def read_disp_points_gmt(filename):
             continue;
         else:
             temp = line.split();
-            new_disp = Displacement_points(lon=float(temp[0]), lat=float(temp[1]), dE_obs=float(temp[2]),
-                                           dN_obs=float(temp[3]), Se_obs=float(temp[4]), Sn_obs=0,
-                                           dU_obs=0, Su_obs=0, name=temp[8]);
+            new_disp = Displacement_points(lon=float(temp[0]), lat=float(temp[1]), dE_obs=float(temp[2])/1000,
+                                           dN_obs=float(temp[3])/1000, dU_obs=float(temp[4])/1000,
+                                           Se_obs=float(temp[5])/1000,
+                                           Sn_obs=float(temp[6])/1000, Su_obs=float(temp[7])/1000, name=temp[8]);
             disp_pts.append(new_disp);
     return disp_pts;
 

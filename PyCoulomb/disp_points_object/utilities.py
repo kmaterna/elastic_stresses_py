@@ -115,10 +115,7 @@ def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
 
 def filter_to_meas_type(obs_points, meas_type='continuous'):
     """Filter a list of disp_points into a list of disp_points with a certain value of meas_type."""
-    keep_obs_points = [];
-    for item in obs_points:
-        if item.is_meas_type(meas_type):
-            keep_obs_points.append(item);
+    keep_obs_points = [x for x in obs_points if x.is_meas_type(meas_type)];
     return keep_obs_points;
 
 
@@ -140,6 +137,11 @@ def filter_to_remove_near_fault(obs_points, fault_points, radius_km=5):
             far_field_points.append(item);
     print("Filtering creep: Returning %d of %d points " % (len(far_field_points), len(obs_points)));
     return far_field_points;
+
+
+def filter_to_remove_nans(obs_points):
+    keep_obs_points = [x for x in obs_points if x.has_full_data()];
+    return keep_obs_points;
 
 
 def filter_by_bounding_box(obs_points, bbox):

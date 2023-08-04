@@ -124,13 +124,15 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         for item in fault_traces_from_memory:
             fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
 
-    # Optional: pre-written fault edges, with 1-m hardcoded colorscale
+    # Optional: pre-written fault edges, with hardcoded colorscale
     if fault_traces_from_file:
-        pygmt.makecpt(cmap="polar", series=str(-1.0) + "/" + str(1.0) + "/" + str(0.01),
+        cbar_min = -0.5;
+        cbar_max = 0.5;
+        pygmt.makecpt(cmap="polar", series=str(cbar_min) + "/" + str(cbar_max) + "/" + str(0.01),
                       truncate="-1/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
         fig.plot(data=fault_traces_from_file, pen="0.2p,black", fill="+z", cmap='mycpt.cpt');
-        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", truncate=str(-1.0) + "/" + str(1.0),
-                     frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
+        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+                     truncate=str(cbar_min) + "/" + str(cbar_max), frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
 
     # Optional: Draw the updip trace of each fault segment
     if fault_traces_from_dict:

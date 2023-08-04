@@ -1,6 +1,7 @@
 
 from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions
 from Tectonic_Utils.geodesy import utilities as geod_utilities
+import numpy as np
 
 
 class Displacement_points:
@@ -42,6 +43,12 @@ class Displacement_points:
             return 1;
         else:
             return 0;
+
+    def has_full_data(self):
+        if np.isnan(self.dE_obs) or np.isnan(self.dN_obs) or np.isnan(self.dU_obs):
+            return 0;
+        else:
+            return 1;
 
     # ------------ REGULAR OBJECT FUNCTIONS -------------- #
 
