@@ -31,21 +31,12 @@ def unpack_horiz_disp_points_for_vectors(disp_points):
     disp_y_horiz = np.array([x.dN_obs for x in disp_points if ~np.isnan(x.dE_obs)]);
     return [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz];
 
-def get_total_slip_from_x(x):
-    return x.get_total_slip();
 
-def get_blank_slip_from_x(x):
-    return x.get_blank_fault();
-
-
-def write_patch_edges_for_plotting(fault_dict_list, colorby='slip'):
+def write_patch_edges_for_plotting(fault_dict_list, plotting_function=lambda x: x.get_total_slip):
     """
-    Plot the full patches and the surface traces of a collection of rectangular faults.  Can colorcode by slip.
+    Plot the full patches and the surface traces of a collection of rectangular faults.  Colorcode by slip (default).
+    plotting_function is a function that operates on a fault_dict object to return a float.
     """
-    if colorby == "slip":
-        plotting_function = get_total_slip_from_x;
-    else:
-        plotting_function = get_blank_slip_from_x;
     fso.write_gmt_fault_file(fault_dict_list, 'tmp.txt', color_mappable=plotting_function, verbose=False);
     fso.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
     return "tmp.txt", "tmp2.txt";
@@ -56,7 +47,7 @@ def automatically_determine_map_region(region_given=None, fault_dict_list=None, 
     Automatically select a map region [W, E, S, N] for a given list of fault segments and disp_point_objects.
     """
     region = region_given;
-    if not region_given:  # automatically determine the region
+    if not region_given:  # automatically determine region
         if len(fault_dict_list) > 0:
             minlon, maxlon, minlat, maxlat = fso.get_four_corners_lon_lat_multiple(fault_dict_list);
         elif len(disp_points) > 0:
@@ -68,10 +59,11 @@ def automatically_determine_map_region(region_given=None, fault_dict_list=None, 
 
 
 def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), region=None,
-                                 scale_arrow=(1.0, 0.010, "10 mm"), v_labeling_interval=None,
+                                 scale_arrow=(1.0, 0.010, "10 mm"),
                                  fault_traces_from_memory=None, fault_traces_from_dict=None,
-                                 fault_traces_from_file=None, title="",
-                                 plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1, map_scale=25):
+                                 fault_traces_from_file=None, title="", vmin=None, vmax=None, v_labeling_interval=None,
+                                 plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1, map_scale=25,
+                                 slip_cbar_opts=None):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions of rectangular faults.
     In order to use this function with other fault formats, convert to the internal rectangular fault dict first.
@@ -86,10 +78,13 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param fault_traces_from_dict: a list of fault_dict objects that will be used for updip fault traces
     :param fault_traces_from_file: string, optional filename with fault traces to be plotted
     :param title: string
+    :param vmin: float, bottom of vertical color bar
+    :param vmax: float, top of vertical color bar
     :param plot_slip_colorbar: bool, whether to show a color bar for fault slip
     :param vert_disp_units: string, describing the units of the vertical scale bar
     :param vert_mult: can turn verticals into mm by providing 1000 if you want (default is meters)
     :param map_scale: int, in km
+    :param slip_cbar_opts: tuple with (cbar_min, cbar_max, cbar_int) for fault slip cbar
     """
     print("Plotting outfile %s " % outfile);
     proj = "M7i"
@@ -102,45 +97,47 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame=str(fig_width_deg/5));
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='lightblue');
 
+    # Draw fault slip for a list of faults; draw a color scale.
     if len(fault_dict_list) > 0:
-        # Drawing fault slip with a color scale.
         fault_colors = [_i.slip for _i in fault_dict_list];
-        [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors);
-        if len(fault_colors) > 0:
-            pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
-                          truncate="0/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
-            # Write the source patches
-            file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='slip');  # write the source patches
-            fig.plot(data=file1, pen="0.2p,black", fill="+z", cmap="mycpt.cpt");
-            fig.plot(data=file2, pen="0.6p,black");   # shallow edges
-            os.remove(file1); os.remove(file2);
+        if slip_cbar_opts:
+            cmap_opts, cbar_opts = slip_cbar_opts, slip_cbar_opts;  # user-defined color bar
+        else:
+            [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors);  # auto-defined color bar
+        pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
+                      truncate="0/1", background="o", reverse=True, output="mycpt.cpt");
+        file1, file2 = write_patch_edges_for_plotting(fault_dict_list);  # write source patches, colored by slip
+        fig.plot(data=file1, pen="0.2p,black", fill="+z", cmap="mycpt.cpt");
+        fig.plot(data=file2, pen="0.6p,black");   # shallow edges
+        os.remove(file1); os.remove(file2);
         if plot_slip_colorbar:
             fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
                          truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
                          frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""]);
 
-    # Optional: lines you can draw on the plot
+    # Draw pre-written fault edges from GMT format, with colorbar (useful for triangles or descriptive data)
+    if fault_traces_from_file:
+        if slip_cbar_opts is None:
+            raise ValueError("Error! Requesting to plot slip from GMT file, but no slip_cbar_opts provided.");
+        pygmt.makecpt(cmap="polar", truncate="-1/1", background="o", reverse=True, output="mycpt.cpt",
+                      series=str(slip_cbar_opts[0]) + "/" + str(slip_cbar_opts[1]) + "/" + str(slip_cbar_opts[2]));
+        fig.plot(data=fault_traces_from_file, pen="0.2p,black", fill="+z", cmap='mycpt.cpt');
+        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+                     truncate=str(slip_cbar_opts[0]) + "/" + str(slip_cbar_opts[1]),
+                     frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
+
+    # Draw fault traces (lines) on the plot
     if fault_traces_from_memory:
         for item in fault_traces_from_memory:
             fig.plot(x=item[0], y=item[1], pen="thickest,darkred");
 
-    # Optional: pre-written fault edges, with hardcoded colorscale
-    if fault_traces_from_file:
-        cbar_min = -0.5;
-        cbar_max = 0.5;
-        pygmt.makecpt(cmap="polar", series=str(cbar_min) + "/" + str(cbar_max) + "/" + str(0.01),
-                      truncate="-1/1", background="o", reverse=True, output="mycpt.cpt");  # slip divided into 100
-        fig.plot(data=fault_traces_from_file, pen="0.2p,black", fill="+z", cmap='mycpt.cpt');
-        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
-                     truncate=str(cbar_min) + "/" + str(cbar_max), frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
-
-    # Optional: Draw the updip trace of each fault segment
+    # Draw the updip trace of each fault segment
     if fault_traces_from_dict:
         for item in fault_dict_list:
             lons, lats = item.get_updip_corners_lon_lat();
             fig.plot(x=lons, y=lats, pen="thickest,darkred");
 
-    # Vector displacements
+    # Draw vector displacements
     if len(disp_points) > 0:
         [lon, lat, _, _, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(disp_points);
         [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz] = unpack_horiz_disp_points_for_vectors(disp_points);
@@ -148,7 +145,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         if sum(~np.isnan(disp_z)) > 0:  # display vertical data if it's provided
             disp_z_vert = np.multiply(disp_z_vert, vert_mult);
             [v_cmap_opts, v_cbar_opts] = utilities.define_colorbar_series(disp_z_vert, tol=0.0001,
-                                                                          v_labeling_interval=v_labeling_interval);
+                                                                          v_labeling_interval=v_labeling_interval,
+                                                                          vmin=vmin, vmax=vmax);
             series_str = str(v_cmap_opts[0])+"/" + str(v_cmap_opts[1]) + "/" + str(v_cmap_opts[2])
             pygmt.makecpt(cmap="roma", series=series_str, background="o", output="vert.cpt");
             fig.plot(x=lon_vert, y=lat_vert, style='c0.3c', fill=disp_z_vert, cmap='vert.cpt', pen="thin,black");
@@ -215,7 +213,8 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
             [_, _, _, _, disp_z, lon_vert, lat_vert, disp_z_vert] = unpack_disp_points(model_disp_points);
             [lon_horiz, lat_horiz, dispx_horiz, dispy_horiz] = unpack_horiz_disp_points_for_vectors(model_disp_points);
 
-            file1, file2 = write_patch_edges_for_plotting(fault_dict_list, colorby='None');
+            file1, file2 = write_patch_edges_for_plotting(fault_dict_list,
+                                                          plotting_function=lambda x: x.get_blank_fault);
             fig.plot(data=file1, pen="0.2p,black", fill="white");  # annotate the rectangular fault patches
             fig.plot(data=file2, pen="0.6p,black", projection=proj);  # annotate shallow edges of rect. fault patches
             os.remove(file1); os.remove(file2);
