@@ -119,6 +119,10 @@ class FaultSlipObject:
         distance_3d = np.sqrt(np.square(h_distance) + np.square(depth_distance))
         return distance_3d;
 
+    def get_top_bottom_depths(self):
+        top, bottom = fault_vector_functions.get_top_bottom_from_top(self.depth, self.width, self.dip);
+        return top, bottom;
+
     def get_fault_area(self):
         """Return the area of a rectangular fault. Units: square meters."""
         A = self.width * 1000 * self.length * 1000;
@@ -209,7 +213,7 @@ class FaultSlipObject:
         """
         zerolon = self.lon if not zerolon_system else zerolon_system;
         zerolat = self.lat if not zerolat_system else zerolat_system;
-        _top, bottom = fault_vector_functions.get_top_bottom_from_top(self.depth, self.width, self.dip);
+        _, bottom = self.get_top_bottom_depths()
         [startx, starty] = fault_vector_functions.latlon2xy_single(self.lon, self.lat, zerolon, zerolat);
 
         rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(self.slip, self.rake);
@@ -220,6 +224,26 @@ class FaultSlipObject:
                                                   zerolon=zerolon, zerolat=zerolat, rake=self.rake,
                                                   top=self.depth, bottom=bottom, comment='');
         return one_source;
+
+    def subdivide_by_depth(self, num_divisions):
+        """
+        Subdivide a rectangular fault into an integer number of sub-faults along its width (i.e., down-dip) axis.
+        """
+        divided_faults_list = [];
+        lons, lats = self.get_four_corners_lon_lat();
+        lons_range = lons[-2] - lons[-1];
+        lats_range = lats[-2] - lats[-1];
+        top, bottom = self.get_top_bottom_depths();
+        depth_range = bottom - top;
+        for i in range(num_divisions):
+            new_item = FaultSlipObject(strike=self.strike, dip=self.dip, length=self.length,
+                                       width=self.width/num_divisions,
+                                       lon=self.lon + lons_range * i / num_divisions,
+                                       lat=self.lat + lats_range * i / num_divisions,
+                                       depth=self.depth + depth_range * i / num_divisions,
+                                       slip=self.slip, rake=self.rake, tensile=self.tensile, segment=self.segment);
+            divided_faults_list.append(new_item);
+        return divided_faults_list;
 
 
 """
