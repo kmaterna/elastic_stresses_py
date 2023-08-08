@@ -1,5 +1,5 @@
 """
-The functions in this package operate on cc.disp_points objects.
+The functions in this package operate on disp_points objects.
 Displacement_points = ['lon', 'lat', 'dE_obs'[m], 'dN_obs'[m], 'dU_obs'[m], 'Se_obs'[m], 'Sn_obs'[m], 'Su_obs'[m],
 'name', 'starttime', 'endtime', 'refframe', 'meas_type'];
 Disp_points are lists of individual disp_point elements.
@@ -21,6 +21,16 @@ def mult_disp_points_by(disp_points1, multiplier=-1):
     Flip list of disp_points, or multiply by another value. The metadata and uncertainties will be retained.
     """
     return [item.multiply_by_value(multiplier) for item in disp_points1];
+
+
+def with_easts_as(disp_points_list, east_array):
+    """
+    :param disp_points_list: list of disp_point_objects.
+    :param east_array: list of floats, matching length with disp_points_list.
+    """
+    if len(disp_points_list) != len(east_array):
+        raise ValueError("Error! Length of east_array not equal to length of disp_points_list.");
+    return [disp_points_list[i].with_east_as(east_array[i]) for i in range(len(disp_points_list))];
 
 
 # ------- REGULAR UTILITY FUNCTIONS ---------- #
@@ -108,10 +118,11 @@ def generate_grid_of_disp_points(W, E, S, N, xinc, yinc):
     [x2d, y2d] = np.meshgrid(x, y);
     for ky in range(len(y)):
         for kx in range(len(x)):
-            points.append(Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx], dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0,
-                                              Sn_obs=0, Su_obs=0));
+            points.append(Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx], dE_obs=0, dN_obs=0, dU_obs=0));
     return points;
 
+
+# ------- MAP / FILTER / REDUCE FUNCTIONS ---------- #
 
 def filter_to_meas_type(obs_points, meas_type='continuous'):
     """Filter a list of disp_points into a list of disp_points with a certain value of meas_type."""
@@ -193,6 +204,14 @@ def extract_particular_station_from_list(disp_points_list, station_lon, station_
         raise ValueError("Error in referencing this array!  Zero stations found at the reference location.");
 
 
+def extract_region_from_disp_points(disp_points_list):
+    """Operates on a list of disp_points. Returns bbox [W, E, S, N]."""
+    lon = np.array([x.lon for x in disp_points_list]);
+    lat = np.array([x.lat for x in disp_points_list]);
+    region = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)];
+    return region;
+
+
 def station_vel_object_to_disp_points(velfield):
     """
     Convert from StationVel objects from GNSS Python library into disp_points.
@@ -206,25 +225,3 @@ def station_vel_object_to_disp_points(velfield):
                                              endtime=item.last_epoch, meas_type=item.meas_type, refframe=item.refframe);
         disp_points_list.append(new_disp_point);
     return disp_points_list;
-
-
-def extract_region_from_disp_points(disp_points_list):
-    """Operates on a list of disp_points. Returns bbox [W, E, S, N]."""
-    lon = np.array([x.lon for x in disp_points_list]);
-    lat = np.array([x.lat for x in disp_points_list]);
-    region = [np.min(lon), np.max(lon), np.min(lat), np.max(lat)];
-    return region;
-
-
-def set_east(disp_points_list, east_array):
-    """
-    :param disp_points_list: list of disp_point_objects.
-    :param east_array: list of floats, matching length with disp_points_list.
-    """
-    new_array = [];
-    if len(disp_points_list) != len(east_array):
-        raise ValueError("Error! Length of east_array not equal to length of disp_points_list.");
-    for i in range(len(disp_points_list)):
-        item = disp_points_list[i].change_east_value(east_array[i]);
-        new_array.append(item);
-    return new_array;

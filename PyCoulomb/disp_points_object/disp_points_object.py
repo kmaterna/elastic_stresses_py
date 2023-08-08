@@ -9,7 +9,7 @@ class Displacement_points:
     Displacement_points are individual disp_point elements, can be put into lists of elements.
     dE_obs, Se_obs, etc. in meters.
     Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', 'insar', etc.
-    If starttime and endtime are used, they should be datetime objects.  Lon is between -180 and 180.
+    starttime and endtime are optional datetime objects.  Lon is between -180 and 180.
     """
     def __init__(self,  lon, lat, dE_obs, dN_obs, dU_obs, Se_obs=0, Sn_obs=0, Su_obs=0, name=None, starttime=None,
                  endtime=None, refframe=None, meas_type=None):
@@ -52,12 +52,25 @@ class Displacement_points:
 
     # ------------ REGULAR OBJECT FUNCTIONS -------------- #
 
-    def change_east_value(self, east_value):
+    def with_east_as(self, east_value):
+        """
+        Return a new copy of the object after setting the value of dE_obs to a new value.
+        Different from set_east_value(), which modifies the same object in-place.
+        """
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=east_value, dN_obs=self.dN_obs,
                                    dU_obs=self.dU_obs, Se_obs=self.Se_obs, Sn_obs=self.Sn_obs, Su_obs=self.Su_obs,
                                    name=self.name, starttime=self.starttime, endtime=self.endtime,
                                    refframe=self.refframe, meas_type=self.meas_type);
         return obj2;
+
+    def set_east_value(self, east_value):
+        self.dE_obs = east_value;
+
+    def set_north_value(self, north_value):
+        self.dN_obs = north_value;
+
+    def set_vert_value(self, vert_value):
+        self.dU_obs = vert_value;
 
     def multiply_by_value(self, value):
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=value * self.dE_obs, dN_obs=value * self.dN_obs,
@@ -73,9 +86,8 @@ class Displacement_points:
         :param lkv_u: up look vector component from ground to satellite
         :returns: los_defo, float, in meters
         """
-        flight_angle, incidence_angle = insar_vector_functions.look_vector2flight_incidence_angles(lkv_e, lkv_n, lkv_u);
-        los_defo = insar_vector_functions.def3D_into_LOS(self.dE_obs, self.dN_obs, self.dU_obs, flight_angle,
-                                                         incidence_angle);
+        flight_angle, inc_angle = insar_vector_functions.look_vector2flight_incidence_angles(lkv_e, lkv_n, lkv_u);
+        los_defo = insar_vector_functions.def3D_into_LOS(self.dE_obs, self.dN_obs, self.dU_obs, flight_angle, inc_angle)
         return los_defo;
 
     def translate_point_by_euler_pole(self, euler_pole_components):
