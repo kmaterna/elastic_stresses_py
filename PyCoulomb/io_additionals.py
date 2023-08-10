@@ -29,7 +29,7 @@ def read_aftershock_table(infile):
     return [lon, lat, depth, magnitude, time];
 
 
-def read_disp_points(infile):
+def read_disp_points(infile, default_Se_obs=np.nan, default_Sn_obs=np.nan, default_Su_obs=np.nan):
     """
     A file with lon/lat points that we are computing displacements.
     If the observed displacements are given in the additional columns,
@@ -49,7 +49,7 @@ def read_disp_points(infile):
         else:
             lon, lat = float(temp[0]), float(temp[1]);
             dE_obs, dN_obs, dU_obs = np.nan, np.nan, np.nan;
-            Se_obs, Sn_obs, Su_obs = np.nan, np.nan, np.nan;
+            Se_obs, Sn_obs, Su_obs = default_Se_obs, default_Sn_obs, default_Su_obs;
             name = "";
             # Ultimately it might be better to have a different way of determining formats, but for now...
             if len(temp) == 3:  # if file is: lon, lat, name

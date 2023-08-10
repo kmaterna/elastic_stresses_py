@@ -63,7 +63,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                                  fault_traces_from_memory=None, fault_traces_from_dict=None,
                                  fault_traces_from_file=None, title="", vmin=None, vmax=None, v_labeling_interval=None,
                                  plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1, map_scale=25,
-                                 slip_cbar_opts=None):
+                                 slip_cbar_opts=(-1, 1, 0.001)):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions of rectangular faults.
     In order to use this function with other fault formats, convert to the internal rectangular fault dict first.
