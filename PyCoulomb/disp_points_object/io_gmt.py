@@ -28,20 +28,23 @@ def read_disp_points_gmt(filename):
     return disp_pts;
 
 
-def write_disp_points_gmt(disp_points, filename, write_meas_type=False):
+def write_disp_points_gmt(disp_points, filename, write_meas_type=False, multiply_by=1):
     """
     Write disp_points in GMT psvelo format.
 
     :param disp_points: list of disp_points_objects
     :param filename: string
     :param write_meas_type: bool, similar to 'verbose', to write an extra column with meas_type
+    :param multiply_by: a unit conversion for displacements and uncertainties. Default 1.
     """
     print("Writing %s " % filename);
     ofile = open(filename, 'w');
     ofile.write("# lon lat dE dN dU Se Sn Su name\n");
     for item in disp_points:
-        ofile.write("%f %f %f %f %f " % (item.lon, item.lat, item.dE_obs, item.dN_obs, item.dU_obs) );
-        ofile.write("%f %f %f %s " % (item.Se_obs, item.Sn_obs, item.Su_obs, item.name));
+        ofile.write("%f %f %f %f %f " % (item.lon, item.lat, multiply_by*item.dE_obs, multiply_by*item.dN_obs,
+                                         multiply_by*item.dU_obs) );
+        ofile.write("%f %f %f %s " % (multiply_by*item.Se_obs, multiply_by*item.Sn_obs, multiply_by*item.Su_obs,
+                                      item.name));
         if write_meas_type:
             ofile.write("%s " % item.meas_type);
         ofile.write("\n");
