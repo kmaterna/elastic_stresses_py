@@ -100,6 +100,17 @@ class FaultSlipObject:
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, source.zerolon, source.zerolat);
         return lons, lats;
 
+    def get_geographic_center(self):
+        """
+        Return the geographic center of a rectangular fault patch, in (lon, lat, depth).
+        """
+        lons, lats = self.get_four_corners_lon_lat();
+        center_lon = np.nanmean(lons[0:4]);
+        center_lat = np.nanmean(lats[0:4]);
+        top, bottom = self.get_top_bottom_depths();
+        center_depth = np.nanmean([top, bottom]);
+        return center_lon, center_lat, center_depth;
+
     def get_updip_corners_lon_lat(self):
         """
         Return the lon/lat of 2 shallow corners of a fault_object.
