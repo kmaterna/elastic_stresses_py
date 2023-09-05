@@ -32,7 +32,7 @@ def unpack_horiz_disp_points_for_vectors(disp_points):
     return [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz];
 
 
-def write_patch_edges_for_plotting(fault_dict_list, plotting_function=lambda x: x.get_total_slip):
+def write_patch_edges_for_plotting(fault_dict_list, plotting_function=lambda x: fso.get_total_slip(x)):
     """
     Plot the full patches and the surface traces of a collection of rectangular faults.  Colorcode by slip (default).
     plotting_function is a function that operates on a fault_dict object to return a float.

@@ -373,12 +373,15 @@ def filter_by_segment(fault_object_list, segment_num=0):
 def get_blank_fault_function(x):
     return x.get_blank_fault();
 
+def get_total_slip(x):
+    return x.get_total_slip();
+
 
 def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function, verbose=True):
     """
     Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT.
     By default, does not provide color on the fault patches.
-    color_mappable can be 1d array of scalars, or a function of the object's class.
+    color_mappable can be 1d array of scalars, or a function that takes an object of the fault's type.
     """
     if verbose:
         print("Writing file %s " % outfile);
