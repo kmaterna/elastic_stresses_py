@@ -2,6 +2,7 @@ import scipy.io
 import numpy as np
 from osgeo import osr  # gdal library, works inside pygmt environment
 from .. import fault_slip_triangle
+from Tectonic_Utils.geodesy import fault_vector_functions as fvf
 
 
 def convert_points_to_wgs84(x, y):
@@ -49,3 +50,37 @@ def read_brawley_lohman_2005(filename):
         triangle_list.append(new_triangle);
     print("--> Returning %d triangular fault patches" % len(triangle_list));
     return triangle_list;
+
+def extract_given_patch_helper(nodes, idx):
+    """ nodes = 1859 x 3.  idx = [a b c]."""
+    xs = [nodes[idx[0]-1][0], nodes[idx[1]-1][0], nodes[idx[2]-1][0], nodes[idx[0]-1][0]];
+    ys = [nodes[idx[0]-1][1], nodes[idx[1]-1][1], nodes[idx[2]-1][1], nodes[idx[0]-1][1]];
+    depths = [nodes[idx[0]-1][2], nodes[idx[1]-1][2], nodes[idx[2]-1][2], nodes[idx[0]-1][2]];
+    return xs, ys, depths;
+
+def read_csz_bartlow_2019(input_file):
+    """
+    Read matlab file format used for the inversions in Materna et al., 2019.
+    Returns a list of triangular fault patches and a list of node points.
+    """
+    print("Reading file %s " % input_file);
+    data_structure = scipy.io.loadmat(input_file);
+    nodes = data_structure['nd_ll'];  # all the nodes for the entire CSZ, a big array from Canada to MTJ.
+    elements = data_structure['el'];  # elements
+
+    # Open all the fault patches
+    fault_patches = [];
+    for i, item in enumerate(elements):
+        xs, ys, depths = extract_given_patch_helper(nodes, item);
+        reflon, reflat = xs[0], ys[0];
+        v1x, v1y = fvf.latlon2xy_single(xs[0], ys[0], reflon, reflat);
+        v2x, v2y = fvf.latlon2xy_single(xs[1], ys[1], reflon, reflat);
+        v3x, v3y = fvf.latlon2xy_single(xs[2], ys[2], reflon, reflat);
+        new_ft = fault_slip_triangle.TriangleFault(vertex1=[v1x*1000, v1y*1000, depths[0]*-1000],
+                                                   vertex2=[v2x*1000, v2y*1000, depths[1]*-1000],
+                                                   vertex3=[v3x*1000, v3y*1000, depths[2]*-1000],
+                                                   lon=reflon, lat=reflat, depth=depths[0],
+                                                   rtlat_slip=0, dip_slip=1);
+        fault_patches.append(new_ft);
+    print("--> Returning %d triangular fault patches" % len(fault_patches));
+    return fault_patches, nodes;

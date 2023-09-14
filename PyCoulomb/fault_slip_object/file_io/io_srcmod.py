@@ -15,7 +15,7 @@ def read_srcmod_distribution(infile):
 
     :param infile: name of input slip distribution file, defined to be the '.fsp' file
     :type infile: string
-    :returns: list of fault slip objectss
+    :returns: list of fault slip objects
     :rtype: list
     """
     print("Reading SRCMOD distribution %s " % infile);
@@ -113,6 +113,8 @@ def determine_nx_nz_for_multiple_segments(filename):
                         break;
                     if len(newline) > 0 and newline[0] != '%':
                         depth_list.append(float(newline.split()[4]));
+                    if len(newline) == 0:
+                        break;
         ifile.close();
     return segment_list, nx_list, nz_list, rake_col;
 

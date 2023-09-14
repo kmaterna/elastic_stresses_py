@@ -201,7 +201,7 @@ class TriangleFault:
                                                                    potency=[], strike=self.get_strike(),
                                                                    dipangle=self.get_dip(), rake=rake,
                                                                    zerolon=zerolon, zerolat=zerolat,
-                                                                   top=centroid[2]/1000, bottom=centroid[2]/1000+0.01);
+                                                                   top=centroid[2]/1000, bottom=centroid[2]/1000+0.2);
         return one_source;
 
 
@@ -299,6 +299,22 @@ def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=return_tot
             slip_for_coloring = color_mappable(item);
             vertex1, vertex2, vertex3 = item.get_ll_corners();
             ofile.write("> -Z%f \n" % slip_for_coloring);
+            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
+            ofile.write("%f %f \n" % (vertex2[0], vertex2[1]));
+            ofile.write("%f %f \n" % (vertex3[0], vertex3[1]));
+            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
+    return;
+
+
+def write_colored_triangles(triangle_list, outfile, color_array):
+    """
+    The same as above, except the color array is a 1-d array with the same length as triangle_list
+    """
+    print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
+    with open(outfile, 'w') as ofile:
+        for i, item in enumerate(triangle_list):
+            vertex1, vertex2, vertex3 = item.get_ll_corners();
+            ofile.write("> -Z%f \n" % color_array[i]);
             ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
             ofile.write("%f %f \n" % (vertex2[0], vertex2[1]));
             ofile.write("%f %f \n" % (vertex3[0], vertex3[1]));

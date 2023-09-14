@@ -19,6 +19,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     print("Beginning stress calculation.");
     print("Number of sources: %d " % len(inputs.source_object));
     print("Number of receivers: %d " % len(inputs.receiver_object));
+    print("Coefficient of friction: %f" % inputs.FRIC);
     subfaulted_inputs = split_subfault_receivers(params, inputs);
 
     # Computes here.
