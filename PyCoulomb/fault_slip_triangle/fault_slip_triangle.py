@@ -2,7 +2,7 @@
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions, haversine
 from Tectonic_Utils.seismo import moment_calculations
-from .. import conversion_math
+from .. import conversion_math, coulomb_collections
 from Elastic_stresses_py.PyCoulomb.fault_slip_object.fault_slip_object import fault_object_to_coulomb_fault
 
 
@@ -83,7 +83,10 @@ class TriangleFault:
         return vertex1, vertex2, vertex3;
 
     def compute_triangle_centroid(self):
-        """Compute cartesian centroid of a triangular fault. Returns a numpy array."""
+        """
+        Compute cartesian centroid of a triangular fault in m, relative to self.lon and self.lat.
+        Returns a numpy array
+        """
         x_centroid = np.mean([self.vertex1[0], self.vertex2[0], self.vertex3[0]]);
         y_centroid = np.mean([self.vertex1[1], self.vertex2[1], self.vertex3[1]]);
         z_centroid = np.mean([self.vertex1[2], self.vertex2[2], self.vertex3[2]]);
@@ -151,6 +154,55 @@ class TriangleFault:
         d = self.get_total_slip();
         moment = moment_calculations.moment_from_muad(mu, A, d);
         return moment;
+
+    def get_fault_normal(self):
+        """
+        Return the upward unit-normal-vector to the plane of the triangle
+        """
+        vector1 = np.array([self.vertex2[0] - self.vertex1[0],
+                            self.vertex2[1] - self.vertex1[1],
+                            self.vertex2[2] - self.vertex1[2]])
+        vector2 = np.array([self.vertex3[0] - self.vertex1[0],
+                            self.vertex3[1] - self.vertex1[1],
+                            self.vertex3[2] - self.vertex1[2]])
+        fault_normal = fault_vector_functions.get_unit_vector(np.cross(vector1, vector2));
+        if fault_normal[2] > 0:
+            fault_normal = np.multiply(fault_normal, -1);
+        return fault_normal;
+
+    def get_strike(self):
+        fault_normal = self.get_fault_normal();
+        strike = np.rad2deg(np.arctan2(fault_normal[0], fault_normal[1])) - 90
+        return strike;
+
+    def get_dip(self):
+        dip = np.rad2deg(np.arccos(np.dot(self.get_fault_normal(), [0, 0, -1])));
+        return dip;
+
+    def fault_triangle_to_coulomb_fault(self, zerolon_system=None, zerolat_system=None):
+        """
+        Convert a triangular fault object into a source object for Elastic_stresses_py.
+        It will be a small rectangle centered around the centroid of the triangle
+        By default, the bottom corner of the fault is the center of the coordinate system, but
+        Parameters zerolon_system and zerolat_system can be passed in.
+        """
+        zerolon = self.lon if not zerolon_system else zerolon_system;
+        zerolat = self.lat if not zerolat_system else zerolat_system;
+        rake = fault_vector_functions.get_rake(self.rtlat_slip, self.dip_slip);
+
+        centroid = self.compute_triangle_centroid();  # in meters
+        [refx0, refy0] = fault_vector_functions.latlon2xy_single(self.lon, self.lat, zerolon, zerolat)  # in km
+        [xstart, ystart] = refx0 + centroid[0]/1000, refy0 + centroid[1]/1000;  # in km with respect to zerolon/lat
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xstart, ystart, 1, self.get_strike());
+
+        one_source = coulomb_collections.construct_pycoulomb_fault(xstart=xstart, xfinish=xfinish, ystart=ystart,
+                                                                   yfinish=yfinish, rtlat=self.rtlat_slip,
+                                                                   reverse=self.dip_slip, tensile=self.tensile,
+                                                                   potency=[], strike=self.get_strike(),
+                                                                   dipangle=self.get_dip(), rake=rake,
+                                                                   zerolon=zerolon, zerolat=zerolat,
+                                                                   top=centroid[2]/1000, bottom=centroid[2]/1000+0.01);
+        return one_source;
 
 
 def convert_rectangle_into_two_triangles(one_fault_obj):
@@ -282,3 +334,17 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=ret
         ofile.write("%f %f\n" % (xprime1[0], -fault.vertex1[2]/1000));
     ofile.close();
     return;
+
+
+def fault_triangles_to_coulomb_fault(fault_object_list, zerolon_system=None, zerolat_system=None):
+    """
+    Convert a list of triangular fault objects into a list of small Coulomb source objects for Elastic_stresses_py.
+    Parameters zerolon_system and zerolat_system can be passed in for system with 1+ faults.
+    """
+    source_object = [];
+    if len(fault_object_list) > 1 and zerolon_system is None:
+        print("Warning! You are converting multiple faults to cartesian without defining a system coordinate system!");
+    for onefault in fault_object_list:
+        one_source = onefault.fault_triangle_to_coulomb_fault(zerolon_system, zerolat_system);
+        source_object.append(one_source);
+    return source_object;
