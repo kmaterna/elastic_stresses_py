@@ -161,13 +161,16 @@ def filter_to_remove_outliers(obs_points, outlier_def=0.2, verbose=False):
     :param outlier_def: magnitude of large total displacement, in meters
     :param verbose: bool, default False
     """
-    keep_obs_points = [];
+    keep_obs_points, exclude_list = [], [];
     for item in obs_points:
         if np.sqrt(np.square(item.dE_obs) + np.square(item.dN_obs) + np.square(item.dU_obs)) < outlier_def:
             keep_obs_points.append(item);
+        else:
+            exclude_list.append(item.name);
     if verbose:
         print("Filtering to remove outliers: Returning %d out of %d original points." % (len(keep_obs_points),
                                                                                          len(obs_points)));
+        print("--> Excluding stations ", exclude_list);
     return keep_obs_points;
 
 
