@@ -23,9 +23,8 @@ def configure_stress_calculation(config_file):
         if configobj.has_option('io-config', 'gps_disp_points') else None;
     strain_file = configobj.get('io-config', 'strain_file') \
         if configobj.has_option('io-config', 'strain_file') else None;
-    if output_dir[-1] != '/':
-        output_dir = output_dir + '/';
-    output_dir = output_dir + exp_name + '/';
+    os.path.join(output_dir, '');
+    output_dir = os.path.join(output_dir, exp_name, '');
     if configobj.has_option('io-config', 'plot_stress'):
         plot_stress = configobj.getint('io-config', 'plot_stress');
     else:
@@ -68,9 +67,9 @@ def write_params_into_config(params, outfile):
     configobj = configparser.ConfigParser()
     configobj["io-config"] = {};
     ioconfig = configobj["io-config"];
-    ioconfig["exp_name"] = params.outdir.split('/')[-2]
+    ioconfig["exp_name"] = os.path.split(os.path.split(params.outdir)[0])[1];
     ioconfig["input_file"] = params.input_file
-    ioconfig["output_dir"] = '/'.join(params.outdir.split('/')[0:-2])+'/'
+    ioconfig["output_dir"] = os.path.split(params.outdir)[0];
     ioconfig["plot_stress"] = str(params.plot_stress)
     ioconfig["plot_grd_disp"] = str(params.plot_grd_disp)
     ioconfig["gps_disp_points"] = "" if params.disp_points_file is None else params.disp_points_file
@@ -90,7 +89,8 @@ def write_params_into_config(params, outfile):
     return;
 
 
-def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_grd_disp=1, config_file=None,
+def configure_default_displacement_params(outdir=os.path.join('output', ''), plot_stress=1, plot_grd_disp=1,
+                                          config_file=None,
                                           input_file=None, aftershocks=None, disp_points_file=None, strain_file=None,
                                           strike_num_receivers=1, dip_num_receivers=1, fixed_rake=0,
                                           mu=30e9, lame1=30e9, B=0):
@@ -101,7 +101,7 @@ def configure_default_displacement_params(outdir='output/', plot_stress=1, plot_
     Sends the output to an outdir directory.
     """
     if outdir[-1] != '/':
-        outdir += '/';
+        outdir = os.path.join(outdir, '');
     [pr, alpha] = conversion_math.get_poissons_ratio_and_alpha(mu, lame1);  # derived from provided mu and lame1
     print("For this stress calculation:\n--> Poisson's ratio = %f, alpha = %f" % (pr, alpha));
     MyParams = cc.Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
@@ -150,7 +150,7 @@ def modify_params_object(default_params, config_file=None, input_file=None, afte
     plot_grd_disp = default_params.plot_grd_disp if plot_grd_disp is None else plot_grd_disp;
     outdir = default_params.outdir if outdir is None else outdir;
     if outdir[-1] != '/':
-        outdir += '/';
+        outdir = os.path.join(outdir, '');
     [pr, alpha] = conversion_math.get_poissons_ratio_and_alpha(mu, lame1);  # derived from provided mu and lame1
     print("For this stress calculation:\n--> Poisson's ratio = %f, alpha = %f" % (pr, alpha));
 
@@ -232,7 +232,7 @@ def write_valid_config_file(directory):
     ioconfig = configobj["io-config"];
     ioconfig["exp_name"] = 'my_experiment';
     ioconfig["input_file"] = 'M6.8_2014.intxt';
-    ioconfig["output_dir"] = 'Outputs/';
+    ioconfig["output_dir"] = os.path.join('Outputs', '');
     ioconfig["plot_stress"] = '1'
     ioconfig["plot_grd_disp"] = '1'
     ioconfig["gps_disp_points"] = 'CA_GPS_ll.txt';
@@ -246,9 +246,9 @@ def write_valid_config_file(directory):
     computeconfig["lame1"] = '30000000000';
     computeconfig["B"] = '0';
     computeconfig["fixed_rake"] = '';
-    with open(directory+'/'+config_filename, 'w') as configfile:
+    with open(os.path.join(directory, config_filename), 'w') as configfile:
         configobj.write(configfile)
-    print("Writing file %s " % directory+"/"+config_filename);
+    print("Writing file %s " % os.path.join(directory, config_filename));
     return;
 
 

@@ -1,5 +1,6 @@
 import numpy as np
 from subprocess import call
+import os
 from Tectonic_Utils.seismo import moment_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
@@ -135,11 +136,11 @@ def displacements_to_3_grds(outdir, efiles, nfiles, ufiles, region, inc=0.0005):
     """
     Call gmt surface on each component. efiles, nfiles, and ufiles are tuples of inputs and outputs: (txtfile, grdfile)
     """
-    call_gmt_surface(outdir+'/'+ufiles[0], outdir+'/'+ufiles[1], region, inc=inc);
+    call_gmt_surface(os.path.join(outdir, ufiles[0]), os.path.join(outdir, ufiles[1]), region, inc=inc);
     print("Printing "+ufiles[1]);
-    call_gmt_surface(outdir+'/'+efiles[0], outdir+'/'+efiles[1], region, inc=inc);
+    call_gmt_surface(os.path.join(outdir, efiles[0]), os.path.join(outdir, efiles[1]), region, inc=inc);
     print("Printing " + efiles[1]);
-    call_gmt_surface(outdir+'/'+nfiles[0], outdir+'/'+nfiles[1], region, inc=inc);
+    call_gmt_surface(os.path.join(outdir, nfiles[0]), os.path.join(outdir, nfiles[1]), region, inc=inc);
     print("Printing " + nfiles[1]);
     return;
 
