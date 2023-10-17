@@ -70,16 +70,25 @@ class TriangleFault:
         """Helper function to return the segment_num of a fault object."""
         return self.segment;
 
+    def get_llz_point(self, meters_pt):
+        """meters_pt is a length-three tuple in meters."""
+        lon1, lat1 = fault_vector_functions.xy2lonlat_single(meters_pt[0] / 1000, meters_pt[1] / 1000, self.lon,
+                                                             self.lat);
+        return np.array([lon1, lat1, (meters_pt[2] / 1000) - self.depth]);
+
+    def get_llz_tri_coords(self, tri_coords_pt):
+        """tri_coords_pt is a length-two tuple between 0 and 1"""
+        target_pt_meters = np.add(self.vertex1, tri_coords_pt[0] * self.get_vector_12());
+        target_pt_meters = np.add(target_pt_meters, tri_coords_pt[1] * self.get_vector_13());
+        return self.get_llz_point(target_pt_meters);
+
     def get_ll_corners(self):
         """Return three tuples representing (lon, lat) pairs of all three vertices for mapping."""
         # Convert m to km before coordinate conversion
-        lon1, lat1 = fault_vector_functions.xy2lonlat_single(self.vertex1[0] / 1000, self.vertex1[1] / 1000,
-                                                             self.lon, self.lat);
-        lon2, lat2 = fault_vector_functions.xy2lonlat_single(self.vertex2[0] / 1000, self.vertex2[1] / 1000,
-                                                             self.lon, self.lat);
-        lon3, lat3 = fault_vector_functions.xy2lonlat_single(self.vertex3[0] / 1000, self.vertex3[1] / 1000,
-                                                             self.lon, self.lat);
-        vertex1 = [lon1, lat1]; vertex2 = [lon2, lat2]; vertex3 = [lon3, lat3];
+        v1 = self.get_llz_point(self.vertex1);
+        v2 = self.get_llz_point(self.vertex2);
+        v3 = self.get_llz_point(self.vertex3);
+        vertex1 = [v1[0], v1[1]]; vertex2 = [v2[0], v2[1]]; vertex3 = [v3[0], v3[1]];
         return vertex1, vertex2, vertex3;
 
     def compute_triangle_centroid(self):
@@ -159,12 +168,8 @@ class TriangleFault:
         """
         Return the upward unit-normal-vector to the plane of the triangle
         """
-        vector1 = np.array([self.vertex2[0] - self.vertex1[0],
-                            self.vertex2[1] - self.vertex1[1],
-                            self.vertex2[2] - self.vertex1[2]])
-        vector2 = np.array([self.vertex3[0] - self.vertex1[0],
-                            self.vertex3[1] - self.vertex1[1],
-                            self.vertex3[2] - self.vertex1[2]])
+        vector1 = self.get_vector_12();
+        vector2 = self.get_vector_13();
         fault_normal = fault_vector_functions.get_unit_vector(np.cross(vector1, vector2));
         if fault_normal[2] > 0:
             fault_normal = np.multiply(fault_normal, -1);
@@ -178,6 +183,18 @@ class TriangleFault:
     def get_dip(self):
         dip = np.rad2deg(np.arccos(np.dot(self.get_fault_normal(), [0, 0, -1])));
         return dip;
+
+    def get_vector_12(self):
+        vector1 = np.array([self.vertex2[0] - self.vertex1[0],
+                            self.vertex2[1] - self.vertex1[1],
+                            self.vertex2[2] - self.vertex1[2]])
+        return vector1;
+
+    def get_vector_13(self):
+        vector2 = np.array([self.vertex3[0] - self.vertex1[0],
+                            self.vertex3[1] - self.vertex1[1],
+                            self.vertex3[2] - self.vertex1[2]])
+        return vector2;
 
     def fault_triangle_to_coulomb_fault(self, zerolon_system=None, zerolat_system=None):
         """
