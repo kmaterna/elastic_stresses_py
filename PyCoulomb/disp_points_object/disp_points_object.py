@@ -21,34 +21,34 @@ class Displacement_points:
         self.Se_obs = Se_obs;  # meters
         self.Sn_obs = Sn_obs;  # meters
         self.Su_obs = Su_obs;  # meters
-        self.name = name;
-        self.starttime = starttime;
-        self.endtime = endtime;
-        self.refframe = refframe;
-        self.meas_type = meas_type;
+        self.name = name;  # string
+        self.starttime = starttime;  # datetime object
+        self.endtime = endtime;  # datetime object
+        self.refframe = refframe;  # string
+        self.meas_type = meas_type;  # string
 
     # ------------ PREDICATES -------------- #
-    def is_within_bbox(self, bbox):
+    def is_within_bbox(self, bbox) -> bool:
         """
         :param bbox: [lonW, lonE, latS, latN] floats
         :returns: bool
         """
         if bbox[0] <= self.lon <= bbox[1] and bbox[2] <= self.lat <= bbox[3]:
-            return 1;
+            return True;
         else:
-            return 0;
+            return False;
 
-    def is_meas_type(self, target_meas_type):
+    def is_meas_type(self, target_meas_type) -> bool:
         if self.meas_type == target_meas_type:
-            return 1;
+            return True;
         else:
-            return 0;
+            return False;
 
-    def has_full_data(self):
+    def has_full_data(self) -> bool:
         if np.isnan(self.dE_obs) or np.isnan(self.dN_obs) or np.isnan(self.dU_obs):
-            return 0;
+            return False;
         else:
-            return 1;
+            return True;
 
     # ------------ REGULAR OBJECT FUNCTIONS -------------- #
 
@@ -79,7 +79,7 @@ class Displacement_points:
                                    refframe=self.refframe, meas_type=self.meas_type);
         return obj2;
 
-    def project_into_los(self, lkv_e, lkv_n, lkv_u):
+    def project_into_los(self, lkv_e, lkv_n, lkv_u) -> float:
         """
         :param lkv_e: east look vector component from ground to satellite
         :param lkv_n: north look vector component from ground to satellite

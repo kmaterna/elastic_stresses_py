@@ -5,6 +5,9 @@ from .. import fault_slip_triangle
 def write_slippy_like_triangles(fault_object_list, filename):
     """
     Write the slippy-like file format for triangular fault slip elements
+
+    :param fault_object_list; list of fault Triangles
+    :param filename: string
     """
     print("Writing file %s" % filename);
     ofile = open(filename, 'w');

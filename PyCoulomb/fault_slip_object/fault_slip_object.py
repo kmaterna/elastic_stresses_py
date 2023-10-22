@@ -51,38 +51,46 @@ class FaultSlipObject:
         self.slip = slip;  # float
         self.tensile = tensile;  # float
         self.segment = segment;  # int
+        if self.dip > 90:
+            raise ValueError("Error! Dip greater than 90 degrees.");
+        if self.dip < 0:
+            raise ValueError("Error! Dip less than 0 degrees.");
+        if self.length < 0:
+            raise ValueError("Error! Length less than 0 km.");
+        if self.width < 0:
+            raise ValueError("Error! Width less than 0 km.");
 
     def __iter__(self):
         for attr, value in self.__dict__.items():
             yield attr, value
 
-    def get_total_slip(self):
+    def get_total_slip(self) -> float:
         """Helper function to return the total slip amount of a fault object (always > 0)"""
         return self.slip;
 
-    def get_total_slip_mm(self):
+    def get_total_slip_mm(self) -> float:
         """Helper function to return the total slip amount of a fault object in mm (always > 0)"""
         return self.slip*1000;
 
-    def get_rtlat_slip(self):
+    def get_rtlat_slip(self) -> float:
         """Helper function to return the right lateral slip amount of a fault object"""
         [rtlat, _] = fault_vector_functions.get_rtlat_dip_slip(self.slip, self.rake);
         return rtlat;
 
-    def get_dip_slip(self):
+    def get_dip_slip(self) -> float:
         """Helper function to return the dip slip amount of a fault object"""
         [_, dipslip] = fault_vector_functions.get_rtlat_dip_slip(self.slip, self.rake);
         return dipslip;
 
-    def get_fault_depth(self):
+    def get_fault_depth(self) -> float:
         """Helper function to return the depth of a fault object"""
         return self.depth;
 
-    def get_fault_rake(self):
+    def get_fault_rake(self) -> float:
         """Helper function to return the depth of a fault object"""
         return self.rake;
 
-    def get_segment(self):
+    def get_segment(self) -> int:
         """Helper function to return the segment_num of a fault object"""
         return self.segment;
 
@@ -120,7 +128,7 @@ class FaultSlipObject:
         lons, lats = fault_vector_functions.xy2lonlat(x_updip, y_updip, source.zerolon, source.zerolat);
         return lons, lats;
 
-    def get_fault_element_distance(self, fault_object2, threedimensional=True):
+    def get_fault_element_distance(self, fault_object2, threedimensional=True) -> float:
         """Return the distance between two fault elements, in 3d, in km."""
         h_distance = haversine.distance([self.lat, self.lon], [fault_object2.lat, fault_object2.lon]);
         if threedimensional:
@@ -134,12 +142,12 @@ class FaultSlipObject:
         top, bottom = fault_vector_functions.get_top_bottom_from_top(self.depth, self.width, self.dip);
         return top, bottom;
 
-    def get_fault_area(self):
+    def get_fault_area(self) -> float:
         """Return the area of a rectangular fault. Units: square meters."""
         A = self.width * 1000 * self.length * 1000;
         return A;
 
-    def get_fault_moment(self, mu=30e9):
+    def get_fault_moment(self, mu=30e9) -> float:
         """Get the moment for a fault patch. Units: Newton-meters."""
         A = self.get_fault_area();
         d = self.slip;
@@ -165,7 +173,7 @@ class FaultSlipObject:
         return new_obj;
 
     # ------------ PREDICATES -------------- #
-    def is_within_depth_range(self, upper_depth, lower_depth):
+    def is_within_depth_range(self, upper_depth, lower_depth) -> bool:
         """
         Filter fault_object if it falls within depth range [upper_depth, lower_depth].
 
@@ -174,11 +182,11 @@ class FaultSlipObject:
         :returns: bool
         """
         if upper_depth <= self.depth <= lower_depth:
-            return 1;
+            return True;
         else:
-            return 0;
+            return False;
 
-    def is_within_bbox(self, bbox):
+    def is_within_bbox(self, bbox) -> bool:
         """
         Filter fault_object if it falls within bounding box.
 
@@ -186,9 +194,9 @@ class FaultSlipObject:
         :returns: bool
         """
         if bbox[0] <= self.lon <= bbox[1] and bbox[2] <= self.lat <= bbox[3]:
-            return 1;
+            return True;
         else:
-            return 0;
+            return False;
 
     # ------------ REGULAR FUNCTIONS -------------- #
     def construct_intxt_source_patch(self):
@@ -275,7 +283,7 @@ def get_four_corners_lon_lat_multiple(fault_object_list):
     return np.min(lons_all), np.max(lons_all), np.min(lats_all), np.max(lats_all);
 
 
-def get_total_moment(fault_object_list, mu=30e9):
+def get_total_moment(fault_object_list, mu=30e9) -> float:
     """
     Return the total moment of a list of slip objects, in fault_object
     Moment in newton-meters
@@ -286,7 +294,7 @@ def get_total_moment(fault_object_list, mu=30e9):
     return total_moment;
 
 
-def get_total_moment_depth_dependent(fault_object_list, depths, mus):
+def get_total_moment_depth_dependent(fault_object_list, depths, mus) -> float:
     """Compute total moment using a depth-dependent G calculation"""
     total_moment = 0;
     for item in fault_object_list:

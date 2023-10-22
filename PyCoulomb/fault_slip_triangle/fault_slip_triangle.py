@@ -11,14 +11,14 @@ class TriangleFault:
     The internal format is a class for a triangular fault segment, specified by three vertices and a reference point.
     If the fault is a receiver fault, we put slip = 0.
 
-    :param vertex1: array containing [x, y, z] of vertex 1 in m, z is positive downward
-    :param vertex2: array containing [x, y, z] of vertex 2 in m, z is positive downward
-    :param vertex3: array containing [x, y, z] of vertex 3 in m, z is positive downward
+    :param vertex1: array containing [x, y, z] of vertex 1 in m, z is positive downward. z in meters below surface.
+    :param vertex2: array containing [x, y, z] of vertex 2 in m, z is positive downward. z in meters below surface.
+    :param vertex3: array containing [x, y, z] of vertex 3 in m, z is positive downward. z in meters below surface.
     :param lon: longitude of reference coordinate
     :type lon: float
     :param lat: latitude of reference coordinate
     :type lat: float
-    :param depth: depth of reference coordinate, in km
+    :param depth: depth of reference coordinate, in km (not used for much)
     :type depth: float
     :param rtlat_slip: amount of right-lateral slip, in meters
     :type rtlat_slip: float
@@ -42,11 +42,11 @@ class TriangleFault:
         self.tensile = tensile;  # float
         self.segment = segment;  # int
 
-    def get_total_slip(self):
+    def get_total_slip(self) -> float:
         """Helper function to return the total slip amount of a fault object (always > 0)."""
         return np.sqrt(np.square(self.dip_slip) + np.square(self.rtlat_slip));
 
-    def get_total_slip_mm(self):
+    def get_total_slip_mm(self) -> float:
         """Helper function to return the total slip amount of a fault object in mm (always > 0)."""
         return self.get_total_slip()*1000;
 
@@ -62,19 +62,19 @@ class TriangleFault:
         """Helper function to return the depth of a fault object."""
         return self.depth;
 
-    def get_centroid_depth(self):
-        """Helper function to return the computed depth of a fault object."""
+    def get_centroid_depth(self) -> float:
+        """Helper function to return the computed centroid depth of a fault object, in meters, positive downwards."""
         return self.compute_triangle_centroid()[2];
 
-    def get_segment(self):
+    def get_segment(self) -> int:
         """Helper function to return the segment_num of a fault object."""
         return self.segment;
 
     def get_llz_point(self, meters_pt):
-        """meters_pt is a length-three tuple in meters."""
+        """meters_pt is a length-three tuple. XY are in meters from the reference pixel. Z(depth) is in meters."""
         lon1, lat1 = fault_vector_functions.xy2lonlat_single(meters_pt[0] / 1000, meters_pt[1] / 1000, self.lon,
                                                              self.lat);
-        return np.array([lon1, lat1, (meters_pt[2] / 1000) - self.depth]);
+        return np.array([lon1, lat1, (meters_pt[2] / 1000)]);
 
     def get_llz_tri_coords(self, tri_coords_pt):
         """tri_coords_pt is a length-two tuple between 0 and 1"""
@@ -93,7 +93,7 @@ class TriangleFault:
 
     def compute_triangle_centroid(self):
         """
-        Compute cartesian centroid of a triangular fault in m, relative to self.lon and self.lat.
+        Compute cartesian centroid of a triangular fault in m, relative to self.lon and self.lat and the surface.
         Returns a numpy array
         """
         x_centroid = np.mean([self.vertex1[0], self.vertex2[0], self.vertex3[0]]);
@@ -101,7 +101,7 @@ class TriangleFault:
         z_centroid = np.mean([self.vertex1[2], self.vertex2[2], self.vertex3[2]]);
         return np.array([x_centroid, y_centroid, z_centroid]);
 
-    def get_fault_element_distance(self, fault_object2, threedimensional=True):
+    def get_fault_element_distance(self, fault_object2, threedimensional=True) -> float:
         """Return the distance between two triangular fault elements, in 3d, in km."""
         [xc1, yc1, zc1] = self.compute_triangle_centroid();
         [xc2, yc2, zc2] = fault_object2.compute_triangle_centroid();
@@ -126,7 +126,7 @@ class TriangleFault:
         return new_fault_obj;
 
     def change_reference_loc(self, new_refcoords=None):
-        """Move the reference lon/lat.  If none given, moves it to the location of vertex1.s
+        """Move the reference lon/lat.  If none given, moves it to the location of vertex1.
 
         :param new_refcoords: tuple of (lon, lat).
         """
@@ -146,7 +146,7 @@ class TriangleFault:
                                       dip_slip=self.dip_slip, rtlat_slip=self.rtlat_slip, tensile=self.tensile);
         return new_fault_obj;
 
-    def get_fault_area(self):
+    def get_fault_area(self) -> float:
         """Compute area of a triangle: A = 1/2 (AB x AC), with all cartesian coordinates in meters. Units: sq-m."""
         AB = np.array([self.vertex2[0] - self.vertex1[0], self.vertex2[1] - self.vertex1[1],
                        self.vertex2[2] - self.vertex1[2]]);
@@ -157,7 +157,7 @@ class TriangleFault:
         area_sq_m = (1/2) * total_vector_mag;
         return area_sq_m;
 
-    def get_fault_moment(self, mu=30e9):
+    def get_fault_moment(self, mu=30e9) -> float:
         """Get the moment for a triangular fault patch. Units: Newton-meters."""
         A = self.get_fault_area();
         d = self.get_total_slip();
@@ -175,13 +175,17 @@ class TriangleFault:
             fault_normal = np.multiply(fault_normal, -1);
         return fault_normal;
 
-    def get_strike(self):
+    def get_strike(self) -> float:
         fault_normal = self.get_fault_normal();
         strike = np.rad2deg(np.arctan2(fault_normal[0], fault_normal[1])) - 90
         return strike;
 
-    def get_dip(self):
+    def get_dip(self) -> float:
         dip = np.rad2deg(np.arccos(np.dot(self.get_fault_normal(), [0, 0, -1])));
+        if dip > 90:
+            raise ValueError("Error! Dip returned greater than 90 degrees.");
+        if dip < 0:
+            raise ValueError("Error! Dip returned less than 0 degrees.");
         return dip;
 
     def get_vector_12(self):
@@ -210,7 +214,7 @@ class TriangleFault:
         centroid = self.compute_triangle_centroid();  # in meters
         [refx0, refy0] = fault_vector_functions.latlon2xy_single(self.lon, self.lat, zerolon, zerolat)  # in km
         [xstart, ystart] = refx0 + centroid[0]/1000, refy0 + centroid[1]/1000;  # in km with respect to zerolon/lat
-        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xstart, ystart, 1, self.get_strike());
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xstart, ystart, 2, self.get_strike());
 
         one_source = coulomb_collections.construct_pycoulomb_fault(xstart=xstart, xfinish=xfinish, ystart=ystart,
                                                                    yfinish=yfinish, rtlat=self.rtlat_slip,
@@ -218,8 +222,23 @@ class TriangleFault:
                                                                    potency=[], strike=self.get_strike(),
                                                                    dipangle=self.get_dip(), rake=rake,
                                                                    zerolon=zerolon, zerolat=zerolat,
-                                                                   top=centroid[2]/1000, bottom=centroid[2]/1000+0.2);
+                                                                   top=centroid[2]/1000, bottom=centroid[2]/1000+1.2);
         return one_source;
+
+    # ------------ PREDICATES -------------- #
+    def is_within_depth_range(self, upper_depth, lower_depth) -> bool:
+        """
+        Filter fault_object if it falls within depth range [upper_depth, lower_depth].
+
+        :param upper_depth: float, km
+        :param lower_depth: float, km
+        :returns: bool
+        """
+        centroid_depth_km = self.get_centroid_depth()/1000;
+        if upper_depth <= centroid_depth_km <= lower_depth:
+            return True;
+        else:
+            return False;
 
 
 def convert_rectangle_into_two_triangles(one_fault_obj):
@@ -248,7 +267,7 @@ Functions that work on lists of fault items
 """
 
 
-def get_total_moment(fault_object_list, mu=30e9):
+def get_total_moment(fault_object_list, mu=30e9) -> float:
     """
     Return total moment of a list of triangle slip objects. Moment in newton-meters.
     """
@@ -258,7 +277,7 @@ def get_total_moment(fault_object_list, mu=30e9):
     return total_moment;
 
 
-def get_total_moment_depth_dependent(fault_object_list, depths, mus):
+def get_total_moment_depth_dependent(fault_object_list, depths, mus) -> float:
     """Compute total moment using a depth-dependent G calculation."""
     total_moment = 0;
     for item in fault_object_list:
@@ -271,7 +290,7 @@ def get_total_moment_depth_dependent(fault_object_list, depths, mus):
     return total_moment;
 
 
-def check_consistent_reference_frame(triangle_fault_list):
+def check_consistent_reference_frame(triangle_fault_list) -> int:
     """Returns True if all the triangles have the coordinate reference system."""
     return_code = 1;  # default true
     reflon, reflat = triangle_fault_list[0].lon, triangle_fault_list[0].lat;

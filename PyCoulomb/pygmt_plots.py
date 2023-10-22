@@ -6,7 +6,7 @@ from . import io_additionals, utilities, io_intxt, conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def map_stress_plot(params, inputs, out_object, stress_component):
+def map_stress_plot(params, inputs, out_object, stress_component, vmin=-1, vmax=1):
     """
     Fill in mapped fault patches with colors corresponding to their stress changes.
     """
@@ -24,7 +24,6 @@ def map_stress_plot(params, inputs, out_object, stress_component):
         label = 'Coulomb';
 
     # Make stress bounds for color map.
-    vmin, vmax = -1, 1;
     [cmap_opts, cbar_opts] = utilities.define_colorbar_series(plotting_stress, vmin=vmin, vmax=vmax);
 
     # Make cpt
