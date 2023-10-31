@@ -71,7 +71,10 @@ class TriangleFault:
         return self.segment;
 
     def get_llz_point(self, meters_pt):
-        """meters_pt is a length-three tuple. XY are in meters from the reference pixel. Z(depth) is in meters."""
+        """
+        meters_pt is a length-three tuple. XY are in meters from the reference pixel. Z(depth) is in meters.
+        Returns array of [lon, lat, depth_km].
+        """
         lon1, lat1 = fault_vector_functions.xy2lonlat_single(meters_pt[0] / 1000, meters_pt[1] / 1000, self.lon,
                                                              self.lat);
         return np.array([lon1, lat1, (meters_pt[2] / 1000)]);
@@ -94,7 +97,7 @@ class TriangleFault:
     def compute_triangle_centroid(self):
         """
         Compute cartesian centroid of a triangular fault in m, relative to self.lon and self.lat and the surface.
-        Returns a numpy array
+        Returns a numpy array [x, y, z] in meters
         """
         x_centroid = np.mean([self.vertex1[0], self.vertex2[0], self.vertex3[0]]);
         y_centroid = np.mean([self.vertex1[1], self.vertex2[1], self.vertex3[1]]);
@@ -178,6 +181,8 @@ class TriangleFault:
     def get_strike(self) -> float:
         fault_normal = self.get_fault_normal();
         strike = np.rad2deg(np.arctan2(fault_normal[0], fault_normal[1])) - 90
+        if strike < 0:
+            strike = strike + 360;
         return strike;
 
     def get_dip(self) -> float:
@@ -300,92 +305,6 @@ def check_consistent_reference_frame(triangle_fault_list) -> int:
     if return_code == 0:
         print("Warning! Not all triangles have the same reference lon/lat");
     return return_code;
-
-
-def return_total_slip(fault_object):
-    """ lambda function to get the slip of the object, for plotting."""
-    return fault_object.get_total_slip();
-
-
-def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_total_slip):
-    """
-    Write triangle edges out to file for GMT plots, in X-Y cartesian space in m.
-    color_mappable is a simple function of one fault object that returns the plotting value.
-    """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
-    with open(outfile, 'w') as ofile:
-        for item in triangle_list:
-            total_slip = color_mappable(item);
-            ofile.write("> -Z%f \n" % total_slip);
-            ofile.write("%f %f \n" % (item.vertex1[0], item.vertex1[1]));
-            ofile.write("%f %f \n" % (item.vertex2[0], item.vertex2[1]));
-            ofile.write("%f %f \n" % (item.vertex3[0], item.vertex3[1]));
-            ofile.write("%f %f \n" % (item.vertex1[0], item.vertex1[1]));
-    return;
-
-
-def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=return_total_slip):
-    """
-    Write triangle edges out to file for GMT plots, in lon/lat space assuming a cartesian-to-geographic transform
-    color_mappable is a simple function of one fault object that returns the plotting value
-    """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
-    with open(outfile, 'w') as ofile:
-        for item in triangle_list:
-            slip_for_coloring = color_mappable(item);
-            vertex1, vertex2, vertex3 = item.get_ll_corners();
-            ofile.write("> -Z%f \n" % slip_for_coloring);
-            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
-            ofile.write("%f %f \n" % (vertex2[0], vertex2[1]));
-            ofile.write("%f %f \n" % (vertex3[0], vertex3[1]));
-            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
-    return;
-
-
-def write_colored_triangles(triangle_list, outfile, color_array):
-    """
-    The same as above, except the color array is a 1-d array with the same length as triangle_list
-    """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile) );
-    with open(outfile, 'w') as ofile:
-        for i, item in enumerate(triangle_list):
-            vertex1, vertex2, vertex3 = item.get_ll_corners();
-            ofile.write("> -Z%f \n" % color_array[i]);
-            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
-            ofile.write("%f %f \n" % (vertex2[0], vertex2[1]));
-            ofile.write("%f %f \n" % (vertex3[0], vertex3[1]));
-            ofile.write("%f %f \n" % (vertex1[0], vertex1[1]));
-    return;
-
-
-def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=return_total_slip, strike=45):
-    """
-    Write the vertical coordinates of triangular fault patches (length and depth, in local coords instead of lon/lat)
-    and associated slip values into a multi-segment file for plotting in GMT.
-    Good for vertical faults.  Plots with depth as a negative number.
-    Works for only planar-esque fault segments.
-    Strike is the approximate strike of the fault
-    """
-    print("Writing file %s " % outfile);
-    origin_lon, origin_lat = fault_object_list[0].lon, fault_object_list[0].lat;
-
-    ofile = open(outfile, 'w');
-    for fault in fault_object_list:
-        slip = color_mappable(fault);
-        vertex1, vertex2, vertex3 = fault.get_ll_corners();  # vertex1 = [lon1, lat1]
-        x1, y1 = fault_vector_functions.latlon2xy_single(vertex1[0], vertex1[1], origin_lon, origin_lat);
-        x2, y2 = fault_vector_functions.latlon2xy_single(vertex2[0], vertex2[1], origin_lon, origin_lat);
-        x3, y3 = fault_vector_functions.latlon2xy_single(vertex3[0], vertex3[1], origin_lon, origin_lat);
-        [xprime1, _] = conversion_math.rotate_points(x1, y1, 90 + strike);
-        [xprime2, _] = conversion_math.rotate_points(x2, y2, 90 + strike);
-        [xprime3, _] = conversion_math.rotate_points(x3, y3, 90 + strike);
-        ofile.write("> -Z"+str(slip)+"\n");  # whatever slip value the user chooses
-        ofile.write("%f %f\n" % (xprime1[0], -fault.vertex1[2]/1000));
-        ofile.write("%f %f\n" % (xprime2[0], -fault.vertex2[2]/1000));
-        ofile.write("%f %f\n" % (xprime3[0], -fault.vertex3[2]/1000));
-        ofile.write("%f %f\n" % (xprime1[0], -fault.vertex1[2]/1000));
-    ofile.close();
-    return;
 
 
 def fault_triangles_to_coulomb_fault(fault_object_list, zerolon_system=None, zerolat_system=None):

@@ -28,17 +28,19 @@ class Tests(unittest.TestCase):
         modeled_tri_points = fst.triangle_okada.compute_disp_points_from_triangles(tri_faults, obs_disp_points, pr);
         modeled_rect_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points);
 
-        # # Optional: Visualizing the faults
-        # fst.fault_slip_triangle.write_gmt_plots_geographic(tri_faults, "test/temp-outfile.txt");
-        # fso.plot_fault_slip.map_source_slip_distribution([test_rectangular_fault], 'test/model_rect_disps.png',
-        #                                                  disp_points=modeled_rect_points);
-        # fso.plot_fault_slip.map_source_slip_distribution([test_rectangular_fault], 'test/model_tri_disps.png',
-        #                                                  disp_points=modeled_tri_points, plot_slip_colorbar=False,
-        #                                                  fault_traces_from_file="test/temp-outfile.txt");
-
         obs_E_triangles = np.array([x.dE_obs for x in modeled_tri_points]);
         obs_E_rectangles = np.array([x.dE_obs for x in modeled_rect_points]);
         np.testing.assert_allclose(obs_E_rectangles, obs_E_triangles, atol=0.0001);
+        return;
+
+    def test_triangle_geometry_functions(self):
+        """ Test the dip and strike calculation for a triangular fault element. """
+        tri_fault = fst.fault_slip_triangle.TriangleFault(lon=-121.0, lat=40, depth=5000,
+                                                          vertex1=np.array([0, 0, 5000]),
+                                                          vertex2=np.array([0, 1000, 5000]),
+                                                          vertex3=np.array([1000, 1000, 6000]));
+        np.testing.assert_almost_equal(0, tri_fault.get_strike());
+        np.testing.assert_almost_equal(45, tri_fault.get_dip());
         return;
 
 
