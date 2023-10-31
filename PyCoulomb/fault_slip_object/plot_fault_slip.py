@@ -3,6 +3,7 @@
 import numpy as np
 import pygmt, os
 from . import fault_slip_object as fso
+from . import file_io
 from .. import utilities
 from ..disp_points_object import utilities as dpo_utils
 
@@ -32,13 +33,13 @@ def unpack_horiz_disp_points_for_vectors(disp_points):
     return [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz];
 
 
-def write_patch_edges_for_plotting(fault_dict_list, plotting_function=lambda x: fso.get_total_slip(x)):
+def write_patch_edges_for_plotting(fault_dict_list, plotting_function=lambda x: file_io.outputs.get_total_slip(x)):
     """
     Plot the full patches and the surface traces of a collection of rectangular faults.  Colorcode by slip (default).
     plotting_function is a function that operates on a fault_dict object to return a float.
     """
-    fso.write_gmt_fault_file(fault_dict_list, 'tmp.txt', color_mappable=plotting_function, verbose=False);
-    fso.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
+    file_io.outputs.write_gmt_fault_file(fault_dict_list, 'tmp.txt', color_mappable=plotting_function, verbose=False);
+    file_io.outputs.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False);
     return "tmp.txt", "tmp2.txt";
 
 

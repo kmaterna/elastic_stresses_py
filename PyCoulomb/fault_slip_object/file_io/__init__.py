@@ -5,3 +5,4 @@ from . import io_four_corners
 from . import io_static1d
 from . import io_slippy
 from . import io_param
+from . import outputs

@@ -201,7 +201,7 @@ def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=l
     """
     rect_sources, _, _ = separate_source_types(fault_object);
     fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(rect_sources);
-    fso.fault_slip_object.write_gmt_fault_file(fault_dict_list, outfile, color_mappable=color_array, verbose=False);
+    fso.file_io.outputs.write_gmt_fault_file(fault_dict_list, outfile, color_mappable=color_array, verbose=False);
     return;
 
 
