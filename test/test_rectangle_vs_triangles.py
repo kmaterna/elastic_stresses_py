@@ -9,7 +9,7 @@ class Tests(unittest.TestCase):
     def test_okada_rect_vs_tri(self):
         obs_disp_points = PyCoulomb.io_additionals.read_disp_points("test/example_disp_field.txt");
         zerolon, zerolat = -115.68, 33.1012233;
-        test_params = PyCoulomb.configure_calc.configure_default_displacement_params(mu=30e9, lame1=30e9);
+        test_params = PyCoulomb.configure_calc.Params(mu=30e9, lame1=30e9);
         _, pr = PyCoulomb.conversion_math.get_poissons_ratio_and_alpha(mu=30e9, lame1=30e9)
         pr = 0.25;
 

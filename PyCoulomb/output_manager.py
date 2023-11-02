@@ -18,7 +18,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     if not os.path.exists(params.outdir):
         os.makedirs(params.outdir)
     if params.config_file:
-        configure_calc.write_params_into_config(params, params.outdir+"used_config.txt");  # for record-keeping
+        params.write_params_into_config(params.outdir+"used_config.txt");  # for record-keeping
     io_intxt.write_intxt(inputs, params.outdir + "used_inputs.txt", mu=params.mu, lame1=params.lame1);
     if params.input_file:
         call(['cp', params.input_file, params.outdir], shell=False);  # for record-keeping

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import Elastic_stresses_py.PyCoulomb.coulomb_collections as cc
 from Elastic_stresses_py import PyCoulomb
 
 # My configuration: special experiment, focal mechanism as a function of depth.  This is my "lab notebook".
@@ -19,14 +19,14 @@ def swap_output_dir(default_params, dirname):
     # write lines to replace params.outdir with the proper params.outdir
     # PACK MY SUITCASE
     old_outdir = '/'.join(default_params.outdir.split('/')[0:-2]);
-    MyParams = PyCoulomb.configure_calc.modify_params_object(default_params, outdir=old_outdir+"/"+dirname);
+    MyParams = default_params.modify_params_object(outdir=old_outdir+"/"+dirname);
     return MyParams;
 
 
 def swap_input_depth(default_inputs, new_depth):
     # PACK MY SUITCASE. Replace source(old_depth) with source(new_depth)
     base_source = default_inputs.source_object[0];
-    new_point_source = PyCoulomb.configure_calc.modify_fault_object(base_source, top=new_depth, bottom=new_depth);
+    new_point_source = cc.modify_fault_object(base_source, top=new_depth, bottom=new_depth);
     inputs = PyCoulomb.configure_calc.modify_inputs_object(default_inputs, source_object=[new_point_source]);
     return inputs;
 

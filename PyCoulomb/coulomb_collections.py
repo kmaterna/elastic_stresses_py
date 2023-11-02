@@ -5,30 +5,6 @@ from . import conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions
 from .disp_points_object import disp_points_object
 
-Params = collections.namedtuple('Params', [
-    'config_file', 'input_file', 'aftershocks',
-    'disp_points_file', 'strain_file',
-    'strike_num_receivers',
-    'dip_num_receivers',
-    'fixed_rake',
-    'mu', 'lame1', 'B', 'alpha', 'nu',
-    'plot_stress', 'plot_grd_disp', 'outdir']);
-
-Faults_object = collections.namedtuple('Faults_object', [
-    'xstart', 'xfinish',
-    'ystart', 'yfinish',
-    'Kode', 'zerolon', 'zerolat',
-    'rtlat', 'reverse', 'tensile', 'potency',
-    'strike', 'dipangle', 'rake',
-    'top', 'bottom', 'comment',
-    'R', 'R2', 'W', 'L', 'strike_unit_vector', 'dip_unit_vector', 'plane_normal']);
-"""
-PyCoulomb faults object. 
-rtlat, reverse, tensile are in units of meters.
-Having both "rake" and "rtlat/reverse" in this object seems a little redundant, but it's used for receiver rake.
-See constructor construct_pycoulomb_fault() for the creating of this object.  
-We usually don't call this object directly.
-"""
 
 Input_object = collections.namedtuple('Input_object', [
     'PR1', 'FRIC', 'depth',
@@ -47,15 +23,6 @@ source_object = a list of Faults (pycoulomb format), with the same zerolon/zerol
 receiver_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system.
 """
 
-Receiver_Horiz_Profile = collections.namedtuple('Receiver_Horiz_Profile', [
-    'depth_km', 'strike', 'dip', 'rake', 'centerlon', 'centerlat', 'lon1d', 'lat1d',
-    'width', 'length', 'inc', 'shape'])
-
-
-Mogi_Source = collections.namedtuple('Mogi_Source', ['xstart', 'ystart',
-                                                     'zerolon', 'zerolat', 'depth', 'dV']);
-
-
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',
     'x2d', 'y2d', 'u_disp', 'v_disp', 'w_disp',
@@ -64,13 +31,52 @@ Out_object = collections.namedtuple('Out_object', [
     'source_object', 'receiver_object',
     'receiver_normal', 'receiver_shear', 'receiver_coulomb', 'receiver_profile']);
 
-"""
-Displacement_points are individual disp_point elements, can be put into lists of elements. 
-dE_obs, Se_obs, etc in meters. Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', etc.
-If starttime and endtime are used, they should be datetime objects.  
-"""
+
+class Receiver_Horiz_Profile:
+    def __init__(self, depth_km, strike, dip, rake, centerlon, centerlat, lon1d, lat1d, width, length, inc, shape):
+        self.depth_km = depth_km;  # km
+        self.strike = strike;  # degrees
+        self.dip = dip;  # degrees
+        self.rake = rake;  # degrees
+        self.centerlon = centerlon;  # degrees
+        self.centerlat = centerlat;  # degrees
+        self.lon1d = lon1d;
+        self.lat1d = lat1d;
+        self.width = width;
+        self.length = length;
+        self.inc = inc;
+        self.shape = shape;
+
+
+class Mogi_Source:
+    def __init__(self, xstart, ystart, zerolon, zerolat, depth, dV):
+        self.xstart = xstart;  # km
+        self.ystart = ystart;  # km
+        self.zerolon = zerolon;  # degrees
+        self.zerolat = zerolat;  # degrees
+        self.depth = depth;  # km
+        self.dV = dV;  # cubic meters
+
+
+# Displacement_points are individual disp_point elements, can be put into lists of elements.
 Displacement_points = disp_points_object.Displacement_points;
 
+
+Faults_object = collections.namedtuple('Faults_object', [
+    'xstart', 'xfinish',
+    'ystart', 'yfinish',
+    'Kode', 'zerolon', 'zerolat',
+    'rtlat', 'reverse', 'tensile', 'potency',
+    'strike', 'dipangle', 'rake',
+    'top', 'bottom', 'comment',
+    'R', 'R2', 'W', 'L', 'strike_unit_vector', 'dip_unit_vector', 'plane_normal']);
+"""
+PyCoulomb faults object. 
+rtlat, reverse, tensile are in units of meters.
+Having both "rake" and "rtlat/reverse" in this object seems a little redundant, but it's used for receiver rake.
+See constructor construct_pycoulomb_fault() for the creating of this object.  
+We usually don't call this object directly.
+"""
 
 def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, tensile, potency, strike, dipangle,
                               rake, zerolon, zerolat, top, bottom, Kode=100, comment=None):
@@ -102,3 +108,31 @@ def construct_pycoulomb_fault(xstart, xfinish, ystart, yfinish, rtlat, reverse, 
                                strike_unit_vector=strike_unit_vector, dip_unit_vector=dip_unit_vector,
                                plane_normal=plane_normal);
     return one_source;
+
+
+def modify_fault_object(default_fault, xstart=None, xfinish=None, ystart=None, yfinish=None, rtlat=None,
+                        reverse=None, tensile=None, potency=None, strike=None, dipangle=None, rake=None, zerolon=None,
+                        zerolat=None, top=None, bottom=None):
+    """
+    Modify the fields in a Pycoulomb.Faults_object namedtuple.
+    """
+    xstart = default_fault.xstart if xstart is None else xstart;
+    xfinish = default_fault.xfinish if xfinish is None else xfinish;
+    ystart = default_fault.ystart if ystart is None else ystart;
+    yfinish = default_fault.yfinish if yfinish is None else yfinish;
+    rtlat = default_fault.rtlat if rtlat is None else rtlat;
+    reverse = default_fault.reverse if reverse is None else reverse;
+    tensile = default_fault.tensile if tensile is None else tensile;
+    potency = default_fault.potency if potency is None else potency;
+    strike = default_fault.strike if strike is None else strike;
+    dipangle = default_fault.dipangle if dipangle is None else dipangle;
+    rake = default_fault.rake if rake is None else rake;
+    zerolon = default_fault.zerolon if zerolon is None else zerolon;
+    zerolat = default_fault.zerolat if zerolat is None else zerolat;
+    top = default_fault.top if top is None else top;
+    bottom = default_fault.bottom if bottom is None else bottom;
+    new_fault = construct_pycoulomb_fault(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, rtlat=rtlat,
+                                          reverse=reverse, tensile=tensile, potency=potency, strike=strike,
+                                          dipangle=dipangle, rake=rake, zerolon=zerolon, zerolat=zerolat, top=top,
+                                          bottom=bottom);
+    return new_fault;

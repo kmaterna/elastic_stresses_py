@@ -16,7 +16,7 @@ coulomb_fault_model = fso.fault_slip_object.fault_object_to_coulomb_fault(parkfi
 disp_points = io_additionals.read_disp_points(lonlatfile);
 
 # Configure, Compute, Output
-params = configure_calc.configure_default_displacement_params();
+params = configure_calc.Params();  # configure with default values
 inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, zerolon=lon0_sys,
                                                              zerolat=lat0_sys, bbox=bbox, domainsize=100);
 outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=[]);

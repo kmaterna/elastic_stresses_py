@@ -19,7 +19,7 @@ if __name__ == "__main__":
     coulomb_fault_model = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_model_list, filedict['lon0_sys'],
                                                                               filedict['lat0_sys']);
     disp_points = io_additionals.read_disp_points(filedict['datafile']);
-    params = configure_calc.configure_default_displacement_params();
+    params = configure_calc.Params();  # configure with default values
     inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, zerolon=filedict['lon0_sys'],
                                                                  zerolat=filedict['lat0_sys'], bbox=filedict['bbox']);
     # Compute and Output
