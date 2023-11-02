@@ -3,7 +3,6 @@
 
 
 import numpy as np
-from Tectonic_Utils.seismo import moment_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -104,78 +103,8 @@ def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, 
 
 
 # ----------------------------
-# FAULT OBJECT FUNCTIONS
+# GEOMETRY FUNCTIONS
 # ----------------------------
-
-def get_fault_center(fault_object):
-    """
-    Compute the x-y-z coordinates of the center of a PyCoulomb fault patch (a namedtuple)
-    """
-    center_z = (fault_object.top+fault_object.bottom)/2.0;
-    updip_center_x = (fault_object.xstart+fault_object.xfinish)/2.0;
-    updip_center_y = (fault_object.ystart+fault_object.yfinish)/2.0;
-    vector_mag = fault_object.W*np.cos(np.deg2rad(fault_object.dipangle))/2.0;  # how far the middle is displaced
-    # downdip from map-view
-    center_point = fault_vector_functions.add_vector_to_point(updip_center_x, updip_center_y, vector_mag,
-                                                              fault_object.strike+90);
-    # strike+90 = downdip direction.
-    center = [center_point[0], center_point[1], center_z];
-    return center;
-
-def get_fault_four_corners(fault_object, coords="cartesian"):
-    """
-    Get the four corners of the object, including updip and downdip.
-    depth is fault_object.top
-    dip is fault_object.dipangle (in case you need it)
-    coords can be "cartesian" or "geographic" for lon/lat
-    """
-
-    updip_point0 = [fault_object.xstart, fault_object.ystart];
-    updip_point1 = [fault_object.xfinish, fault_object.yfinish];
-    vector_mag = fault_object.W*np.cos(np.deg2rad(fault_object.dipangle));  # how far the bottom edge is displaced
-    # downdip from map-view
-    downdip_point0 = fault_vector_functions.add_vector_to_point(fault_object.xstart, fault_object.ystart, vector_mag,
-                                                                fault_object.strike+90);
-    # strike+90 = downdip direction.
-    downdip_point1 = fault_vector_functions.add_vector_to_point(fault_object.xfinish, fault_object.yfinish, vector_mag,
-                                                                fault_object.strike+90);
-
-    if coords == 'geographic':
-        updip_point0 = fault_vector_functions.xy2lonlat_single(updip_point0[0], updip_point0[1],
-                                                               fault_object.zerolon, fault_object.zerolat);
-        updip_point1 = fault_vector_functions.xy2lonlat_single(updip_point1[0], updip_point1[1],
-                                                               fault_object.zerolon, fault_object.zerolat);
-        downdip_point0 = fault_vector_functions.xy2lonlat_single(downdip_point0[0], downdip_point0[1],
-                                                                 fault_object.zerolon, fault_object.zerolat);
-        downdip_point1 = fault_vector_functions.xy2lonlat_single(downdip_point1[0], downdip_point1[1],
-                                                                 fault_object.zerolon, fault_object.zerolat);
-
-    x_total = [updip_point0[0], updip_point1[0], downdip_point1[0], downdip_point0[0], updip_point0[0]];
-    y_total = [updip_point0[1], updip_point1[1], downdip_point1[1], downdip_point0[1], updip_point0[1]];
-    x_updip = [updip_point0[0], updip_point1[0]];
-    y_updip = [updip_point0[1], updip_point1[1]];
-
-    return [x_total, y_total, x_updip, y_updip];
-
-
-def get_fault_slip_moment(fault_object, mu):
-    """
-    From a source fault object, calculate the seismic moment.
-    Must be a finite fault, not a point source.
-    Not really used yet, but could be useful in the future.
-
-    :param fault_object: PyCoulomb named-tuple representing one fault
-    :param mu: shear modulus, float, in Pa
-    :returns: array with two elements, seismic moment (N-m), and moment magnitude
-    """
-    if fault_object.potency:  # for the case of point source, we can't do the moment calculation
-        return None, None;
-    area = fault_object.L * fault_object.W * 1000 * 1000;
-    slip = fault_vector_functions.get_vector_magnitude([fault_object.rtlat, fault_object.reverse]);
-    seismic_moment = mu * area * slip;
-    moment_magnitude = moment_calculations.mw_from_moment(seismic_moment);
-    return seismic_moment, moment_magnitude;
-
 
 def get_R_from_strike(strike):
     """Compute the rotation matrix into a system with a given fault strike"""

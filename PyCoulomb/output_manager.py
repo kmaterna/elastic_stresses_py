@@ -1,8 +1,7 @@
 # output_manager
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib, os
-from subprocess import call
+import matplotlib, os, shutil
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from . import conversion_math, pygmt_plots, io_additionals, utilities
@@ -22,7 +21,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         params.write_params_into_config(params.outdir+"used_config.txt");  # for record-keeping
     io_intxt.write_intxt(inputs, params.outdir + "used_inputs.txt", mu=params.mu, lame1=params.lame1);
     if params.input_file:
-        call(['cp', params.input_file, params.outdir], shell=False);  # for record-keeping
+        shutil.copy(params.input_file, params.outdir)  # for record-keeping
 
     # Write output files for GPS displacements and strains at specific lon/lat points (if used)
     io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");
@@ -91,16 +90,16 @@ def surface_def_plot(out_object, outfile):
     rectangles, points, mogis = utilities.separate_source_types(out_object.source_object);
     fault_sources = rectangles + points;
     for source in fault_sources:
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+        [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners();
         plt.plot(x_total, y_total, 'k', linewidth=1);
         plt.plot(x_updip, y_updip, 'g', linewidth=3);
-        center = conversion_math.get_fault_center(source);
+        center = source.get_fault_center();
         plt.plot(center[0], center[1], '.g', markersize=8);
     for rec in out_object.receiver_object:
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
+        [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners();
         plt.plot(x_total, y_total, 'b', linewidth=1);
         plt.plot(x_updip, y_updip, 'b', linewidth=3);
-        center = conversion_math.get_fault_center(rec);
+        center = rec.get_fault_center();
         plt.plot(center[0], center[1], '.b', markersize=8);
     plt.xlim([out_object.x.min(), out_object.x.max()])
     plt.ylim([out_object.y.min(), out_object.y.max()])
@@ -146,7 +145,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     plt.figure(figsize=(12, 10), dpi=300);
 
     for i in range(len(stress_component)):
-        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(out_object.receiver_object[i]);
+        [x_total, y_total, _, _] = out_object.receiver_object[i].get_fault_four_corners();
         xcoords = x_total[0:4];
         ycoords = y_total[0:4];
         fault_vertices = np.column_stack((xcoords, ycoords));
@@ -163,16 +162,16 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
 
     # Adding source and receiver faults
     for source in out_object.source_object:
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+        [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners();
         plt.plot(x_total, y_total, 'k', linewidth=1);
         plt.plot(x_updip, y_updip, 'g', linewidth=3);
-        center = conversion_math.get_fault_center(source);
+        center = source.get_fault_center();
         plt.plot(center[0], center[1], '.g', markersize=8);
     for rec in out_object.receiver_object:
-        [x_total, y_total, x_updip, y_updip] = conversion_math.get_fault_four_corners(rec);
+        [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners();
         plt.plot(x_total, y_total, 'b', linewidth=1);
         plt.plot(x_updip, y_updip, 'b', linewidth=3);
-        center = conversion_math.get_fault_center(rec);
+        center = rec.get_fault_center();
         plt.plot(center[0], center[1], '.b', markersize=8);
 
     plt.grid();

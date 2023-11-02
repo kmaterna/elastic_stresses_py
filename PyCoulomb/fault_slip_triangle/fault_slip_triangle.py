@@ -2,7 +2,7 @@
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions, haversine
 from Tectonic_Utils.seismo import moment_calculations
-from .. import conversion_math, coulomb_collections
+from ..pyc_fault_object import Faults_object
 from Elastic_stresses_py.PyCoulomb.fault_slip_object.fault_slip_object import fault_object_to_coulomb_fault
 
 
@@ -221,13 +221,10 @@ class TriangleFault:
         [xstart, ystart] = refx0 + centroid[0]/1000, refy0 + centroid[1]/1000;  # in km with respect to zerolon/lat
         xfinish, yfinish = fault_vector_functions.add_vector_to_point(xstart, ystart, 2, self.get_strike());
 
-        one_source = coulomb_collections.construct_pycoulomb_fault(xstart=xstart, xfinish=xfinish, ystart=ystart,
-                                                                   yfinish=yfinish, rtlat=self.rtlat_slip,
-                                                                   reverse=self.dip_slip, tensile=self.tensile,
-                                                                   potency=[], strike=self.get_strike(),
-                                                                   dipangle=self.get_dip(), rake=rake,
-                                                                   zerolon=zerolon, zerolat=zerolat,
-                                                                   top=centroid[2]/1000, bottom=centroid[2]/1000+1.2);
+        one_source = Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish,
+                                   rtlat=self.rtlat_slip, reverse=self.dip_slip, tensile=self.tensile,
+                                   strike=self.get_strike(), dipangle=self.get_dip(), rake=rake, zerolon=zerolon,
+                                   zerolat=zerolat, top=centroid[2]/1000, bottom=centroid[2]/1000+1.2);
         return one_source;
 
     # ------------ PREDICATES -------------- #
@@ -251,7 +248,7 @@ def convert_rectangle_into_two_triangles(one_fault_obj):
     Convert a rectangular fault_slip_object into two triangular faults. The fault normals are expected to point up.
     """
     [source] = fault_object_to_coulomb_fault([one_fault_obj]);
-    [x_all, y_all, _, _] = conversion_math.get_fault_four_corners(source);  # This is cartesian
+    [x_all, y_all, _, _] = source.get_fault_four_corners();  # This is cartesian
     top_depth, bottom_depth = source.top, source.bottom;
     vertex1 = np.array([x_all[0]*1000, y_all[0]*1000, top_depth*1000]);  # in meters
     vertex2 = np.array([x_all[1]*1000, y_all[1]*1000, top_depth*1000]);

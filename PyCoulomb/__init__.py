@@ -9,3 +9,4 @@ from . import pygmt_plots
 from . import utilities
 from . import disp_points_object
 from . import inputs_object
+from . import pyc_fault_object

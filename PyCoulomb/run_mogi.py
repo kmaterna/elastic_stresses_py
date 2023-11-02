@@ -24,7 +24,7 @@ def compute_surface_disp_point(sources, nu, x, y, compute_depth=0):
     return u_disp, v_disp, w_disp;
 
 
-def compute_disps_from_one_mogi(source, x, y, nu, compute_depth=0):
+def compute_disps_from_one_mogi(source, x, y, nu, _compute_depth=0):
     """
     Calculates surface deformation based on point source
     References: Mogi 1958, Segall 2010 p.203

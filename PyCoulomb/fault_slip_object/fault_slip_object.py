@@ -3,10 +3,9 @@ The functions in this package operate on an internal class for faults/slip distr
 For all other formats, make sure you build read/write conversion AND TEST functions into internal format.
 """
 
-from .. import coulomb_collections as cc
+from ..pyc_fault_object import Faults_object
 from Tectonic_Utils.geodesy import fault_vector_functions, haversine
 from Tectonic_Utils.seismo import moment_calculations
-from .. import conversion_math
 import numpy as np
 
 class FaultSlipObject:
@@ -103,7 +102,7 @@ class FaultSlipObject:
         Return the lon/lat of all 4 corners of a fault_object.
         """
         [source] = fault_object_to_coulomb_fault([self]);
-        [x_total, y_total, _, _] = conversion_math.get_fault_four_corners(source);
+        [x_total, y_total, _, _] = source.get_fault_four_corners();
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, source.zerolon, source.zerolat);
         return lons, lats;
 
@@ -123,7 +122,7 @@ class FaultSlipObject:
         Return the lon/lat of 2 shallow corners of a fault_object.
         """
         [source] = fault_object_to_coulomb_fault([self]);
-        [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+        [_, _, x_updip, y_updip] = source.get_fault_four_corners();
         lons, lats = fault_vector_functions.xy2lonlat(x_updip, y_updip, source.zerolon, source.zerolat);
         return lons, lats;
 
@@ -236,11 +235,10 @@ class FaultSlipObject:
 
         rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(self.slip, self.rake);
         xfinish, yfinish = fault_vector_functions.add_vector_to_point(startx, starty, self.length, self.strike);
-        one_source = cc.construct_pycoulomb_fault(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish,
-                                                  Kode=100, rtlat=rtlat, reverse=reverse, tensile=self.tensile,
-                                                  potency=[], strike=self.strike, dipangle=self.dip,
-                                                  zerolon=zerolon, zerolat=zerolat, rake=self.rake,
-                                                  top=self.depth, bottom=bottom, comment='');
+        one_source = Faults_object(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish, rtlat=rtlat,
+                                   reverse=reverse, tensile=self.tensile, strike=self.strike, dipangle=self.dip,
+                                   zerolon=zerolon, zerolat=zerolat, rake=self.rake,
+                                   top=self.depth, bottom=bottom, comment='');
         return one_source;
 
     def subdivide_by_depth(self, num_divisions):

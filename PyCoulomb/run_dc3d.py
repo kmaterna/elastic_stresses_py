@@ -4,7 +4,7 @@ import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 from . import coulomb_collections as cc
 from . import conversion_math
-from . import run_mogi, utilities
+from . import run_mogi, utilities, pyc_fault_object
 from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -72,19 +72,17 @@ def split_subfault_receivers(params, inputs):
                                                                     finish_y_top, strike_split);
 
                 for k in range(strike_split):
-                    single_subfaulted_receiver = cc.construct_pycoulomb_fault(xstart=xsplit_array[k],
-                                                                              xfinish=xsplit_array[k + 1],
-                                                                              ystart=ysplit_array[k],
-                                                                              yfinish=ysplit_array[k + 1],
-                                                                              Kode=fault.Kode, rtlat=0, reverse=0,
-                                                                              tensile=0, potency=[],
-                                                                              strike=fault.strike,
-                                                                              dipangle=fault.dipangle,
-                                                                              zerolon=inputs.zerolon,
-                                                                              zerolat=inputs.zerolat,
-                                                                              rake=fault.rake, top=zsplit_array[j],
-                                                                              bottom=zsplit_array[j + 1],
-                                                                              comment=fault.comment);
+                    single_subfaulted_receiver = pyc_fault_object.Faults_object(xstart=xsplit_array[k],
+                                                                                xfinish=xsplit_array[k + 1],
+                                                                                ystart=ysplit_array[k],
+                                                                                yfinish=ysplit_array[k + 1],
+                                                                                Kode=fault.Kode, strike=fault.strike,
+                                                                                dipangle=fault.dipangle,
+                                                                                zerolon=inputs.zerolon,
+                                                                                zerolat=inputs.zerolat,
+                                                                                rake=fault.rake, top=zsplit_array[j],
+                                                                                bottom=zsplit_array[j + 1],
+                                                                                comment=fault.comment);
                     subfaulted_receivers.append(single_subfaulted_receiver);
 
     subfaulted_objects = cc.Input_object(PR1=inputs.PR1, FRIC=inputs.FRIC, depth=inputs.depth,
@@ -304,7 +302,7 @@ def compute_strains_stresses(params, inputs):
 
     print("Resolving stresses on receiver fault(s).")
     for receiver in inputs.receiver_object:
-        centercoords = conversion_math.get_fault_center(receiver);
+        centercoords = receiver.get_fault_center();
         normal_sum, shear_sum, coulomb_sum = 0, 0, 0;
 
         for source in inputs.source_object:

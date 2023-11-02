@@ -89,7 +89,7 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
     ofile = open(outfile, 'w');
     for fault in fault_object_list:
         [source] = fault_object_to_coulomb_fault([fault], zerolon_system=origin_ll[0], zerolat_system=origin_ll[1]);
-        [_, _, x_updip, y_updip] = conversion_math.get_fault_four_corners(source);
+        [_, _, x_updip, y_updip] = source.get_fault_four_corners();
         deeper_offset = fault.width*np.sin(np.deg2rad(fault.dip));
         [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+fault.strike);
         start_x, finish_x = xprime[0], xprime[1];
