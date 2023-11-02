@@ -14,7 +14,7 @@ filedict = {"fault_slip_file": "s2016NORCIA01PIZZ.fsp",
 def replace_inputs(demo_obj, fault_dict_list):
     pycoulomb_faults = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_dict_list, demo_obj.zerolon,
                                                                            demo_obj.zerolat)
-    input_object = PyCoulomb.configure_calc.modify_inputs_object(demo_obj, source_object=pycoulomb_faults);
+    input_object = demo_obj.modify_inputs_object(source_object=pycoulomb_faults);
     return input_object;
 
 
@@ -25,9 +25,9 @@ def convert_norcia_to_pycoulomb(filedict):
     Mw = seismo.moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(italy_faults))
     print("Moment Magnitude: ", Mw);
     params = PyCoulomb.configure_calc.configure_stress_calculation(filedict["demo_config"]);
-    inputs = PyCoulomb.file_io.io_intxt.read_intxt(params.input_file, params.mu, params.lame1);  # convenient io format
+    inputs = PyCoulomb.inputs_object.io_intxt.read_intxt(params.input_file, params.mu, params.lame1);
     inputs = replace_inputs(inputs, italy_faults);
-    PyCoulomb.file_io.io_intxt.write_intxt(inputs, filedict["norcia_input"], mu=params.mu, lame1=params.lame1);
+    PyCoulomb.inputs_object.io_intxt.write_intxt(inputs, filedict["norcia_input"], mu=params.mu, lame1=params.lame1);
     return;
 
 

@@ -27,7 +27,7 @@ def swap_input_depth(default_inputs, new_depth):
     # PACK MY SUITCASE. Replace source(old_depth) with source(new_depth)
     base_source = default_inputs.source_object[0];
     new_point_source = cc.modify_fault_object(base_source, top=new_depth, bottom=new_depth);
-    inputs = PyCoulomb.configure_calc.modify_inputs_object(default_inputs, source_object=[new_point_source]);
+    inputs = default_inputs.modify_inputs_object(source_object=[new_point_source]);
     return inputs;
 
 

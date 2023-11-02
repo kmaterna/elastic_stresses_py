@@ -1,7 +1,7 @@
 # Configures a stress calculation
 
 import os, configparser
-from . import coulomb_collections as cc
+from .inputs_object.input_obj import Input_object
 from . import conversion_math
 
 
@@ -11,6 +11,7 @@ class Params:
     Displacement calculations from Okada only use alpha.  Stress uses alpha, mu, lame1, and B.
     alpha is Okada alpha parameter. It is 2/3 for nu=1/4. See DC3D.f docs.   nu = poisson's ratio
     """
+
     def __init__(self, config_file=None, input_file=None, outdir=os.path.join('output', ''),
                  aftershocks=None, disp_points_file=None, strain_file=None,
                  strike_num_receivers=1, dip_num_receivers=1, fixed_rake=None, mu=30e9, lame1=30e9, B=0,
@@ -23,7 +24,7 @@ class Params:
         self.strain_file = strain_file;  # string, filename
         self.strike_num_receivers = strike_num_receivers;  # int, number to split along-strike
         self.dip_num_receivers = dip_num_receivers;  # int, number to split along-dip
-        self.fixed_rake = fixed_rake;      # on receivers, we must specify rake globally if we're using .inp format.
+        self.fixed_rake = fixed_rake;  # on receivers, we must specify rake globally if we're using .inp format.
         self.mu = mu;  # float, shear modulus
         self.lame1 = lame1;  # float, first lame parameter
         self.B = B;  # float, Skempton's coefficient
@@ -37,7 +38,7 @@ class Params:
         print("  -Input file: %s " % self.input_file);
         print("  -Disp_points_file: %s " % self.disp_points_file);
         print("  -Outdir: %s " % self.outdir);
-        print("  -Elastic moduli: %f, %f " % (self.mu, self.lame1) );
+        print("  -Elastic moduli: %f, %f " % (self.mu, self.lame1));
         print("  -Poisson's ratio and Alpha: %f, %f" % (self.nu, self.alpha));
         return;
 
@@ -145,67 +146,6 @@ def configure_stress_calculation(config_file):
     return MyParams;
 
 
-def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20,
-                                         num_points_x=20, num_points_y=20):
-    """
-    Build a default Input object for displacement-only calculations.
-    Unused parameters get default values or None.
-
-    :param source_object: a PyCoulomb source object
-    :param zerolon: float
-    :param zerolat: float
-    :param bbox: [w, e, s, n]
-    :param domainsize: in km. default is 20.
-    :param num_points_x: default 20
-    :param num_points_y: default 20
-    """
-    inputs = cc.Input_object(PR1=0.25, FRIC=0.4, depth=0,
-                             start_gridx=-domainsize, finish_gridx=domainsize,
-                             start_gridy=-domainsize, finish_gridy=domainsize,
-                             xinc=domainsize / num_points_x, yinc=domainsize / num_points_y,
-                             minlon=bbox[0], maxlon=bbox[1], zerolon=zerolon,
-                             minlat=bbox[2], maxlat=bbox[3], zerolat=zerolat,
-                             source_object=source_object, receiver_object=[],
-                             receiver_horiz_profile=None);
-    return inputs;
-
-
-def modify_inputs_object(default_inputs, PR1=None, FRIC=None, depth=None, start_gridx=None, finish_gridx=None,
-                         start_gridy=None, finish_gridy=None, xinc=None, yinc=None, minlon=None, maxlon=None,
-                         zerolon=None, minlat=None, maxlat=None, zerolat=None, source_object=None, receiver_object=None,
-                         receiver_horiz_profile=None):
-    """
-    Modify the fields in a PyCoulomb.Input_object namedtuple.
-    """
-
-    PR1 = default_inputs.PR1 if PR1 is None else PR1;
-    FRIC = default_inputs.FRIC if FRIC is None else FRIC;
-    depth = default_inputs.depth if depth is None else depth;
-    start_gridx = default_inputs.start_gridx if start_gridx is None else start_gridx;
-    finish_gridx = default_inputs.finish_gridx if finish_gridx is None else finish_gridx;
-    start_gridy = default_inputs.start_gridy if start_gridy is None else start_gridy;
-    finish_gridy = default_inputs.finish_gridy if finish_gridy is None else finish_gridy;
-    xinc = default_inputs.xinc if xinc is None else xinc;
-    yinc = default_inputs.yinc if yinc is None else yinc;
-    minlon = default_inputs.minlon if minlon is None else minlon;
-    maxlon = default_inputs.maxlon if maxlon is None else maxlon;
-    zerolon = default_inputs.zerolon if zerolon is None else zerolon;
-    minlat = default_inputs.minlat if minlat is None else minlat;
-    maxlat = default_inputs.maxlat if maxlat is None else maxlat;
-    zerolat = default_inputs.zerolat if zerolat is None else zerolat;
-    source_object = default_inputs.source_object if source_object is None else source_object;
-    receiver_object = default_inputs.receiver_object if receiver_object is None else receiver_object;
-    rec_profile = default_inputs.receiver_horiz_profile if receiver_horiz_profile is None else receiver_horiz_profile;
-
-    modified_inputs = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx,
-                                      finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy,
-                                      xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon,
-                                      minlat=minlat, maxlat=maxlat, zerolat=zerolat,
-                                      source_object=source_object, receiver_object=receiver_object,
-                                      receiver_horiz_profile=rec_profile);
-    return modified_inputs;
-
-
 def write_valid_config_file(directory):
     config_filename = "my_config.txt";
     configobj = configparser.ConfigParser()
@@ -232,3 +172,26 @@ def write_valid_config_file(directory):
         configobj.write(configfile)
     print("Writing file %s " % os.path.join(directory, config_filename));
     return;
+
+
+def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20,
+                                         num_points_x=20, num_points_y=20):
+    """
+    Build a default Input object for displacement-only calculations.
+    Unused parameters get default values or None.
+
+    :param source_object: a PyCoulomb source object
+    :param zerolon: float
+    :param zerolat: float
+    :param bbox: [w, e, s, n]
+    :param domainsize: in km. default is 20.
+    :param num_points_x: default 20
+    :param num_points_y: default 20
+    """
+    inputs = Input_object(start_gridx=-domainsize, finish_gridx=domainsize,
+                          start_gridy=-domainsize, finish_gridy=domainsize,
+                          xinc=domainsize / num_points_x, yinc=domainsize / num_points_y,
+                          minlon=bbox[0], maxlon=bbox[1], zerolon=zerolon,
+                          minlat=bbox[2], maxlat=bbox[3], zerolat=zerolat,
+                          source_object=source_object);
+    return inputs;

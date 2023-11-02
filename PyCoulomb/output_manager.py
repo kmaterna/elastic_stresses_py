@@ -5,7 +5,7 @@ import matplotlib, os
 from subprocess import call
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
-from . import conversion_math, pygmt_plots, io_additionals, utilities, configure_calc
+from . import conversion_math, pygmt_plots, io_additionals, utilities
 from .inputs_object import io_intxt, io_inp
 from . import fault_slip_object as fso
 from Tectonic_Utils.geodesy import fault_vector_functions
@@ -63,8 +63,8 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
 
 def write_subfaulted_inp(inputs, out_object, outfile):
     # write an inp for the sub-faulted configuration.
-    subfaulted_inputs = configure_calc.modify_inputs_object(inputs, source_object=out_object.source_object,
-                                                            receiver_object=out_object.receiver_object);
+    subfaulted_inputs = inputs.modify_inputs_object(source_object=out_object.source_object,
+                                                    receiver_object=out_object.receiver_object);
     io_inp.write_inp(subfaulted_inputs, outfile);
     return;
 

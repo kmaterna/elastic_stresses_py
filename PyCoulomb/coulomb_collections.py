@@ -7,7 +7,12 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 from .disp_points_object import disp_points_object
 
 
+# A grouping of elements used for inputs into the coulomb calculation
 Input_object = input_obj.Input_object
+
+# Displacement_points are individual disp_point elements, can be put into lists of elements.
+Displacement_points = disp_points_object.Displacement_points;
+
 
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',
@@ -42,10 +47,6 @@ class Mogi_Source:
         self.zerolat = zerolat;  # degrees
         self.depth = depth;  # km
         self.dV = dV;  # cubic meters
-
-
-# Displacement_points are individual disp_point elements, can be put into lists of elements.
-Displacement_points = disp_points_object.Displacement_points;
 
 
 Faults_object = collections.namedtuple('Faults_object', [

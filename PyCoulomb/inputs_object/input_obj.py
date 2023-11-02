@@ -1,13 +1,12 @@
-
 import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
 class Input_object:
     # Input object for the calculation of displacements and stresses.
-    def __init__(self, PR1, FRIC, depth, start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc,
-                 minlon, maxlon, zerolon, minlat, maxlat, zerolat, source_object, receiver_object,
-                 receiver_horiz_profile):
+    def __init__(self, xinc, yinc, minlon, maxlon, zerolon, minlat, maxlat, zerolat, source_object,
+                 PR1=0.25, FRIC=0.4, depth=0, start_gridx=-20, finish_gridx=20, start_gridy=-20, finish_gridy=20,
+                 receiver_object=(), receiver_horiz_profile=None):
         self.PR1 = PR1;
         self.FRIC = FRIC;
         self.depth = depth;
@@ -50,8 +49,42 @@ class Input_object:
         Check that all faults have the same coord system
         """
         for item in self.source_object + self.receiver_object:
-            if np.abs(item.zerolon-self.zerolon) > tol:
-                raise(ValueError, "input or receiver faults lack a good longitude coordinate system.");
-            if np.abs(item.zerolat-self.zerolat) > tol:
-                raise(ValueError, "input or receiver faults lack a good latitude coordinate system.");
+            if np.abs(item.zerolon - self.zerolon) > tol:
+                raise (ValueError, "input or receiver faults lack a good longitude coordinate system.");
+            if np.abs(item.zerolat - self.zerolat) > tol:
+                raise (ValueError, "input or receiver faults lack a good latitude coordinate system.");
         return;
+
+    def modify_inputs_object(self, PR1=None, FRIC=None, depth=None, start_gridx=None, finish_gridx=None,
+                             start_gridy=None, finish_gridy=None, xinc=None, yinc=None, minlon=None, maxlon=None,
+                             zerolon=None, minlat=None, maxlat=None, zerolat=None, source_object=None,
+                             receiver_object=None, receiver_horiz_profile=None):
+        """
+        Modify the fields in a PyCoulomb.Input_object.
+        """
+        PR1 = self.PR1 if PR1 is None else PR1;
+        FRIC = self.FRIC if FRIC is None else FRIC;
+        depth = self.depth if depth is None else depth;
+        start_gridx = self.start_gridx if start_gridx is None else start_gridx;
+        finish_gridx = self.finish_gridx if finish_gridx is None else finish_gridx;
+        start_gridy = self.start_gridy if start_gridy is None else start_gridy;
+        finish_gridy = self.finish_gridy if finish_gridy is None else finish_gridy;
+        xinc = self.xinc if xinc is None else xinc;
+        yinc = self.yinc if yinc is None else yinc;
+        minlon = self.minlon if minlon is None else minlon;
+        maxlon = self.maxlon if maxlon is None else maxlon;
+        zerolon = self.zerolon if zerolon is None else zerolon;
+        minlat = self.minlat if minlat is None else minlat;
+        maxlat = self.maxlat if maxlat is None else maxlat;
+        zerolat = self.zerolat if zerolat is None else zerolat;
+        source_object = self.source_object if source_object is None else source_object;
+        receiver_object = self.receiver_object if receiver_object is None else receiver_object;
+        rec_profile = self.receiver_horiz_profile if receiver_horiz_profile is None else receiver_horiz_profile;
+
+        modified_inputs = Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx,
+                                       finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy,
+                                       xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon,
+                                       minlat=minlat, maxlat=maxlat, zerolat=zerolat,
+                                       source_object=source_object, receiver_object=receiver_object,
+                                       receiver_horiz_profile=rec_profile);
+        return modified_inputs;
