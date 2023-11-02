@@ -8,9 +8,9 @@ Read Coulomb input files in the .inp format. Important parameters are:
 * 6. Map info (min lon, max lon, zero lon, min lat, max lat, zero lat)
 """
 
-
-from . import coulomb_collections as cc
-from . import utilities
+from .. import coulomb_collections as cc
+from .. import utilities
+from .input_obj import Input_object
 from Tectonic_Utils.geodesy import fault_vector_functions
 import subprocess
 
@@ -80,12 +80,12 @@ def read_inp(input_file, fixed_rake):
                     receivers.append(one_receiver_object);
     ifile.close();
 
-    input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx, finish_gridx=finish_gridx,
-                                start_gridy=start_gridy, finish_gridy=finish_gridy, xinc=xinc, yinc=yinc, minlon=minlon,
-                                maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
-                                receiver_object=receivers, source_object=sources, receiver_horiz_profile=None);
-
-    return input_obj;
+    my_inputs = Input_object(PR1=PR1, FRIC=FRIC, depth=depth, start_gridx=start_gridx,
+                             finish_gridx=finish_gridx, start_gridy=start_gridy, finish_gridy=finish_gridy,
+                             xinc=xinc, yinc=yinc, minlon=minlon, maxlon=maxlon, zerolon=zerolon,
+                             minlat=minlat, maxlat=maxlat, zerolat=zerolat,
+                             receiver_object=receivers, source_object=sources, receiver_horiz_profile=None);
+    return my_inputs;
 
 
 def read_fault_line(line, rake_is_explicit=0):

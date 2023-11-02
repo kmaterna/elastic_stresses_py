@@ -25,9 +25,9 @@ def convert_norcia_to_pycoulomb(filedict):
     Mw = seismo.moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(italy_faults))
     print("Moment Magnitude: ", Mw);
     params = PyCoulomb.configure_calc.configure_stress_calculation(filedict["demo_config"]);
-    inputs = PyCoulomb.io_intxt.read_intxt(params.input_file, params.mu, params.lame1);  # convenient input format
+    inputs = PyCoulomb.file_io.io_intxt.read_intxt(params.input_file, params.mu, params.lame1);  # convenient io format
     inputs = replace_inputs(inputs, italy_faults);
-    PyCoulomb.io_intxt.write_intxt(inputs, filedict["norcia_input"], mu=params.mu, lame1=params.lame1);
+    PyCoulomb.file_io.io_intxt.write_intxt(inputs, filedict["norcia_input"], mu=params.mu, lame1=params.lame1);
     return;
 
 

@@ -2,26 +2,12 @@
 
 import collections
 from . import conversion_math
+from .inputs_object import input_obj
 from Tectonic_Utils.geodesy import fault_vector_functions
 from .disp_points_object import disp_points_object
 
 
-Input_object = collections.namedtuple('Input_object', [
-    'PR1', 'FRIC', 'depth',
-    'start_gridx', 'finish_gridx',
-    'start_gridy', 'finish_gridy',
-    'xinc', 'yinc',
-    'minlon', 'maxlon',
-    'zerolon',
-    'minlat', 'maxlat',
-    'zerolat',
-    'source_object',
-    'receiver_object', 'receiver_horiz_profile'])
-"""
-Input object for the calculation of displacements and stresses. 
-source_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system.
-receiver_object = a list of Faults (pycoulomb format), with the same zerolon/zerolat as the overall system.
-"""
+Input_object = input_obj.Input_object
 
 Out_object = collections.namedtuple('Out_object', [
     'x', 'y',

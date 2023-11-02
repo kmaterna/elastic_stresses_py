@@ -2,7 +2,8 @@
 
 import numpy as np
 import pygmt, os
-from . import io_additionals, utilities, io_intxt, conversion_math
+from . import io_additionals, utilities, conversion_math
+from .inputs_object import io_intxt
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -31,7 +32,7 @@ def map_stress_plot(params, inputs, out_object, stress_component, vmin=-1, vmax=
                   output="mycpt.cpt", background=True);
 
     # Make Map
-    region = utilities.define_map_region(inputs);
+    region = inputs.define_map_region();
     proj = "M7i"
     fig = pygmt.Figure()
     title = "+t\"" + stress_component + " stress\"";  # must put escaped quotations around the title.
@@ -67,7 +68,7 @@ def map_vertical_def(params, inputs, outfile):
     print("Mapping vertical deformation in %s " % outfile);
 
     proj = 'M4i'
-    region = utilities.define_map_region(inputs);
+    region = inputs.define_map_region();
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
@@ -96,7 +97,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
         return;
 
     proj = 'M4i'
-    region = utilities.define_map_region(inputs);
+    region = inputs.define_map_region();
 
     # Unpack modeled displacements, in meters
     model_dE = np.array([x.dE_obs for x in model_disp_points]);

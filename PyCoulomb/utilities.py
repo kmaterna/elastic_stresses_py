@@ -2,7 +2,6 @@ import numpy as np
 from subprocess import call
 import os
 from Tectonic_Utils.seismo import moment_calculations
-from Tectonic_Utils.geodesy import fault_vector_functions
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
 from . import coulomb_collections as cc
 
@@ -113,25 +112,6 @@ def define_vector_scale_size(model_dE, model_dN):
     return scale_arrow, vectext;
 
 
-def define_map_region(inputs):
-    """
-    Define the bounding box for map in pygmt [W, E, S, N] based on sources and receivers, if bigger than coord system
-    """
-    region = [inputs.minlon, inputs.maxlon, inputs.minlat, inputs.maxlat];
-    allfaults = inputs.receiver_object + inputs.source_object
-    for item in allfaults:
-        lon, lat = fault_vector_functions.xy2lonlat(item.xstart, item.ystart, inputs.zerolon, inputs.zerolat);
-        if lon < region[0]:
-            region[0] = lon;
-        if lon > region[1]:
-            region[1] = lon;
-        if lat < region[2]:
-            region[2] = lat;
-        if lat > region[3]:
-            region[3] = lat;
-    return region;
-
-
 def displacements_to_3_grds(outdir, efiles, nfiles, ufiles, region, inc=0.0005):
     """
     Call gmt surface on each component. efiles, nfiles, and ufiles are tuples of inputs and outputs: (txtfile, grdfile)
@@ -202,17 +182,4 @@ def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=l
     rect_sources, _, _ = separate_source_types(fault_object);
     fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(rect_sources);
     fso.file_io.outputs.write_gmt_fault_file(fault_dict_list, outfile, color_mappable=color_array, verbose=False);
-    return;
-
-
-def check_each_fault_has_same_coord_system(list_of_fault_objects, system_zerolon, system_zerolat):
-    """
-    Check that all faults have the same coord system
-    """
-    tol = 0.00001
-    for item in list_of_fault_objects:
-        if np.abs(item.zerolon-system_zerolon) > tol:
-            raise(ValueError, "input or receiver faults lack a good longitude coordinate system.");
-        if np.abs(item.zerolat-system_zerolat) > tol:
-            raise(ValueError, "input or receiver faults lack a good latitude coordinate system.");
     return;

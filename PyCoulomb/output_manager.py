@@ -5,7 +5,8 @@ import matplotlib, os
 from subprocess import call
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
-from . import conversion_math, io_inp, pygmt_plots, io_additionals, utilities, configure_calc, io_intxt
+from . import conversion_math, pygmt_plots, io_additionals, utilities, configure_calc
+from .inputs_object import io_intxt, io_inp
 from . import fault_slip_object as fso
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -356,7 +357,7 @@ def write_horiz_profile(horiz_profile, profile_results, outfile):
 
 def write_disp_grd_files(inputs, outdir, east_txt, north_txt, vert_txt):
     # Make surfaces of east/north/up deformation for plotting. Based on three text files in outdir, with x-y-disp
-    region = utilities.define_map_region(inputs);
+    region = inputs.define_map_region();
     inc = (region[1]-region[0]) / 500;  # for gmt mapping, default is 500 points per axis
     utilities.displacements_to_3_grds(outdir, efiles=(east_txt, 'east.grd'), nfiles=(north_txt, 'north.grd'),
                                       ufiles=(vert_txt, 'vert.grd'), region=region, inc=inc)

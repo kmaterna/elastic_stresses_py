@@ -5,8 +5,9 @@ using Wells and Coppersmith 1994, in the same way that Coulomb does.
 """
 
 import numpy as np
-from . import coulomb_collections as cc
-from . import conversion_math
+from .. import coulomb_collections as cc
+from .. import conversion_math
+from .input_obj import Input_object
 from Tectonic_Utils.seismo import wells_and_coppersmith, moment_calculations, MT_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -45,11 +46,11 @@ def read_intxt(input_file, mu, lame1):
     ifile.close();
 
     # Wrapping up the inputs.
-    input_obj = cc.Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_x, finish_gridx=end_x,
-                                start_gridy=start_y, finish_gridy=end_y, xinc=xinc, yinc=yinc, minlon=minlon,
-                                maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
-                                receiver_object=receivers, source_object=sources,
-                                receiver_horiz_profile=receiver_horiz_profile);
+    input_obj = Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_x, finish_gridx=end_x,
+                             start_gridy=start_y, finish_gridy=end_y, xinc=xinc, yinc=yinc, minlon=minlon,
+                             maxlon=maxlon, zerolon=zerolon, minlat=minlat, maxlat=maxlat, zerolat=zerolat,
+                             receiver_object=receivers, source_object=sources,
+                             receiver_horiz_profile=receiver_horiz_profile);
     return input_obj;
 
 
@@ -74,11 +75,11 @@ def write_intxt(input_object, output_file, label=None, mu=30e9, lame1=30e9):
     ofile.write("General: %.3f %.3f %f %f %f %f %f %f \n" % (real_poissons_ratio, input_object.FRIC,
                                                              input_object.minlon, input_object.maxlon,
                                                              input_object.zerolon, input_object.minlat,
-                                                             input_object.maxlat, input_object.zerolat) );
+                                                             input_object.maxlat, input_object.zerolat));
     for src in input_object.source_object:
         if isinstance(src, cc.Mogi_Source):
             src_lon, src_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat);
-            ofile.write("Source_Mogi: %.3f %.3f %.3f %.3f\n" % (src_lon, src_lat, src.depth, src.dV) );
+            ofile.write("Source_Mogi: %.3f %.3f %.3f %.3f\n" % (src_lon, src_lat, src.depth, src.dV));
         if isinstance(src, cc.Faults_object):
             if not src.potency:  # write a finite source as a Source_Patch
                 L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish);  # in km
@@ -89,24 +90,24 @@ def write_intxt(input_object, output_file, label=None, mu=30e9, lame1=30e9):
                 ofile.write("Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, src.dipangle,
                                                                                     L, W, fault_lon, fault_lat,
                                                                                     src.top, slip));
-            if src.potency:   # write a DC focal mechanism
+            if src.potency:  # write a DC focal mechanism
                 fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
                                                                         src.zerolon, src.zerolat);
                 mag = get_mag_from_dc_potency(src.potency, mu, src.rake);
                 ofile.write("Source_FM: %.3f %.3f %.3f %f %f %.3f %.3f\n" % (src.strike, src.rake, src.dipangle,
-                                                                             fault_lon, fault_lat, src.top, mag) );
+                                                                             fault_lon, fault_lat, src.top, mag));
     for rec in input_object.receiver_object:
         L = fault_vector_functions.get_strike_length(rec.xstart, rec.xfinish, rec.ystart, rec.yfinish);  # in km
         W = fault_vector_functions.get_downdip_width(rec.top, rec.bottom, rec.dipangle);  # in km
         fault_lon, fault_lat = fault_vector_functions.xy2lonlat(rec.xstart, rec.ystart, rec.zerolon, rec.zerolat);
         ofile.write("Receiver: %.3f %.3f %.3f %f %f %f %f %.3f \n" % (rec.strike, rec.rake, rec.dipangle, L, W,
-                                                                      fault_lon, fault_lat, rec.top) );
+                                                                      fault_lon, fault_lat, rec.top));
     if input_object.receiver_horiz_profile:
         rec = input_object.receiver_horiz_profile;
         ofile.write("Receiver_Horizontal_Profile: ");
         ofile.write("%.3f %.3f %.3f %.3f " % (rec.depth_km, rec.strike, rec.dip, rec.rake))
-        ofile.write("%f %f " % (rec.centerlon, rec.centerlat) )
-        ofile.write("%f %f %f\n" % (rec.length, rec.width, rec.inc) );
+        ofile.write("%f %f " % (rec.centerlon, rec.centerlat))
+        ofile.write("%f %f %f\n" % (rec.length, rec.width, rec.inc));
     ofile.close();
     print("Writing file %s " % output_file);
     return;
@@ -230,14 +231,14 @@ def get_receiver_profile(line):
     endlon = fault_vector_functions.xy2lonlat(length, 0, centerlon, centerlat)[0];
     startlat = fault_vector_functions.xy2lonlat(0, -width, centerlon, centerlat)[1];
     endlat = fault_vector_functions.xy2lonlat(0, width, centerlon, centerlat)[1];
-    lonpts = np.arange(startlon, endlon, inc/111.00);
-    latpts = np.arange(startlat, endlat, inc/111.00);
+    lonpts = np.arange(startlon, endlon, inc / 111.00);
+    latpts = np.arange(startlat, endlat, inc / 111.00);
     X, Y = np.meshgrid(lonpts, latpts);
     lon1d = np.reshape(X, (np.size(X),));
     lat1d = np.reshape(Y, (np.size(X),));
     horiz_profile = cc.Receiver_Horiz_Profile(depth_km=depth, strike=strike, dip=dip, rake=rake, centerlon=centerlon,
                                               centerlat=centerlat, lon1d=lon1d, lat1d=lat1d, length=length, width=width,
-                                              inc=inc,  shape=np.shape(X));
+                                              inc=inc, shape=np.shape(X));
     return horiz_profile;
 
 
@@ -271,6 +272,7 @@ def read_source_line_WCconvention(line):
     [fault_center_lon, fault_center_lat, fault_center_dep] = [float(i) for i in line.split()[6:9]];
     return [strike, rake, dip, magnitude, faulting_type, fault_center_lon, fault_center_lat, fault_center_dep];
 
+
 def read_source_line_slip_convention(line):
     """Format: strike rake dip length_km width_km lon lat depth_km slip_m"""
     [strike, rake, dip, length, width] = [float(i) for i in line.split()[1:6]];
@@ -282,11 +284,13 @@ def read_source_line_slip_convention(line):
         tensile = 0;
     return [strike, rake, dip, length, width, slip, tensile, updip_corner_lon, updip_corner_lat, updip_corner_dep];
 
+
 def read_receiver_line(line):
     """Format: strike rake dip length_km width_km lon lat depth_km"""
     [strike, rake, dip, length, width] = [float(i) for i in line.split()[1:6]];
     [updip_corner_lon, updip_corner_lat, updip_corner_dep] = [float(i) for i in line.split()[6:9]];
     return [strike, rake, dip, length, width, updip_corner_lon, updip_corner_lat, updip_corner_dep]
+
 
 def read_general_line(line):
     """Format: poissons_ratio friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero"""
@@ -294,10 +298,12 @@ def read_general_line(line):
     [lat_min, lat_max, lat_zero] = [float(i) for i in line.split()[6:9]];
     return [PR1, FRIC, lon_min, lon_max, lon_zero, lat_min, lat_max, lat_zero];
 
+
 def read_point_source_line(line):
     """Format: strike rake dip lon lat depth magnitude mu lamdba """
     [strike, rake, dip, lon, lat, depth, magnitude] = [float(i) for i in line.split()[1:8]];
     return [strike, rake, dip, lon, lat, depth, magnitude];
+
 
 def read_moment_tensor_source_line(line):
     """Format: Mrr Mtt Mpp Mrt Mrp Mtp strike dip rake lon lat depth_km mu lambda"""
@@ -305,6 +311,7 @@ def read_moment_tensor_source_line(line):
     [strike, dip, rake] = [float(i) for i in line.split()[7:10]];
     [lon, lat, depth] = [float(i) for i in line.split()[10:13]];
     return [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth];
+
 
 def read_mogi_source_line(line):
     """Format: lon lat depth dV"""
@@ -342,9 +349,9 @@ def compute_params_for_WC_source(strike, dip, rake, depth, mag, faulting_type, f
     W = wells_and_coppersmith.RW_from_M(mag, faulting_type);  # rupture width
     slip = wells_and_coppersmith.rectangular_slip(L * 1000, W * 1000, mag);  # must input in meters
     if refpoint == 'center':  # if hypocenter is really the center of the rupture:
-        xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, -L/2, strike);
+        xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, -L / 2, strike);
         top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
-        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L/2, strike);
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L / 2, strike);
     else:  # if hypocenter is top updip corner of rupture:
         xstart, ystart = fault_vector_functions.add_vector_to_point(xcenter, ycenter, 0, strike);
         xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcenter, ycenter, L, strike);
@@ -361,8 +368,8 @@ def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fa
     """
     [xcorner, ycorner] = fault_vector_functions.latlon2xy(fault_lon, fault_lat, zerolon, zerolat);
     if refpoint == 'center':  # if hypocenter is the center of the rupture:
-        xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, -L/2, strike);
-        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L/2, strike);
+        xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, -L / 2, strike);
+        xfinish, yfinish = fault_vector_functions.add_vector_to_point(xcorner, ycorner, L / 2, strike);
         top, bottom = fault_vector_functions.get_top_bottom_from_center(depth, W, dip);
     else:  # if hypocenter is top updip corner of rupture:
         xstart, ystart = fault_vector_functions.add_vector_to_point(xcorner, ycorner, 0, strike);
