@@ -3,7 +3,7 @@
 # To forward-model displacements from a slip distribution at known locations
 
 from Elastic_stresses_py.PyCoulomb import fault_slip_object as fso
-from Elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals
+from Elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals, inputs_object
 
 filedict = {
     'datafile': 'lon_lat_points.txt',
@@ -20,8 +20,10 @@ if __name__ == "__main__":
                                                                               filedict['lat0_sys']);
     disp_points = io_additionals.read_disp_points(filedict['datafile']);
     params = configure_calc.Params();  # configure with default values
-    inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, zerolon=filedict['lon0_sys'],
-                                                                 zerolat=filedict['lat0_sys'], bbox=filedict['bbox']);
+    inputs = inputs_object.input_obj.configure_default_displacement_input(coulomb_fault_model,
+                                                                          zerolon=filedict['lon0_sys'],
+                                                                          zerolat=filedict['lat0_sys'],
+                                                                          bbox=filedict['bbox']);
     # Compute and Output
     outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=[]);
     output_manager.produce_outputs(params, inputs, disp_points, obs_strain_points=[], out_object=outobj);

@@ -80,7 +80,7 @@ def write_fault_traces_gmt(fault_list, outfile):
     print("Writing %s" % outfile);
     ofile = open(outfile, 'w');
     for fault in fault_list:
-        [_, _, x_updip, y_updip] = fault.get_fault_four_corners(coords='geographic');
+        [_, _, x_updip, y_updip] = fault.get_fault_four_corners_geographic();
         ofile.write("> \n");
         ofile.write("%f %f\n" % (x_updip[0], y_updip[0]));
         ofile.write("%f %f\n" % (x_updip[1], y_updip[1]));

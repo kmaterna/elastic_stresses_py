@@ -3,6 +3,7 @@ from subprocess import call
 import os
 from Tectonic_Utils.seismo import moment_calculations
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
+import Elastic_stresses_py.PyCoulomb.pyc_fault_object as pycfaults
 from . import coulomb_collections as cc
 
 
@@ -71,7 +72,10 @@ def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_l
 def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
     """
     Determine boundaries of a symmetric colormap object (like stress change), coding all the edge-case logic here
-    plotting_array: 1d array or None.
+
+    :param plotting_array: 1d array or None.
+    :param vmin: float
+    :param vmax: float
     """
     if not plotting_array:
         return -1, 1;
@@ -88,7 +92,11 @@ def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
 
 def define_vector_scale_size(model_dE, model_dN):
     """
-    Based on the modeled displacements, determine an appropriate vector scale for map visualization
+    Based on modeled displacements, determine an appropriate vector scale for map visualization
+
+    :param model_dE: 1d-array
+    :param model_dN: 1d-array
+    :returns: float for arrow scale, string for vector text
     """
     max_disp = np.max(np.sqrt(np.square(model_dN) + np.square(model_dE)));
     if max_disp > 0.5:
@@ -149,9 +157,8 @@ def print_metrics_on_sources(source_object, mu):
     if len(point_sources) > 0:
         print("Number of point sources: %d" % len(point_sources) );
     if len(rect_sources) > 0:
-        fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(rect_sources);
-        # default mu = 30GPa
-        Mw = moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list, mu=mu));
+        Mw = moment_calculations.mw_from_moment(pycfaults.get_faults_slip_moment(rect_sources, mu));
+        print("Number of rectangular sources: %d" % len(rect_sources) );
         print("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f" % (mu/1e9, Mw));
     if len(mogi_sources) > 0:
         print("Number of Mogi sources: %d" % len(mogi_sources));

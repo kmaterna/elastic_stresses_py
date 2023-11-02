@@ -88,3 +88,25 @@ class Input_object:
                                        source_object=source_object, receiver_object=receiver_object,
                                        receiver_horiz_profile=rec_profile);
         return modified_inputs;
+
+
+def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20,
+                                         num_points_x=20, num_points_y=20):
+    """
+    Build a default Input object for displacement-only calculations using a simpler-parameterized interface.
+
+    :param source_object: a list of PyCoulomb faults
+    :param zerolon: float
+    :param zerolat: float
+    :param bbox: [w, e, s, n]
+    :param domainsize: in km. default is 20.
+    :param num_points_x: default 20
+    :param num_points_y: default 20
+    """
+    inputs = Input_object(start_gridx=-domainsize, finish_gridx=domainsize,
+                          start_gridy=-domainsize, finish_gridy=domainsize,
+                          xinc=domainsize / num_points_x, yinc=domainsize / num_points_y,
+                          minlon=bbox[0], maxlon=bbox[1], zerolon=zerolon,
+                          minlat=bbox[2], maxlat=bbox[3], zerolat=zerolat,
+                          source_object=source_object);
+    return inputs;

@@ -1,13 +1,12 @@
 # Configures a stress calculation
 
 import os, configparser
-from .inputs_object.input_obj import Input_object
 from . import conversion_math
 
 
 class Params:
     """
-    Only need to provide the mu and lame1 parameters.
+    Only need to provide mu and lame1 elastic parameters.
     Displacement calculations from Okada only use alpha.  Stress uses alpha, mu, lame1, and B.
     alpha is Okada alpha parameter. It is 2/3 for nu=1/4. See DC3D.f docs.   nu = poisson's ratio
     """
@@ -31,6 +30,8 @@ class Params:
         self.nu, self.alpha = conversion_math.get_poissons_ratio_and_alpha(mu, lame1);  # derived from mu and lame1
         self.plot_stress = plot_stress;  # boolean
         self.plot_grd_disp = plot_grd_disp;  # boolean
+        if self.B > 1:
+            raise ValueError("Error! Provided Skepmton's coefficient is invalid because 0 <= B <= 1.");
 
     def print_summary(self):
         print("Configuring with the following Params:");
@@ -140,8 +141,7 @@ def configure_stress_calculation(config_file):
                       disp_points_file=gps_file, strain_file=strain_file,
                       strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
                       dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
-                      plot_stress=plot_stress, plot_grd_disp=plot_grd_disp,
-                      outdir=output_dir);
+                      plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, outdir=output_dir);
     MyParams.print_summary();
     return MyParams;
 
@@ -172,26 +172,3 @@ def write_valid_config_file(directory):
         configobj.write(configfile)
     print("Writing file %s " % os.path.join(directory, config_filename));
     return;
-
-
-def configure_default_displacement_input(source_object, zerolon, zerolat, bbox, domainsize=20,
-                                         num_points_x=20, num_points_y=20):
-    """
-    Build a default Input object for displacement-only calculations.
-    Unused parameters get default values or None.
-
-    :param source_object: a PyCoulomb source object
-    :param zerolon: float
-    :param zerolat: float
-    :param bbox: [w, e, s, n]
-    :param domainsize: in km. default is 20.
-    :param num_points_x: default 20
-    :param num_points_y: default 20
-    """
-    inputs = Input_object(start_gridx=-domainsize, finish_gridx=domainsize,
-                          start_gridy=-domainsize, finish_gridy=domainsize,
-                          xinc=domainsize / num_points_x, yinc=domainsize / num_points_y,
-                          minlon=bbox[0], maxlon=bbox[1], zerolon=zerolon,
-                          minlat=bbox[2], maxlat=bbox[3], zerolat=zerolat,
-                          source_object=source_object);
-    return inputs;

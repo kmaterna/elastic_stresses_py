@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
-from Elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals
+from Elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals, inputs_object
 
 
 # Definitions
@@ -17,7 +17,7 @@ disp_points = io_additionals.read_disp_points(lonlatfile);
 
 # Configure, Compute, Output
 params = configure_calc.Params();  # configure with default values
-inputs = configure_calc.configure_default_displacement_input(coulomb_fault_model, zerolon=lon0_sys,
-                                                             zerolat=lat0_sys, bbox=bbox, domainsize=100);
+inputs = inputs_object.input_obj.configure_default_displacement_input(coulomb_fault_model, zerolon=lon0_sys,
+                                                                      zerolat=lat0_sys, bbox=bbox, domainsize=100);
 outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=[]);
 output_manager.produce_outputs(params, inputs, disp_points, obs_strain_points=[], out_object=outobj);

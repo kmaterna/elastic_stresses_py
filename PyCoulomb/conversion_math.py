@@ -1,5 +1,4 @@
-# Stress and strain functions
-# Fault object functions
+# Stress/strain/geometry functions
 
 
 import numpy as np
@@ -47,10 +46,14 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
     """
     Given a stress tensor, receiver strike, receiver rake, and receiver dip
     Resolve the stress changes on the fault plane.
-    Tau is full 3x3 stress tensor
-    Friction is coefficient of friction
-    B is Skepmton's coefficient
-    Return in KPa
+
+    :param tau: full 3x3 stress tensor
+    :param strike: float, in degrees
+    :param rake: float, in degrees
+    :param dip: float, in degrees
+    :param friction: float, coefficient of friction
+    :param B: Skepmton's coefficient
+    :returns: list of 3 floats, in KPa
     """
     # First compute the geometric vectors associated with the receiver
     strike_unit_vector = fault_vector_functions.get_strike_vector(strike);  # a 3d vector in the horizontal plane.
@@ -65,13 +68,17 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
 
 def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, rec_plane_normal, friction, B):
     """
-    The math behind Coulomb stresses
-    Given a stress tensor, receiver strike, receiver rake, and receiver dip
+    The math behind Coulomb stresses: given a stress tensor, receiver strike, receiver rake, and receiver dip.
     Resolve the stress changes on the fault plane.
-    Tau is full 3x3 stress tensor
-    Friction is coefficient of friction
-    B is Skepmton's coefficient
-    Return in KPa
+
+    :param tau: full 3x3 stress tensor
+    :param rec_strike_vector: 1d array
+    :param rake: float
+    :param rec_dip_vector: 1d array
+    :param rec_plane_normal: 1d array
+    :param friction: float, coefficient of friction
+    :param B: float, Skepmton's coefficient
+    :returns: list of 3 floats, Return in KPa
     """
     traction_vector = np.dot(tau, rec_plane_normal);
 
