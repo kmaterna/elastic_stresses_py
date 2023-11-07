@@ -41,7 +41,7 @@ def map_stress_plot(params, inputs, out_object, stress_component, vmin=-1, vmax=
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='white',
               map_scale="jBL+c1.5+w50");
 
-    fig = annotate_figure_with_sources(fig, inputs, params);
+    fig = annotate_figure_with_sources(fig, inputs, params.mu);
 
     # Plot the stress components
     utilities.write_fault_edges_to_gmt_file(out_object.receiver_object, 'tmp.txt', color_array=plotting_stress);
@@ -60,7 +60,7 @@ def map_stress_plot(params, inputs, out_object, stress_component, vmin=-1, vmax=
     return;
 
 
-def map_vertical_def(params, inputs, outfile):
+def map_vertical_def(params, inputs, outfile, max_down=-0.045, max_up=0.045):
     """
     Simple map of grdfile with subsampled vertical deformation.
     Currently a proof of concept!
@@ -72,14 +72,13 @@ def map_vertical_def(params, inputs, outfile):
 
     # Build a PyGMT plot
     fig = pygmt.Figure();
-    max_down, max_up = -0.045, 0.045;
     pygmt.makecpt(cmap="roma", series=str(max_down) + "/"+str(max_up)+"/0.001", background="o", output="mycpt.cpt");
     fig.basemap(region=region, projection=proj, frame="+t\"Modeled Vertical Displacement\"");
     fig.grdimage(os.path.join(params.outdir, 'vert.grd'), region=region, cmap="mycpt.cpt");
     fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
               map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0");
 
-    fig = annotate_figure_with_sources(fig, inputs, params, dotstyle='s0.01c');
+    fig = annotate_figure_with_sources(fig, inputs, params.mu, dotstyle='s0.01c');
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c');
 
     fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(max_down)+"/"+str(max_up),
@@ -137,7 +136,7 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
                  direction=[[scale_arrow], [0]],  pen="thin,red");  # scale vector
         fig.text(x=[region[0]+0.50], y=[region[2]+0.45], text=vectext+' obs');  # scale label
 
-    fig = annotate_figure_with_sources(fig, inputs, params);
+    fig = annotate_figure_with_sources(fig, inputs, params.mu);
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks);
 
     fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(cbar_opts[0])+"/"+str(cbar_opts[1]),
@@ -146,14 +145,14 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
     return;
 
 
-def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="s0.3c"):
+def annotate_figure_with_sources(fig, inputs, mu=30e9, fmscale="0.3c", dotstyle="s0.3c"):
     """
     Draw each source in inputs.source_object, a list of sources.
-    Inputs and Params provide additional information about the calculation.
+    Inputs and mu provide additional information about the calculation.
 
     :param fig: pygmt figure
     :param inputs: coulomb_collection.inputs_object, which has a list of sources in inputs.source_object
-    :param params: coulomb_collection.params object
+    :param mu: shear modulus, float
     :param fmscale: focal mechanism size
     :param dotstyle: psxy style for source dots
     """
@@ -172,7 +171,7 @@ def annotate_figure_with_sources(fig, inputs, params, fmscale="0.3c", dotstyle="
     for source in point_sources:  # draw focal mechanisms
         [x_total, y_total, _, _] = source.get_fault_four_corners();
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat);
-        mag = io_intxt.get_mag_from_dc_potency(source.potency, params.mu, source.rake);
+        mag = io_intxt.get_mag_from_dc_potency(source.potency, mu, source.rake);
         focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
         fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top);
     # draw the fault patches, no special color code
