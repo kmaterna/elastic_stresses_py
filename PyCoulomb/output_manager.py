@@ -39,16 +39,16 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
                                                                  out_object.receiver_normal,
                                                                  out_object.receiver_coulomb,
                                                                  os.path.join(params.outdir, 'stresses_full.txt'))
-        stress_plot(params, out_object, 'shear')  # can give vmin, vmax here if desired.
-        stress_plot(params, out_object, 'normal')
-        stress_plot(params, out_object, 'coulomb')
-        pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb')
-        pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal')
-        pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear')
-        stress_cross_section_cartesian(params, out_object, 'coulomb',
+        stress_plot(params, out_object, stress_type='Shear')  # can give vmin, vmax here if desired.
+        stress_plot(params, out_object, stress_type='Normal')
+        stress_plot(params, out_object, stress_type='Coulomb')
+        pygmt_plots.map_stress_plot(params, inputs, out_object, stress_type='Coulomb')
+        pygmt_plots.map_stress_plot(params, inputs, out_object, stress_type='Normal')
+        pygmt_plots.map_stress_plot(params, inputs, out_object, stress_type='Shear')
+        stress_cross_section_cartesian(params, out_object, stress_type='Coulomb',
                                        writefile=os.path.join(params.outdir, 'coulomb_xsection.txt'))
-        stress_cross_section_cartesian(params, out_object, 'normal')
-        stress_cross_section_cartesian(params, out_object, 'shear')
+        stress_cross_section_cartesian(params, out_object, stress_type='Normal')
+        stress_cross_section_cartesian(params, out_object, stress_type='Shear')
     if params.plot_grd_disp:  # create synthetic grid outputs, grd files, and plot vertical.
         write_synthetic_grid_full_results(out_object, os.path.join(params.outdir, 'disps_model_grid.txt'))
         surface_def_plot(out_object, os.path.join(params.outdir, "Displacement_model_on_grid.png"))  # synthetic grid
@@ -80,9 +80,9 @@ def surface_def_plot(out_object, outfile):
     # Plot of elastic surface deformation from the given input model.
     plt.rcParams['figure.dpi'] = 300;
     plt.rcParams['savefig.dpi'] = 300;
-    plt.figure(figsize=(16, 16), dpi=300)
-    plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp, cmap='jet');
-    cb = plt.colorbar(cax=plt.gca());
+    fig = plt.figure(figsize=(16, 16), dpi=300)
+    display_map = plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp, cmap='jet');
+    cb = fig.colorbar(display_map, ax=plt.gca(), location='right');
     cb.set_label('Vertical displacement (meters)', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
@@ -130,9 +130,9 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     outfile = os.path.join(params.outdir, 'Stresses_' + stress_type + '.png');
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile));
 
-    if stress_type == 'shear':
+    if stress_type == 'Shear':
         stress_component = out_object.receiver_shear;
-    elif stress_type == 'normal':
+    elif stress_type == 'Normal':
         stress_component = out_object.receiver_normal;
     else:
         stress_component = out_object.receiver_coulomb;
@@ -145,7 +145,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     # Figure of stresses.
     plt.rcParams['figure.dpi'] = 300;
     plt.rcParams['savefig.dpi'] = 300;
-    plt.figure(figsize=(12, 10), dpi=300);
+    fig = plt.figure(figsize=(12, 10), dpi=300);
 
     for i in range(len(stress_component)):
         [x_total, y_total, _, _] = out_object.receiver_object[i].get_fault_four_corners();
@@ -158,8 +158,9 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
         plt.gca().add_patch(mypolygon);
 
     custom_cmap.set_array(np.arange(vmin, vmax, 100));
-    cb = plt.colorbar(custom_cmap, cax=plt.gca());
-    cb.set_label('Kilopascals', fontsize=22);
+    ax1 = plt.gca();
+    cb = fig.colorbar(custom_cmap, ax=ax1, location='right');
+    cb.set_label(stress_type + ' stress (kPa)', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
 
@@ -194,7 +195,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
 def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, vmax=None, writefile=None):
     """
     Rotate existing receivers into a depth cross-section and plot their stress values.
-    vmin,vmax are in KPa
+    vmin,vmax are in kPa
     Vertical plots of fault patches in cartesian space, colored by the magnitude of the stress component.
     """
 
@@ -204,9 +205,9 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile));
 
-    if stress_type == 'shear':
+    if stress_type == 'Shear':
         stress_component = out_object.receiver_shear;
-    elif stress_type == 'normal':
+    elif stress_type == 'Normal':
         stress_component = out_object.receiver_normal;
     else:
         stress_component = out_object.receiver_coulomb;
@@ -222,7 +223,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     # Figure of stresses.
     plt.rcParams['figure.dpi'] = 300;
     plt.rcParams['savefig.dpi'] = 300;
-    plt.figure(figsize=(17, 8), dpi=300);
+    fig = plt.figure(figsize=(17, 8), dpi=300);
     if writefile:
         print("Writing file %s" % writefile);
         ofile = open(writefile, 'w');
@@ -260,8 +261,8 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
             ofile.close();
 
     custom_cmap.set_array(np.arange(vmin, vmax, 100));
-    cb = plt.colorbar(custom_cmap, ax=plt.gca());
-    cb.set_label('Kilopascals', fontsize=22);
+    cb = fig.colorbar(custom_cmap, ax=plt.gca(), location='right');
+    cb.set_label(stress_type + ' Stress (kPa)', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
 
@@ -291,13 +292,13 @@ def map_horiz_profile(horiz_profile, profile_results, outfile):
     # Figure of stresses.
     plt.rcParams['figure.dpi'] = 300;
     plt.rcParams['savefig.dpi'] = 300;
-    plt.figure(figsize=(17, 8), dpi=300);
-    plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r');
+    fig = plt.figure(figsize=(17, 8), dpi=300);
+    dislay_map = plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r');
     plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
               str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km));
 
-    cb = plt.colorbar(cax=plt.gca());
-    cb.set_label('Kilopascals', fontsize=22);
+    cb = fig.colorbar(dislay_map, ax=plt.gca(), location='right');
+    cb.set_label('Stress (kPa)', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
     plt.xlabel('Longitude', fontsize=18)

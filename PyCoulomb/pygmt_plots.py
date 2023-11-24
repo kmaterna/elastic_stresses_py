@@ -7,22 +7,19 @@ from .inputs_object import io_intxt
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def map_stress_plot(params, inputs, out_object, stress_component, vmin=-1, vmax=1):
+def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1):
     """
     Fill in mapped fault patches with colors corresponding to their stress changes.
     """
     if not out_object.receiver_object:
         return;
 
-    if stress_component == 'shear':
+    if stress_type == 'Shear':
         plotting_stress = out_object.receiver_shear;
-        label = 'Shear';
-    elif stress_component == 'normal':
+    elif stress_type == 'Normal':
         plotting_stress = out_object.receiver_normal;
-        label = 'Normal';
     else:
         plotting_stress = out_object.receiver_coulomb;  # The default option
-        label = 'Coulomb';
 
     # Make stress bounds for color map.
     [cmap_opts, cbar_opts] = utilities.define_colorbar_series(plotting_stress, vmin=vmin, vmax=vmax);
@@ -35,7 +32,7 @@ def map_stress_plot(params, inputs, out_object, stress_component, vmin=-1, vmax=
     region = inputs.define_map_region();
     proj = "M7i"
     fig = pygmt.Figure()
-    title = "+t\"" + stress_component + " stress\"";  # must put escaped quotations around the title.
+    title = "+t\"" + stress_type + " stress\"";  # must put escaped quotations around the title.
     fig.basemap(region=region, projection=proj, frame=title);
     fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame="1.0");  # the boundary.
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='white',
@@ -51,12 +48,12 @@ def map_stress_plot(params, inputs, out_object, stress_component, vmin=-1, vmax=
     # Colorbar annotation
     fig.coast(shorelines="1.0p,black", region=region, projection=proj);  # the boundary.
     fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", shading="0.8",
-                 truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]), frame=["x" + str(0.2), "y+L\"KPa\""]);
+                 truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]), frame=["x" + str(0.2), "y+L\"Stress (kPa)\""]);
 
     # Annotate with aftershock locations
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c');
-    print("Mapping stress in %s " % os.path.join(params.outdir, label + '_map.png'));
-    fig.savefig(os.path.join(params.outdir, label + '_map.png'));
+    print("Mapping stress in %s " % os.path.join(params.outdir, stress_type + '_map.png'));
+    fig.savefig(os.path.join(params.outdir, stress_type + '_map.png'));
     return;
 
 
