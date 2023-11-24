@@ -79,7 +79,7 @@ def surface_def_plot(out_object, outfile):
     plt.rcParams['savefig.dpi'] = 300;
     plt.figure(figsize=(16, 16), dpi=300)
     plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp, cmap='jet');
-    cb = plt.colorbar();
+    cb = plt.colorbar(cax=plt.gca());
     cb.set_label('Vertical displacement (meters)', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
@@ -155,7 +155,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
         plt.gca().add_patch(mypolygon);
 
     custom_cmap.set_array(np.arange(vmin, vmax, 100));
-    cb = plt.colorbar(custom_cmap);
+    cb = plt.colorbar(custom_cmap, cax=plt.gca());
     cb.set_label('Kilopascals', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
@@ -257,7 +257,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
             ofile.close();
 
     custom_cmap.set_array(np.arange(vmin, vmax, 100));
-    cb = plt.colorbar(custom_cmap);
+    cb = plt.colorbar(custom_cmap, ax=plt.gca());
     cb.set_label('Kilopascals', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
@@ -293,7 +293,7 @@ def map_horiz_profile(horiz_profile, profile_results, outfile):
     plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
               str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km));
 
-    cb = plt.colorbar();
+    cb = plt.colorbar(cax=plt.gca());
     cb.set_label('Kilopascals', fontsize=22);
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
