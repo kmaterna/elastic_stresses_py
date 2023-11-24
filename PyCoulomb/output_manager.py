@@ -18,53 +18,56 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     if not os.path.exists(params.outdir):
         os.makedirs(params.outdir)
     if params.config_file:
-        params.write_params_into_config(params.outdir+"used_config.txt");  # for record-keeping
-    io_intxt.write_intxt(inputs, params.outdir + "used_inputs.txt", mu=params.mu, lame1=params.lame1);
+        params.write_params_into_config(os.path.join(params.outdir, "used_config.txt"))  # for record-keeping
+    io_intxt.write_intxt(inputs, os.path.join(params.outdir, "used_inputs.txt"), mu=params.mu, lame1=params.lame1)
     if params.input_file:
         shutil.copy(params.input_file, params.outdir)  # for record-keeping
 
     # Write output files for GPS displacements and strains at specific lon/lat points (if used)
-    io_additionals.write_disp_points_results(out_object.model_disp_points, params.outdir+"ll_disps.txt");
-    io_additionals.write_strain_results(obs_strain_points, out_object.strains, params.outdir+'ll_strains.txt');
-    io_additionals.write_fault_traces_gmt(out_object.receiver_object, params.outdir + "receiver_traces.txt");
-    io_additionals.write_fault_traces_gmt(out_object.source_object, params.outdir + "source_traces.txt");
-    write_subfaulted_inp(inputs, out_object, params.outdir+"subfaulted.inp");
+    io_additionals.write_disp_points_results(out_object.model_disp_points, os.path.join(params.outdir, "ll_disps.txt"))
+    io_additionals.write_strain_results(obs_strain_points, out_object.strains,
+                                        os.path.join(params.outdir, 'll_strains.txt'))
+    io_additionals.write_fault_traces_gmt(out_object.receiver_object,
+                                          os.path.join(params.outdir, "receiver_traces.txt"))
+    io_additionals.write_fault_traces_gmt(out_object.source_object, os.path.join(params.outdir, "source_traces.txt"))
+    write_subfaulted_inp(inputs, out_object, os.path.join(params.outdir, "subfaulted.inp"))
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
-                                         params.outdir+"vector_plot.png");  # map point displacements
+                                         os.path.join(params.outdir, "vector_plot.png"))  # map point displacements
     if params.plot_stress:  # write the outputs of stress calculation, if doing a stress calculation
-        fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(out_object.receiver_object);
+        fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(out_object.receiver_object)
         fso.file_io.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
                                                                  out_object.receiver_normal,
                                                                  out_object.receiver_coulomb,
-                                                                 params.outdir + 'stresses_full.txt');
-        stress_plot(params, out_object, 'shear');  # can give vmin, vmax here if desired.
-        stress_plot(params, out_object, 'normal');
-        stress_plot(params, out_object, 'coulomb');
-        pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb');
-        pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal');
-        pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear');
-        stress_cross_section_cartesian(params, out_object, 'coulomb', writefile=params.outdir+'coulomb_xsection.txt');
-        stress_cross_section_cartesian(params, out_object, 'normal');
-        stress_cross_section_cartesian(params, out_object, 'shear');
+                                                                 os.path.join(params.outdir, 'stresses_full.txt'))
+        stress_plot(params, out_object, 'shear')  # can give vmin, vmax here if desired.
+        stress_plot(params, out_object, 'normal')
+        stress_plot(params, out_object, 'coulomb')
+        pygmt_plots.map_stress_plot(params, inputs, out_object, 'coulomb')
+        pygmt_plots.map_stress_plot(params, inputs, out_object, 'normal')
+        pygmt_plots.map_stress_plot(params, inputs, out_object, 'shear')
+        stress_cross_section_cartesian(params, out_object, 'coulomb',
+                                       writefile=os.path.join(params.outdir, 'coulomb_xsection.txt'))
+        stress_cross_section_cartesian(params, out_object, 'normal')
+        stress_cross_section_cartesian(params, out_object, 'shear')
     if params.plot_grd_disp:  # create synthetic grid outputs, grd files, and plot vertical.
-        write_synthetic_grid_full_results(out_object, params.outdir+'disps_model_grid.txt');
-        surface_def_plot(out_object, params.outdir+"Displacement_model_on_grid.png");  # grid of cartesian synthetic pts
-        write_synthetic_grid_triplets(out_object, params.outdir, 'xy_east.txt', 'xy_north.txt', 'xy_vert.txt');
-        write_disp_grd_files(inputs, params.outdir, 'xy_east.txt', 'xy_north.txt', 'xy_vert.txt');  # from txt files
-        pygmt_plots.map_vertical_def(params, inputs, params.outdir+"vertical_map.png");
+        write_synthetic_grid_full_results(out_object, os.path.join(params.outdir, 'disps_model_grid.txt'))
+        surface_def_plot(out_object, os.path.join(params.outdir, "Displacement_model_on_grid.png"))  # synthetic grid
+        write_synthetic_grid_triplets(out_object, params.outdir, 'xy_east.txt', 'xy_north.txt', 'xy_vert.txt')
+        write_disp_grd_files(inputs, params.outdir, 'xy_east.txt', 'xy_north.txt', 'xy_vert.txt')  # from txt files
+        pygmt_plots.map_vertical_def(params, inputs, os.path.join(params.outdir, "vertical_map.png"))
     if out_object.receiver_profile:
         write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
-                            params.outdir+"stresses_horiz_profile.txt");
+                            os.path.join(params.outdir, "stresses_horiz_profile.txt"))
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
-                          params.outdir+'horizontal_profile_stresses.png');
+                          os.path.join(params.outdir, 'horizontal_profile_stresses.png'))
     return;
 
 
 def write_subfaulted_inp(inputs, out_object, outfile):
     # write an inp for the sub-faulted configuration.
     subfaulted_inputs = inputs.modify_inputs_object(source_object=out_object.source_object,
-                                                    receiver_object=out_object.receiver_object);
-    io_inp.write_inp(subfaulted_inputs, outfile);
+                                                    receiver_object=out_object.receiver_object)
+    io_inp.write_inp(subfaulted_inputs, outfile)
     return;
 
 
@@ -124,7 +127,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     if not out_object.receiver_object:
         return;
 
-    outfile = params.outdir + 'Stresses_' + stress_type + '.png';
+    outfile = os.path.join(params.outdir, 'Stresses_' + stress_type + '.png');
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile));
 
     if stress_type == 'shear':
@@ -197,7 +200,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 
     if not out_object.receiver_object:
         return;
-    outfile = params.outdir + 'Stresses_cross_section_' + stress_type + '.png';
+    outfile = os.path.join(params.outdir, 'Stresses_cross_section_' + stress_type + '.png');
 
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile));
 
