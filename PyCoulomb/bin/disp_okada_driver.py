@@ -25,5 +25,6 @@ if __name__ == "__main__":
                                                                           zerolat=filedict['lat0_sys'],
                                                                           bbox=filedict['bbox']);
     # Compute and Output
-    outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=[]);
-    output_manager.produce_outputs(params, inputs, disp_points, obs_strain_points=[], out_object=outobj);
+    outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=());
+    output_manager.produce_outputs(params, inputs, obs_disp_points=disp_points,
+                                   obs_strain_points=(), out_object=outobj);

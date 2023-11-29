@@ -4,6 +4,7 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 
 class Input_object:
     # Input object for the calculation of displacements and stresses.
+    # source_object is required.
     def __init__(self, xinc, yinc, minlon, maxlon, zerolon, minlat, maxlat, zerolat, source_object,
                  PR1=0.25, FRIC=0.4, depth=0, start_gridx=-20, finish_gridx=20, start_gridy=-20, finish_gridy=20,
                  receiver_object=(), receiver_horiz_profile=None):
@@ -25,13 +26,19 @@ class Input_object:
         self.source_object = source_object;  # list of pycoulomb Faults, with same zerolon/zerolat as overall system
         self.receiver_object = receiver_object;  # list of pycoulomb Faults, with same zerolon/zerolat as overall system
         self.receiver_horiz_profile = receiver_horiz_profile;
+        if len(self.source_object) == 0:
+            raise ValueError("Error! Valid Input_objects must have nonzero source_object.");
 
     def define_map_region(self):
         """
         Define bounding box for map [W, E, S, N] based on sources and receivers, if bigger than coord system
         """
         region = [self.minlon, self.maxlon, self.minlat, self.maxlat];
-        allfaults = self.receiver_object + self.source_object
+        allfaults = self.source_object;
+        if len(self.receiver_object) > 0:
+            allfaults = self.receiver_object + self.source_object
+        if len(allfaults) == 0:
+            raise ValueError("Error! No faults given, so automatic region cannot be determined.")
         for item in allfaults:
             lon, lat = fault_vector_functions.xy2lonlat(item.xstart, item.ystart, self.zerolon, self.zerolat);
             if lon < region[0]:

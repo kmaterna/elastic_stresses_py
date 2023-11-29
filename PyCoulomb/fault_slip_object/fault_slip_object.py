@@ -4,7 +4,7 @@ For all other formats, make sure you build read/write conversion AND TEST functi
 """
 
 from ..pyc_fault_object import Faults_object
-from Tectonic_Utils.geodesy import fault_vector_functions, haversine
+from Tectonic_Utils.geodesy import fault_vector_functions, haversine, insar_vector_functions
 from Tectonic_Utils.seismo import moment_calculations
 import numpy as np
 
@@ -38,15 +38,15 @@ class FaultSlipObject:
     """
 
     def __init__(self, strike, dip, length, width, lon, lat, depth, rake, slip, tensile=0, segment=0):
-        self.strike = strike;  # float
-        self.dip = dip;  # float
-        self.length = length;  # float
-        self.width = width;  # float
-        self.lon = lon;  # float
-        self.lat = lat;  # float
-        self.depth = depth;  # float
-        self.rake = rake;  # float
-        self.slip = slip;  # float
+        self.strike = strike;  # float, degrees
+        self.dip = dip;  # float, degrees
+        self.length = length;  # float, km
+        self.width = width;  # float, km
+        self.lon = lon;  # float, degrees
+        self.lat = lat;  # float, degrees
+        self.depth = depth;  # float, km
+        self.rake = rake;  # float, degrees
+        self.slip = slip;  # float, m
         self.tensile = tensile;  # float
         self.segment = segment;  # int
         if self.dip > 90:
@@ -61,6 +61,10 @@ class FaultSlipObject:
     def __iter__(self):
         for attr, value in self.__dict__.items():
             yield attr, value
+
+    def __str__(self):
+        return f'FaultSlipObject: length={self.length} km, width={self.width} km, ' \
+               f'depth={self.depth} km, slip={self.slip} m.'
 
     def get_total_slip(self) -> float:
         """Helper function to return the total slip amount of a fault object (always > 0)"""
@@ -195,6 +199,23 @@ class FaultSlipObject:
             return True;
         else:
             return False;
+
+    def is_on_positive_side_of_fault(self, target_pt):
+        """
+        Determine whether a target point falls on the positive or negative lobe of a profile drawn normal to the fault.
+        The viewer is facing the along-strike direction.
+        This function is used for the solid-plate-motion part of a backslip calculation
+
+        :param target_pt: (lon, lat) tuple
+        :returns: bool
+        """
+        xpt, ypt = fault_vector_functions.latlon2xy_single(target_pt[0], target_pt[1], self.lon, self.lat)
+        xrot, yrot = insar_vector_functions.rotate_vector_by_angle(xpt, ypt, -self.strike)
+        # negative strike is (90 - strike - 90), which is correct.
+        if xrot > 0:
+            return True
+        else:
+            return False
 
     # ------------ REGULAR FUNCTIONS -------------- #
     def construct_intxt_source_patch(self):

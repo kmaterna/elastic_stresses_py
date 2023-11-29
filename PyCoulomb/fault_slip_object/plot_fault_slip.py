@@ -74,13 +74,13 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param disp_points: list of disp_point objects
     :param region: tuple of 4 numbers, (W, E, S, N)
     :param scale_arrow: tuple of 3 numbers
-    :param v_labeling_interval: float
-    :param fault_traces_from_memory: list of [lons, lats] for plotting fault trace
+    :param fault_traces_from_memory: list of tuples with ([lons], [lats]) for plotting multiple fault traces
     :param fault_traces_from_dict: a list of fault_dict objects that will be used for updip fault traces
     :param fault_traces_from_file: string, optional filename with fault traces to be plotted
     :param title: string
-    :param vmin: float, bottom of vertical color bar
-    :param vmax: float, top of vertical color bar
+    :param vmin: float, bottom of vertical color bar for disp_points (optional)
+    :param vmax: float, top of vertical color bar for disp_points (optional)
+    :param v_labeling_interval: float for labeling vertical displacement color bar (optional)
     :param plot_slip_colorbar: bool, whether to show a color bar for fault slip
     :param vert_disp_units: string, describing the units of the vertical scale bar
     :param vert_mult: can turn verticals into mm by providing 1000 if you want (default is meters)
@@ -120,12 +120,12 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     if fault_traces_from_file:
         if slip_cbar_opts is None:
             raise ValueError("Error! Requesting to plot slip from GMT file, but no slip_cbar_opts provided.");
-        pygmt.makecpt(cmap="polar", truncate="-1/1", background="o", reverse=True, output="mycpt.cpt",
+        pygmt.makecpt(cmap="devon", truncate="0/1", background="o", reverse=True, output="mycpt.cpt",
                       series=str(slip_cbar_opts[0]) + "/" + str(slip_cbar_opts[1]) + "/" + str(slip_cbar_opts[2]));
         fig.plot(data=fault_traces_from_file, pen="0.2p,black", fill="+z", cmap='mycpt.cpt');
-        fig.colorbar(position="jBr+w2.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+        fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
                      truncate=str(slip_cbar_opts[0]) + "/" + str(slip_cbar_opts[1]),
-                     frame=["x" + str(0.2), "y+L\"Slip(m)\""]);
+                     frame=["x" + str(slip_cbar_opts[2]), "y+L\"Slip(m)\""]);
 
     # Draw fault traces (lines) on the plot
     if fault_traces_from_memory:
@@ -154,6 +154,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             truncate_str = str(v_cbar_opts[0]) + "/" + str(v_cbar_opts[1]),
             fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="vert.cpt", truncate=truncate_str,
                          frame=["x"+str(v_cbar_opts[2]), "y+L\"Vert Disp("+vert_disp_units+")\""]);
+            os.remove('vert.cpt');
         if sum(~np.isnan(disp_x_horiz) > 0):
             scale = scale_arrow[0] * (1/scale_arrow[1]);  # empirical scaling for convenient display
             fig.plot(x=lon_horiz, y=lat_horiz, style='v0.2c+e+gblack+h0+p1p,black+z'+str(scale),
@@ -168,6 +169,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w" +
                                                                                               str(map_scale));
     fig.savefig(outfile);
+    os.remove('mycpt.cpt');
     return;
 
 
