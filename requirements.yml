@@ -9,7 +9,7 @@ channels:
  - anaconda
  - defaults
 dependencies:
- - python>=3.9
+ - pytho<=3.11
  - matplotlib
  - numpy
  - scipy

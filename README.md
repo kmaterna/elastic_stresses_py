@@ -20,7 +20,7 @@ e.g., Beeler et al., 2000.
 ## Installation and Usage
 
 ### Requirements:
-* Python 3.9+
+* Python 3.9-3.11 (not 3.12 for the moment)
 * gfortran and gcc (For mac/linux, this is done through brew, port, apt-get, whatever works for your system)
 * Ben Thompson's Python [Okada wrapper](https://github.com/tbenthompson/okada_wrapper). Install with ```pip install okada_wrapper```.
 * Kathryn Materna's [Tectonic_Utils](https://github.com/kmaterna/Tectonic_Utils).  Install with ```pip install Tectonic-Utils```.
