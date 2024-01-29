@@ -7,7 +7,7 @@ import numpy as np
 # PyCoulomb faults object.
 class Faults_object:
     def __init__(self, xstart, xfinish, ystart, yfinish, zerolon, zerolat, strike, dipangle, rake, top, bottom,
-                 rtlat=0, reverse=0, tensile=0, potency=(), comment=None, Kode=100):
+                 rtlat=0, reverse=0, tensile=0, potency=(), comment=None, Kode=100, segment=0):
         """
         We include both rake AND rtlat/reverse because rake can be specified for receivers, which have slip=0.
         Pass the required input parameters, and a few geometry parameters are filled in for performance reasons.
@@ -26,6 +26,7 @@ class Faults_object:
         self.bottom = bottom  # km
         self.comment = comment  # string
         self.Kode = Kode  # not sure what this is used for
+        self.segment = segment  # integer
         if bottom < top:
             raise ValueError("Error! Provided bad fault- top depth (%f km) below bottom depth (%f km)" % (top, bottom) )
         if dipangle > 90 or dipangle < 0:
@@ -41,7 +42,7 @@ class Faults_object:
 
     def modify_fault_object(self, xstart=None, xfinish=None, ystart=None, yfinish=None, rtlat=None,
                             reverse=None, tensile=None, potency=None, strike=None, dipangle=None, rake=None,
-                            zerolon=None, zerolat=None, top=None, bottom=None):
+                            zerolon=None, zerolat=None, top=None, bottom=None, segment=None):
         """
         Modify the fields in a Pycoulomb.Faults_object.
         """
@@ -60,9 +61,10 @@ class Faults_object:
         zerolat = self.zerolat if zerolat is None else zerolat
         top = self.top if top is None else top
         bottom = self.bottom if bottom is None else bottom
+        segment = self.segment if segment is None else segment
         new_fault = Faults_object(xstart=xstart, xfinish=xfinish, ystart=ystart, yfinish=yfinish, rtlat=rtlat,
                                   reverse=reverse, tensile=tensile, potency=potency, strike=strike, dipangle=dipangle,
-                                  rake=rake, zerolon=zerolon, zerolat=zerolat, top=top, bottom=bottom)
+                                  rake=rake, zerolon=zerolon, zerolat=zerolat, top=top, bottom=bottom, segment=segment)
         return new_fault
 
     def get_fault_center(self):

@@ -32,6 +32,11 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     pts = np.vstack([obsx, obsy, np.zeros(np.shape(obsx))]).T   # shape: (Npts, 3)
     resulting_model = np.zeros(np.shape(pts))
 
+    slip_array = []
+    for source in fault_triangles:
+        slip_array.append([-source.rtlat_slip, source.dip_slip, source.tensile])
+    slip_array = np.array(slip_array)
+
     for source in fault_triangles:
         fault_pts = np.array([[source.vertex1[0], source.vertex1[1], -source.vertex1[2]],
                               [source.vertex2[0], source.vertex2[1], -source.vertex2[2]],
@@ -44,6 +49,9 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
         disp = disp_mat.reshape((-1, 3)).dot(slip.flatten())   # 3 here is the length of the slip vector
         disp_grid = disp.reshape((*np.array(obsx).shape, 3))
         resulting_model = np.add(resulting_model, disp_grid)
+
+        # Get strain
+        strain_mat = HS.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)
 
     modeled_disp_points = []
     for i, item in enumerate(disp_points):

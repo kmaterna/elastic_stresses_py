@@ -259,7 +259,7 @@ class FaultSlipObject:
         one_source = Faults_object(xstart=startx, xfinish=xfinish, ystart=starty, yfinish=yfinish, rtlat=rtlat,
                                    reverse=reverse, tensile=self.tensile, strike=self.strike, dipangle=self.dip,
                                    zerolon=zerolon, zerolat=zerolat, rake=self.rake,
-                                   top=self.depth, bottom=bottom, comment='')
+                                   top=self.depth, bottom=bottom, comment='', segment=self.segment)
         return one_source
 
     def subdivide_by_depth(self, num_divisions):

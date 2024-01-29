@@ -250,16 +250,24 @@ def convert_rectangle_into_two_triangles(one_fault_obj):
     Convert a rectangular fault_slip_object into two triangular faults. The fault normals are expected to point up.
     """
     [source] = fault_object_to_coulomb_fault([one_fault_obj])
+    list_of_two_triangles = convert_pycoulomb_rectangle_into_two_triangles(source, one_fault_obj.lon, one_fault_obj.lat)
+    return list_of_two_triangles
+
+
+def convert_pycoulomb_rectangle_into_two_triangles(source, startlon, startlat):
+    """
+    Convert one rectangular pycoulomb_fault into two triangular faults. The fault normals are expected to point up.
+    """
     [x_all, y_all, _, _] = source.get_fault_four_corners()  # This is cartesian
     top_depth, bottom_depth = source.top, source.bottom
     vertex1 = np.array([x_all[0]*1000, y_all[0]*1000, top_depth*1000])  # in meters
     vertex2 = np.array([x_all[1]*1000, y_all[1]*1000, top_depth*1000])
     vertex3 = np.array([x_all[2]*1000, y_all[2]*1000, bottom_depth*1000])
     vertex4 = np.array([x_all[3]*1000, y_all[3]*1000, bottom_depth*1000])
-    first_triangle = TriangleFault(lon=one_fault_obj.lon, lat=one_fault_obj.lat, segment=one_fault_obj.segment,
+    first_triangle = TriangleFault(lon=startlon, lat=startlat, segment=source.segment,
                                    tensile=source.tensile, vertex1=vertex1, vertex2=vertex3, vertex3=vertex2,
                                    dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2]/1000)
-    second_triangle = TriangleFault(lon=one_fault_obj.lon, lat=one_fault_obj.lat, segment=one_fault_obj.segment,
+    second_triangle = TriangleFault(lon=startlon, lat=startlat, segment=source.segment,
                                     tensile=source.tensile, vertex1=vertex1, vertex2=vertex4, vertex3=vertex3,
                                     dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2]/1000)
     list_of_two_triangles = [first_triangle, second_triangle]
@@ -318,3 +326,51 @@ def fault_triangles_to_coulomb_fault(fault_object_list, zerolon_system=None, zer
         one_source = onefault.fault_triangle_to_coulomb_fault(zerolon_system, zerolat_system)
         source_object.append(one_source)
     return source_object
+
+def extract_mesh_vertices(triangle_fault_list):
+    """
+    From a list of triangle objects, determine the set of vertices and indices that form the mesh.
+
+    :param triangle_fault_list: list of triangle objects
+    :return: mesh_points, index_list
+    """
+    mesh_points, index_list = [], []
+    for tri in triangle_fault_list:  # create the mesh points
+        if not is_in_mesh(mesh_points, tri.vertex1):
+            mesh_points.append(tri.vertex1)
+        if not is_in_mesh(mesh_points, tri.vertex2):
+            mesh_points.append(tri.vertex2)
+        if not is_in_mesh(mesh_points, tri.vertex3):
+            mesh_points.append(tri.vertex3)
+
+    for tri in triangle_fault_list:  # create the list of indices
+        id1 = find_within_mesh(mesh_points, tri.vertex1)
+        id2 = find_within_mesh(mesh_points, tri.vertex2)
+        id3 = find_within_mesh(mesh_points, tri.vertex3)
+        index_list.append([id1, id2, id3])
+
+    return mesh_points, index_list
+
+def is_in_mesh(mesh, candidate_point):
+    """
+    :param mesh: list of 3-coordinate vertices
+    :param candidate_point: 3-coordinate vertex
+    :return: bool
+    """
+    for item in mesh:
+        matching_bool = [item == candidate_point][0]
+        if matching_bool.all():
+            return 1
+    return 0
+
+def find_within_mesh(mesh, candidate_point):
+    """
+    :param mesh: list of 3-coordinate vertices
+    :param candidate_point: 3-coordinate vertex
+    :return: int
+    """
+    for idx, point in enumerate(mesh):
+        matching_bool = [point == candidate_point][0]
+        if matching_bool.all():
+            return idx
+    return
