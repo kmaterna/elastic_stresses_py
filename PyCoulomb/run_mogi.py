@@ -13,15 +13,15 @@ def compute_surface_disp_point(sources, nu, x, y, compute_depth=0):
     :param compute_depth: depth of observation. Default depth is at surface of earth
     :returns: list of 3 floats
     """
-    u_disp, v_disp, w_disp = 0, 0, 0;
+    u_disp, v_disp, w_disp = 0, 0, 0
 
     for source in sources:
-        dx, dy, dz = compute_disps_from_one_mogi(source, x, y, nu, compute_depth);
+        dx, dy, dz = compute_disps_from_one_mogi(source, x, y, nu, compute_depth)
         # Update the displacements from all sources
-        u_disp = u_disp + dx;
-        v_disp = v_disp + dy;
-        w_disp = w_disp + dz;  # vertical
-    return u_disp, v_disp, w_disp;
+        u_disp = u_disp + dx
+        v_disp = v_disp + dy
+        w_disp = w_disp + dz  # vertical
+    return u_disp, v_disp, w_disp
 
 
 def compute_disps_from_one_mogi(source, x, y, nu, _compute_depth=0):
@@ -46,7 +46,7 @@ def compute_disps_from_one_mogi(source, x, y, nu, _compute_depth=0):
     uz = C * source.depth*1000 / R**3
 
     ux, uy = pol2cart(th, ur)
-    return ux, uy, uz;
+    return ux, uy, uz
 
 
 def cart2pol(x1, x2):

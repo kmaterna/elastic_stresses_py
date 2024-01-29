@@ -16,22 +16,22 @@ import Elastic_stresses_py.PyCoulomb as PyCoulomb
 
 
 def welcome_and_parse_runstring():
-    print("\n\nWelcome to a simple forward modeling tool for calculating elastic displacements and coulomb stresses. ");
+    print("\n\nWelcome to a simple forward modeling tool for calculating elastic displacements and coulomb stresses. ")
     parser = argparse.ArgumentParser(description='Run elastic stress models in Python',
-                                     epilog='\U0001f600 \U0001f600 \U0001f600 ');
+                                     epilog='\U0001f600 \U0001f600 \U0001f600 ')
     parser.add_argument('config', type=str, help='name of config file for calculation. Required.')
     args = parser.parse_args()
-    return args;
+    return args
 
 
 def drive_calculation(config_file):
-    params = PyCoulomb.configure_calc.configure_stress_calculation(config_file);
-    [inputs, obs_disp_points, obs_strain_points] = PyCoulomb.input_values.read_inputs(params);
-    out_object = PyCoulomb.run_dc3d.do_stress_computation(params, inputs, obs_disp_points, obs_strain_points);
-    PyCoulomb.output_manager.produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object);
-    return;
+    params = PyCoulomb.configure_calc.configure_stress_calculation(config_file)
+    [inputs, obs_disp_points, obs_strain_points] = PyCoulomb.input_values.read_inputs(params)
+    out_object = PyCoulomb.run_dc3d.do_stress_computation(params, inputs, obs_disp_points, obs_strain_points)
+    PyCoulomb.output_manager.produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object)
+    return
 
 
 if __name__ == "__main__":
-    args = welcome_and_parse_runstring();
-    drive_calculation(args.config);
+    args = welcome_and_parse_runstring()
+    drive_calculation(args.config)

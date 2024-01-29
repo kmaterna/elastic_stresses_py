@@ -11,4 +11,4 @@ Read Coulomb input files in the .inr format. Important parameters are:
 # In this case, we will have to convert slip/rake into strike slip / dip slip. 
 
 def read_inr(_input_file):
-    return [];
+    return []

@@ -15,16 +15,16 @@ filedict = {
 
 if __name__ == "__main__":
     # Input stage: Getting things into proper formats
-    fault_model_list = fso.file_io.io_slippy.read_slippy_distribution(filedict['fault_model']);
+    fault_model_list = fso.file_io.io_slippy.read_slippy_distribution(filedict['fault_model'])
     coulomb_fault_model = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_model_list, filedict['lon0_sys'],
-                                                                              filedict['lat0_sys']);
-    disp_points = io_additionals.read_disp_points(filedict['datafile']);
-    params = configure_calc.Params();  # configure with default values
+                                                                              filedict['lat0_sys'])
+    disp_points = io_additionals.read_disp_points(filedict['datafile'])
+    params = configure_calc.Params()  # configure with default values
     inputs = inputs_object.input_obj.configure_default_displacement_input(coulomb_fault_model,
                                                                           zerolon=filedict['lon0_sys'],
                                                                           zerolat=filedict['lat0_sys'],
-                                                                          bbox=filedict['bbox']);
+                                                                          bbox=filedict['bbox'])
     # Compute and Output
-    outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=());
+    outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=())
     output_manager.produce_outputs(params, inputs, obs_disp_points=disp_points,
-                                   obs_strain_points=(), out_object=outobj);
+                                   obs_strain_points=(), out_object=outobj)

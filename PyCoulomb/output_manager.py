@@ -60,7 +60,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
                             os.path.join(params.outdir, "stresses_horiz_profile.txt"))
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
                           os.path.join(params.outdir, 'horizontal_profile_stresses.png'))
-    return;
+    return
 
 
 def write_subfaulted_inp(inputs, out_object, outfile):
@@ -68,7 +68,7 @@ def write_subfaulted_inp(inputs, out_object, outfile):
     subfaulted_inputs = inputs.modify_inputs_object(source_object=out_object.source_object,
                                                     receiver_object=out_object.receiver_object)
     io_inp.write_inp(subfaulted_inputs, outfile)
-    return;
+    return
 
 
 def surface_def_plot(out_object, outfile):
@@ -76,46 +76,46 @@ def surface_def_plot(out_object, outfile):
     Plots surface displacements on the synthetic cartesian grid domain
     """
     print("Making plot of predicted displacement throughout model domain.")
-    print("Max vertical displacement is %f m" % (out_object.w_disp.max()));
+    print("Max vertical displacement is %f m" % (out_object.w_disp.max()))
     # Plot of elastic surface deformation from the given input model.
-    plt.rcParams['figure.dpi'] = 300;
-    plt.rcParams['savefig.dpi'] = 300;
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
     fig = plt.figure(figsize=(16, 16), dpi=300)
-    display_map = plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp, cmap='jet');
-    cb = fig.colorbar(display_map, ax=plt.gca(), location='right');
-    cb.set_label('Vertical displacement (meters)', fontsize=22);
+    display_map = plt.pcolormesh(out_object.x2d, out_object.y2d, out_object.w_disp, cmap='jet')
+    cb = fig.colorbar(display_map, ax=plt.gca(), location='right')
+    cb.set_label('Vertical displacement (meters)', fontsize=22)
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
     for i in np.arange(0, len(out_object.y), 5):
         for j in np.arange(0, len(out_object.x), 5):
             plt.quiver(out_object.x2d[i][j], out_object.y2d[i][j], out_object.u_disp[i][j], out_object.v_disp[i][j],
                        units='width', scale=0.2)
-    rectangles, points, mogis = utilities.separate_source_types(out_object.source_object);
-    fault_sources = rectangles + points;
+    rectangles, points, mogis = utilities.separate_source_types(out_object.source_object)
+    fault_sources = rectangles + points
     for source in fault_sources:
-        [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners();
-        plt.plot(x_total, y_total, 'k', linewidth=1);
-        plt.plot(x_updip, y_updip, 'g', linewidth=3);
-        center = source.get_fault_center();
-        plt.plot(center[0], center[1], '.g', markersize=8);
+        [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners()
+        plt.plot(x_total, y_total, 'k', linewidth=1)
+        plt.plot(x_updip, y_updip, 'g', linewidth=3)
+        center = source.get_fault_center()
+        plt.plot(center[0], center[1], '.g', markersize=8)
     for rec in out_object.receiver_object:
-        [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners();
-        plt.plot(x_total, y_total, 'b', linewidth=1);
-        plt.plot(x_updip, y_updip, 'b', linewidth=3);
-        center = rec.get_fault_center();
-        plt.plot(center[0], center[1], '.b', markersize=8);
+        [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners()
+        plt.plot(x_total, y_total, 'b', linewidth=1)
+        plt.plot(x_updip, y_updip, 'b', linewidth=3)
+        center = rec.get_fault_center()
+        plt.plot(center[0], center[1], '.b', markersize=8)
     plt.xlim([out_object.x.min(), out_object.x.max()])
     plt.ylim([out_object.y.min(), out_object.y.max()])
     plt.gca().tick_params(axis='both', which='major', labelsize=18)
-    plt.grid();
-    plt.axis('equal');
+    plt.grid()
+    plt.axis('equal')
     plt.xlabel('X (km)', fontsize=20)
     plt.ylabel('Y (km)', fontsize=20)
     plt.gca().tick_params(labelsize=16)
     plt.title('Surface Displacement', fontsize=28)
     plt.savefig(outfile, facecolor="w")
-    plt.close();
-    return;
+    plt.close()
+    return
 
 
 def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
@@ -125,71 +125,71 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     """
 
     if not out_object.receiver_object:
-        return;
+        return
 
-    outfile = os.path.join(params.outdir, 'Stresses_' + stress_type + '.png');
-    print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile));
+    outfile = os.path.join(params.outdir, 'Stresses_' + stress_type + '.png')
+    print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile))
 
     if stress_type == 'Shear':
-        stress_component = out_object.receiver_shear;
+        stress_component = out_object.receiver_shear
     elif stress_type == 'Normal':
-        stress_component = out_object.receiver_normal;
+        stress_component = out_object.receiver_normal
     else:
-        stress_component = out_object.receiver_coulomb;
+        stress_component = out_object.receiver_coulomb
 
     # Select boundaries of color map.
-    vmin, vmax = utilities.produce_vmin_vmax_symmetric(stress_component, vmin, vmax);
-    color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
-    custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
+    vmin, vmax = utilities.produce_vmin_vmax_symmetric(stress_component, vmin, vmax)
+    color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
+    custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r')
 
     # Figure of stresses.
-    plt.rcParams['figure.dpi'] = 300;
-    plt.rcParams['savefig.dpi'] = 300;
-    fig = plt.figure(figsize=(12, 10), dpi=300);
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    fig = plt.figure(figsize=(12, 10), dpi=300)
 
     for i in range(len(stress_component)):
-        [x_total, y_total, _, _] = out_object.receiver_object[i].get_fault_four_corners();
-        xcoords = x_total[0:4];
-        ycoords = y_total[0:4];
-        fault_vertices = np.column_stack((xcoords, ycoords));
-        patch_color = custom_cmap.to_rgba(stress_component[i]);
+        [x_total, y_total, _, _] = out_object.receiver_object[i].get_fault_four_corners()
+        xcoords = x_total[0:4]
+        ycoords = y_total[0:4]
+        fault_vertices = np.column_stack((xcoords, ycoords))
+        patch_color = custom_cmap.to_rgba(stress_component[i])
 
-        mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0);
-        plt.gca().add_patch(mypolygon);
+        mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0)
+        plt.gca().add_patch(mypolygon)
 
-    custom_cmap.set_array(np.arange(vmin, vmax, 100));
-    ax1 = plt.gca();
-    cb = fig.colorbar(custom_cmap, ax=ax1, location='right');
-    cb.set_label(stress_type + ' stress (kPa)', fontsize=22);
+    custom_cmap.set_array(np.arange(vmin, vmax, 100))
+    ax1 = plt.gca()
+    cb = fig.colorbar(custom_cmap, ax=ax1, location='right')
+    cb.set_label(stress_type + ' stress (kPa)', fontsize=22)
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
 
     # Adding source and receiver faults
     for source in out_object.source_object:
-        [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners();
-        plt.plot(x_total, y_total, 'k', linewidth=1);
-        plt.plot(x_updip, y_updip, 'g', linewidth=3);
-        center = source.get_fault_center();
-        plt.plot(center[0], center[1], '.g', markersize=8);
+        [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners()
+        plt.plot(x_total, y_total, 'k', linewidth=1)
+        plt.plot(x_updip, y_updip, 'g', linewidth=3)
+        center = source.get_fault_center()
+        plt.plot(center[0], center[1], '.g', markersize=8)
     for rec in out_object.receiver_object:
-        [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners();
-        plt.plot(x_total, y_total, 'b', linewidth=1);
-        plt.plot(x_updip, y_updip, 'b', linewidth=3);
-        center = rec.get_fault_center();
-        plt.plot(center[0], center[1], '.b', markersize=8);
+        [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners()
+        plt.plot(x_total, y_total, 'b', linewidth=1)
+        plt.plot(x_updip, y_updip, 'b', linewidth=3)
+        center = rec.get_fault_center()
+        plt.plot(center[0], center[1], '.b', markersize=8)
 
-    plt.grid();
-    plt.axis('equal');
+    plt.grid()
+    plt.axis('equal')
     plt.gca().tick_params(axis='both', which='major', labelsize=18)
     plt.title(stress_type + ' stress from source faults', fontsize=22)
     plt.xlim([out_object.x.min(), out_object.x.max()])
     plt.ylim([out_object.y.min(), out_object.y.max()])
-    plt.xlabel('X (km)', fontsize=20);
-    plt.ylabel('Y (km)', fontsize=20);
+    plt.xlabel('X (km)', fontsize=20)
+    plt.ylabel('Y (km)', fontsize=20)
     plt.gca().tick_params(labelsize=16)
-    plt.savefig(outfile, facecolor="w");
-    plt.close();
-    return;
+    plt.savefig(outfile, facecolor="w")
+    plt.close()
+    return
 
 
 def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, vmax=None, writefile=None):
@@ -200,113 +200,113 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     """
 
     if not out_object.receiver_object:
-        return;
-    outfile = os.path.join(params.outdir, 'Stresses_cross_section_' + stress_type + '.png');
+        return
+    outfile = os.path.join(params.outdir, 'Stresses_cross_section_' + stress_type + '.png')
 
-    print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile));
+    print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile))
 
     if stress_type == 'Shear':
-        stress_component = out_object.receiver_shear;
+        stress_component = out_object.receiver_shear
     elif stress_type == 'Normal':
-        stress_component = out_object.receiver_normal;
+        stress_component = out_object.receiver_normal
     else:
-        stress_component = out_object.receiver_coulomb;
+        stress_component = out_object.receiver_coulomb
 
-    max_depth_array = [x.bottom for x in out_object.receiver_object];
-    min_depth_array = [x.top for x in out_object.receiver_object];
+    max_depth_array = [x.bottom for x in out_object.receiver_object]
+    min_depth_array = [x.top for x in out_object.receiver_object]
 
     # Select boundaries of color map, usually forcing even distribution around 0
-    vmin, vmax = utilities.produce_vmin_vmax_symmetric(stress_component, vmin, vmax);
-    color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True);
-    custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r');
+    vmin, vmax = utilities.produce_vmin_vmax_symmetric(stress_component, vmin, vmax)
+    color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
+    custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r')
 
     # Figure of stresses.
-    plt.rcParams['figure.dpi'] = 300;
-    plt.rcParams['savefig.dpi'] = 300;
-    fig = plt.figure(figsize=(17, 8), dpi=300);
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    fig = plt.figure(figsize=(17, 8), dpi=300)
     if writefile:
-        print("Writing file %s" % writefile);
-        ofile = open(writefile, 'w');
-        ofile.close();
+        print("Writing file %s" % writefile)
+        ofile = open(writefile, 'w')
+        ofile.close()
 
-    total_y_array = [];
+    total_y_array = []
     for i in range(len(stress_component)):
         xcoords = [out_object.receiver_object[i].xstart, out_object.receiver_object[i].xstart,
-                   out_object.receiver_object[i].xfinish, out_object.receiver_object[i].xfinish];
+                   out_object.receiver_object[i].xfinish, out_object.receiver_object[i].xfinish]
         ycoords = [out_object.receiver_object[i].ystart, out_object.receiver_object[i].ystart,
-                   out_object.receiver_object[i].yfinish, out_object.receiver_object[i].yfinish];
+                   out_object.receiver_object[i].yfinish, out_object.receiver_object[i].yfinish]
         zcoords = [out_object.receiver_object[i].top, out_object.receiver_object[i].bottom,
-                   out_object.receiver_object[i].bottom, out_object.receiver_object[i].top];
+                   out_object.receiver_object[i].bottom, out_object.receiver_object[i].top]
         fault_strike = out_object.receiver_object[i].strike
-        x1, y1 = conversion_math.rotate_points(xcoords[0], ycoords[0], fault_strike);
-        x2, y2 = conversion_math.rotate_points(xcoords[1], ycoords[1], fault_strike);
-        x3, y3 = conversion_math.rotate_points(xcoords[2], ycoords[2], fault_strike);
-        x4, y4 = conversion_math.rotate_points(xcoords[3], ycoords[3], fault_strike);
-        ycoords = [y1, y2, y3, y4];
-        total_y_array = total_y_array + ycoords;
-        fault_vertices = np.column_stack((ycoords, zcoords));
-        patch_color = custom_cmap.to_rgba(stress_component[i]);
+        x1, y1 = conversion_math.rotate_points(xcoords[0], ycoords[0], fault_strike)
+        x2, y2 = conversion_math.rotate_points(xcoords[1], ycoords[1], fault_strike)
+        x3, y3 = conversion_math.rotate_points(xcoords[2], ycoords[2], fault_strike)
+        x4, y4 = conversion_math.rotate_points(xcoords[3], ycoords[3], fault_strike)
+        ycoords = [y1, y2, y3, y4]
+        total_y_array = total_y_array + ycoords
+        fault_vertices = np.column_stack((ycoords, zcoords))
+        patch_color = custom_cmap.to_rgba(stress_component[i])
 
-        mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0);
-        plt.gca().add_patch(mypolygon);
+        mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0)
+        plt.gca().add_patch(mypolygon)
 
         if writefile:   # the x-axis here is an arbitrary position along the orientation of the receiver fault
-            ofile = open(writefile, 'a');
-            ofile.write("> -Z%f\n" % stress_component[i] );
+            ofile = open(writefile, 'a')
+            ofile.write("> -Z%f\n" % stress_component[i] )
             ofile.write("%f %f \n" % (-y1, zcoords[0]))
             ofile.write("%f %f \n" % (-y2, zcoords[1]))
             ofile.write("%f %f \n" % (-y3, zcoords[2]))
             ofile.write("%f %f \n" % (-y4, zcoords[3]))
             ofile.write("%f %f \n" % (-y1, zcoords[0]))
-            ofile.close();
+            ofile.close()
 
-    custom_cmap.set_array(np.arange(vmin, vmax, 100));
-    cb = fig.colorbar(custom_cmap, ax=plt.gca(), location='right');
-    cb.set_label(stress_type + ' Stress (kPa)', fontsize=22);
+    custom_cmap.set_array(np.arange(vmin, vmax, 100))
+    cb = fig.colorbar(custom_cmap, ax=plt.gca(), location='right')
+    cb.set_label(stress_type + ' Stress (kPa)', fontsize=22)
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
 
-    plt.grid();
+    plt.grid()
     plt.gca().tick_params(axis='both', which='major', labelsize=18)
     plt.title(stress_type + ' stress from source faults', fontsize=22)
-    plt.xlim([np.min(total_y_array)-1, np.max(total_y_array)+1]);
-    plt.xlabel('Distance along fault profile (km)', fontsize=18);
-    plt.ylabel('Depth (km)', fontsize=18);
-    plt.ylim([min(min_depth_array), max(max_depth_array)]);
-    plt.gca().invert_yaxis();
-    plt.gca().invert_xaxis();
-    plt.savefig(outfile, facecolor="w");
-    plt.close();
-    return;
+    plt.xlim([np.min(total_y_array)-1, np.max(total_y_array)+1])
+    plt.xlabel('Distance along fault profile (km)', fontsize=18)
+    plt.ylabel('Depth (km)', fontsize=18)
+    plt.ylim([min(min_depth_array), max(max_depth_array)])
+    plt.gca().invert_yaxis()
+    plt.gca().invert_xaxis()
+    plt.savefig(outfile, facecolor="w")
+    plt.close()
+    return
 
 
 def map_horiz_profile(horiz_profile, profile_results, outfile):
     """Display a small map of a horizontal profile of stresses. Default colors for now."""
 
-    X = np.reshape(horiz_profile.lon1d, horiz_profile.shape);
-    Y = np.reshape(horiz_profile.lat1d, horiz_profile.shape);
-    _normal_stress = np.reshape(profile_results[0], horiz_profile.shape);
-    _shear_stress = np.reshape(profile_results[1], horiz_profile.shape);
-    coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape);
+    X = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
+    Y = np.reshape(horiz_profile.lat1d, horiz_profile.shape)
+    _normal_stress = np.reshape(profile_results[0], horiz_profile.shape)
+    _shear_stress = np.reshape(profile_results[1], horiz_profile.shape)
+    coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape)
 
     # Figure of stresses.
-    plt.rcParams['figure.dpi'] = 300;
-    plt.rcParams['savefig.dpi'] = 300;
-    fig = plt.figure(figsize=(17, 8), dpi=300);
-    dislay_map = plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r');
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    fig = plt.figure(figsize=(17, 8), dpi=300)
+    dislay_map = plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r')
     plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
-              str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km));
+              str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km))
 
-    cb = fig.colorbar(dislay_map, ax=plt.gca(), location='right');
-    cb.set_label('Stress (kPa)', fontsize=22);
+    cb = fig.colorbar(dislay_map, ax=plt.gca(), location='right')
+    cb.set_label('Stress (kPa)', fontsize=22)
     for label in cb.ax.yaxis.get_ticklabels():
         label.set_size(18)
     plt.xlabel('Longitude', fontsize=18)
     plt.ylabel('Latitude', fontsize=18)
     plt.gca().tick_params(labelsize=16)
-    print("Saving figure %s " % outfile);
-    plt.savefig(outfile, facecolor="w");
-    return;
+    print("Saving figure %s " % outfile)
+    plt.savefig(outfile, facecolor="w")
+    return
 
 
 def write_synthetic_grid_triplets(out_object, outdir, east_model_file, north_model_file, vert_model_file):
@@ -315,53 +315,53 @@ def write_synthetic_grid_triplets(out_object, outdir, east_model_file, north_mod
     Used for GMT plots.
     """
     print("Writing synthetic grid into files %s etc." % outdir+east_model_file)
-    ofile_w = open(outdir + vert_model_file, 'w');
-    ofile_u = open(outdir + east_model_file, 'w');
-    ofile_v = open(outdir + north_model_file, 'w');
+    ofile_w = open(outdir + vert_model_file, 'w')
+    ofile_u = open(outdir + east_model_file, 'w')
+    ofile_v = open(outdir + north_model_file, 'w')
     for i in np.arange(0, len(out_object.y)):
         for j in np.arange(0, len(out_object.x)):
             loni, lati = fault_vector_functions.xy2lonlat(out_object.x2d[i][j], out_object.y2d[i][j],
-                                                          out_object.zerolon, out_object.zerolat);
-            ofile_w.write("%f %f %f\n" % (loni, lati, out_object.w_disp[i][j]));
-            ofile_u.write("%f %f %f\n" % (loni, lati, out_object.u_disp[i][j]));
-            ofile_v.write("%f %f %f\n" % (loni, lati, out_object.v_disp[i][j]));
-    ofile_w.close();
-    ofile_u.close();
-    ofile_v.close();
-    return;
+                                                          out_object.zerolon, out_object.zerolat)
+            ofile_w.write("%f %f %f\n" % (loni, lati, out_object.w_disp[i][j]))
+            ofile_u.write("%f %f %f\n" % (loni, lati, out_object.u_disp[i][j]))
+            ofile_v.write("%f %f %f\n" % (loni, lati, out_object.v_disp[i][j]))
+    ofile_w.close()
+    ofile_u.close()
+    ofile_v.close()
+    return
 
 
 def write_synthetic_grid_full_results(out_object, outfile):
     # Write output of synthetic displacement grid in cartesian and lon/lat coordinates
     print("Writing synthetic grid of displacements in %s " % outfile)
-    ofile = open(outfile, 'w');
-    ofile.write("# Format: x y lon lat x_disp[m] y_disp[m] z_disp[m] \n");
+    ofile = open(outfile, 'w')
+    ofile.write("# Format: x y lon lat x_disp[m] y_disp[m] z_disp[m] \n")
     for i in np.arange(0, len(out_object.y)):
         for j in np.arange(0, len(out_object.x)):
             loni, lati = fault_vector_functions.xy2lonlat(out_object.x2d[i][j], out_object.y2d[i][j],
-                                                          out_object.zerolon, out_object.zerolat);
+                                                          out_object.zerolon, out_object.zerolat)
             ofile.write("%f %f %f %f %f %f %f\n" % (out_object.x2d[i][j], out_object.y2d[i][j], loni, lati,
                                                     out_object.u_disp[i][j], out_object.v_disp[i][j],
-                                                    out_object.w_disp[i][j]));
-    ofile.close();
-    return;
+                                                    out_object.w_disp[i][j]))
+    ofile.close()
+    return
 
 
 def write_horiz_profile(horiz_profile, profile_results, outfile):
-    print("Writing %s " % outfile);
-    ofile = open(outfile, 'w');
-    ofile.write("# lon lat depth_km normal_kPa shear_kPa coulomb_kPa\n");
-    ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake) );
+    print("Writing %s " % outfile)
+    ofile = open(outfile, 'w')
+    ofile.write("# lon lat depth_km normal_kPa shear_kPa coulomb_kPa\n")
+    ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake) )
     for i in range(len(horiz_profile.lon1d)):
         ofile.write("%f %f %f %f %f %f\n" % (horiz_profile.lon1d[i], horiz_profile.lat1d[i], horiz_profile.depth_km,
-                                             profile_results[0][i], profile_results[1][i], profile_results[2][i]) );
-    return;
+                                             profile_results[0][i], profile_results[1][i], profile_results[2][i]) )
+    return
 
 
 def write_disp_grd_files(inputs, outdir, east_txt, north_txt, vert_txt):
     # Make surfaces of east/north/up deformation for plotting. Based on three text files in outdir, with x-y-disp
-    region = inputs.define_map_region();
-    inc = (region[1]-region[0]) / 500;  # for gmt mapping, default is 500 points per axis
+    region = inputs.define_map_region()
+    inc = (region[1]-region[0]) / 500  # for gmt mapping, default is 500 points per axis
     utilities.displacements_to_3_grds(outdir, efiles=(east_txt, 'east.grd'), nfiles=(north_txt, 'north.grd'),
                                       ufiles=(vert_txt, 'vert.grd'), region=region, inc=inc)
-    return;
+    return
