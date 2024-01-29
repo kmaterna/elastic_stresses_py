@@ -332,7 +332,7 @@ def extract_mesh_vertices(triangle_fault_list):
     From a list of triangle objects, determine the set of vertices and indices that form the mesh.
 
     :param triangle_fault_list: list of triangle objects
-    :return: mesh_points, index_list
+    :return: mesh_points, index_list numpy arrays
     """
     mesh_points, index_list = [], []
     for tri in triangle_fault_list:  # create the mesh points
@@ -349,7 +349,7 @@ def extract_mesh_vertices(triangle_fault_list):
         id3 = find_within_mesh(mesh_points, tri.vertex3)
         index_list.append([id1, id2, id3])
 
-    return mesh_points, index_list
+    return np.array(mesh_points), np.array(index_list)
 
 def is_in_mesh(mesh, candidate_point):
     """
@@ -374,3 +374,12 @@ def find_within_mesh(mesh, candidate_point):
         if matching_bool.all():
             return idx
     return
+
+def flip_depth_sign(mesh_points):
+    """
+    Flip the z-coordinate of a numpy array mesh
+    """
+    flipped_mesh = []
+    for item in mesh_points:
+        flipped_mesh.append([item[0], item[1], -item[2]])
+    return np.array(flipped_mesh)
