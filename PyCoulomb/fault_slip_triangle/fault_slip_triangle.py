@@ -327,6 +327,7 @@ def fault_triangles_to_coulomb_fault(fault_object_list, zerolon_system=None, zer
         source_object.append(one_source)
     return source_object
 
+
 def extract_mesh_vertices(triangle_fault_list):
     """
     From a list of triangle objects, determine the set of vertices and indices that form the mesh.
@@ -334,46 +335,28 @@ def extract_mesh_vertices(triangle_fault_list):
     :param triangle_fault_list: list of triangle objects
     :return: mesh_points, index_list numpy arrays
     """
+    index = 0
+    lookup = {}
     mesh_points, index_list = [], []
-    for tri in triangle_fault_list:  # create the mesh points
-        if not is_in_mesh(mesh_points, tri.vertex1):
-            mesh_points.append(tri.vertex1)
-        if not is_in_mesh(mesh_points, tri.vertex2):
-            mesh_points.append(tri.vertex2)
-        if not is_in_mesh(mesh_points, tri.vertex3):
-            mesh_points.append(tri.vertex3)
+    for tri in triangle_fault_list:
+        for vertex in [tri.vertex1, tri.vertex2, tri.vertex3]:
+            if vertex_tuple(vertex) not in lookup.keys():
+                lookup[vertex_tuple(vertex)] = index
+                mesh_points.append(vertex)
+                index += 1
 
     for tri in triangle_fault_list:  # create the list of indices
-        id1 = find_within_mesh(mesh_points, tri.vertex1)
-        id2 = find_within_mesh(mesh_points, tri.vertex2)
-        id3 = find_within_mesh(mesh_points, tri.vertex3)
+        id1 = lookup[vertex_tuple(tri.vertex1)]
+        id2 = lookup[vertex_tuple(tri.vertex2)]
+        id3 = lookup[vertex_tuple(tri.vertex3)]
         index_list.append([id1, id2, id3])
 
     return np.array(mesh_points), np.array(index_list)
 
-def is_in_mesh(mesh, candidate_point):
-    """
-    :param mesh: list of 3-coordinate vertices
-    :param candidate_point: 3-coordinate vertex
-    :return: bool
-    """
-    for item in mesh:
-        matching_bool = [item == candidate_point][0]
-        if matching_bool.all():
-            return 1
-    return 0
 
-def find_within_mesh(mesh, candidate_point):
-    """
-    :param mesh: list of 3-coordinate vertices
-    :param candidate_point: 3-coordinate vertex
-    :return: int
-    """
-    for idx, point in enumerate(mesh):
-        matching_bool = [point == candidate_point][0]
-        if matching_bool.all():
-            return idx
-    return
+def vertex_tuple(vertex_array):
+    return (vertex_array[0], vertex_array[1], vertex_array[2])
+
 
 def flip_depth_sign(mesh_points):
     """

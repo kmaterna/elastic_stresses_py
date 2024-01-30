@@ -1,6 +1,7 @@
 *.pyc
 Outputs/*
 examples/Example_1/Outputs/my_experiment/*
+examples/Example_1/Outputs*
 examples/Example_2/Outputs/*
 examples/Example_2/my_config.txt
 examples/Example_2/.ipynb_checkpoints/*.ipynb

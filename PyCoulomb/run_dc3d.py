@@ -215,7 +215,7 @@ def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
     :param x: float
     :param y: float
     :param compute_depth: depth of observation. Default depth is at surface of earth
-    :returns: three floats
+    :returns: three floats and a 3x3 matrix
     """
     u_disp, v_disp, w_disp = 0, 0, 0
     strain_tensor_total = np.zeros((3, 3))

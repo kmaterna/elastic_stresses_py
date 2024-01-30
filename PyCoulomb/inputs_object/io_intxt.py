@@ -5,15 +5,17 @@ using Wells and Coppersmith 1994, in the same way that Coulomb does.
 """
 
 import numpy as np
+from .io_mt import get_mag_from_dc_potency
 from .. import coulomb_collections as cc
 from .. import conversion_math
 from .input_obj import Input_object
 from ..pyc_fault_object import Faults_object
-from Tectonic_Utils.seismo import wells_and_coppersmith, moment_calculations, MT_calculations
+from ..fault_slip_object import fault_slip_object
+from Tectonic_Utils.seismo import wells_and_coppersmith, moment_calculations
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def read_intxt(input_file, mu, lame1):
+def read_intxt(input_file, mu, _lame1):
     print("Reading source and receiver fault information from file %s " % input_file)
     sources, receivers = [], []
     receiver_horiz_profile = None
@@ -32,9 +34,6 @@ def read_intxt(input_file, mu, lame1):
                 sources.append(one_source_object)
             if temp[0] == 'Source_FM:':  # point source from focal mechanism
                 one_source_object = get_FocalMech_source(line, zerolon, zerolat, mu)
-                sources.append(one_source_object)
-            if temp[0] == "Source_MT:":  # point source from moment tensor
-                one_source_object = get_MT_source(line, zerolon, zerolat, lame1, mu)
                 sources.append(one_source_object)
             if temp[0] == 'Receiver:':  # receiver fault
                 one_receiver_object = get_receiver_fault(line, zerolon, zerolat)
@@ -187,24 +186,11 @@ def get_FocalMech_source(line, zerolon, zerolat, mu):
     Create a source object from a point source focal mechanism
     """
     [strike, rake, dip, lon, lat, depth, magnitude] = read_point_source_line(line)
-    [x, y, potency, comment] = compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu)
-    one_source_object = Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, rtlat=0, reverse=0, potency=potency,
-                                      strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat, rake=rake,
-                                      top=depth, bottom=depth, comment=comment)
-    defensive_programming_faults(one_source_object)
-    return one_source_object
-
-
-def get_MT_source(line, zerolon, zerolat, lame1, mu):
-    """
-    Create a source object from a six-component moment tensor solution
-    """
-    [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth] = read_moment_tensor_source_line(line)
-    MT = MT_calculations.get_MT(Mrr, Mtt, Mpp, Mrt, Mrp, Mtp)
-    [x, y, potency, comment] = compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1)
-    one_source_object = Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, rtlat=0, reverse=0, tensile=0,
-                                      potency=potency, strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat,
-                                      rake=rake, top=depth, bottom=depth, comment=comment)
+    moment = moment_calculations.moment_from_mw(magnitude)
+    slip = moment / (0.5 * 0.5 * mu)
+    small_rect = fault_slip_object.FaultSlipObject(lon=lon, lat=lat, strike=strike, dip=dip, depth=depth, segment=0,
+                                                   length=0.0005, width=0.0005, rake=rake, slip=slip, tensile=0)
+    one_source_object = small_rect.fault_object_to_coulomb_fault(zerolon_system=zerolon, zerolat_system=zerolat)
     defensive_programming_faults(one_source_object)
     return one_source_object
 
@@ -301,14 +287,6 @@ def read_point_source_line(line):
     return [strike, rake, dip, lon, lat, depth, magnitude]
 
 
-def read_moment_tensor_source_line(line):
-    """Format: Mrr Mtt Mpp Mrt Mrp Mtp strike dip rake lon lat depth_km mu lambda"""
-    [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp] = [float(i) for i in line.split()[1:7]]
-    [strike, dip, rake] = [float(i) for i in line.split()[7:10]]
-    [lon, lat, depth] = [float(i) for i in line.split()[10:13]]
-    return [Mrr, Mtt, Mpp, Mrt, Mrp, Mtp, strike, dip, rake, lon, lat, depth]
-
-
 def read_mogi_source_line(line):
     """Format: lon lat depth dV"""
     [lon, lat, depth_km, dV] = [float(i) for i in line.split()[1:5]]
@@ -374,95 +352,3 @@ def compute_params_for_slip_source(strike, dip, rake, depth, L, W, fault_lon, fa
     rtlat, reverse = fault_vector_functions.get_rtlat_dip_slip(slip, rake)
     comment = ''
     return [xstart, xfinish, ystart, yfinish, rtlat, reverse, top, bottom, comment]
-
-
-def compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu):
-    """
-    Helper function for setting up faults from 'Source_FM' format
-    Return the right components that get packaged into input_obj.
-    """
-    [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat)
-    potency = get_DC_potency(rake, magnitude, mu)
-    comment = ''
-    return [xcenter, ycenter, potency, comment]
-
-
-def get_DC_potency(rake, momentmagnitude, mu):
-    """
-    Given the basic double couple parameters,
-    Return the four-vector used in Okada DC3D0.
-    Pot1 = strike-slip moment of DC / mu
-    Pot2 = dip-slip moment of DC / mu
-    Pot3 = tensile = M_TENSILE / lambda
-    Pot4 = inflation = M_ISO / mu
-    In a more general case, we would use a different MT format to handle non-DC parts.
-    Right now, it only handles DC focal mechanisms.
-    Moment in newton meters
-    """
-    total_moment = moment_calculations.moment_from_mw(momentmagnitude)
-    dc_moment = total_moment * 1.00
-
-    strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake)
-    print("strike_slip fraction: ", strike_slip_fraction, " / 1.0")
-    print("dip_slip fraction: ", dip_slip_fraction, " / 1.0")
-    strike_slip_fraction = -1 * strike_slip_fraction  # DC3D0 wants left lateral slip.
-    p1 = dc_moment * strike_slip_fraction / mu
-    p2 = dc_moment * dip_slip_fraction / mu
-    # In the double-couple case, this is zero.
-    p3 = 0
-    p4 = 0
-    return [p1, p2, p3, p4]
-
-
-def get_mag_from_dc_potency(potency, mu, rake):
-    """
-    The opposite of the function above.
-    Potency is a four-vector in newton-meters
-    Mu in Pascals
-    """
-    ss_moment = np.abs(potency[0]) * mu
-    ds_moment = np.abs(potency[1]) * mu
-    strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake)
-    if ss_moment >= ds_moment:
-        dc_moment = ss_moment / abs(strike_slip_fraction)
-    else:  # in case the strike slip moment is zero
-        dc_moment = ds_moment / abs(dip_slip_fraction)
-    Mw = moment_calculations.mw_from_moment(dc_moment)
-    return Mw
-
-
-def compute_params_for_MT_source(MT, rake, lon, lat, zerolon, zerolat, mu, lame1):
-    """
-    Given information about point sources from moment tensors,
-    Return the right components that get packaged into input_obj.
-    """
-    [xcenter, ycenter] = fault_vector_functions.latlon2xy(lon, lat, zerolon, zerolat)
-    potency = get_MT_potency(MT, rake, mu, lame1)
-    comment = ''
-    return [xcenter, ycenter, potency, comment]
-
-
-def get_MT_potency(MT, rake, mu, lame1):
-    """
-    An unfinished function, since the computation is not trivial.
-    Return the four-vector used in Okada DC3D0 from the full six-component moment tensor.
-    Pot1 = strike-slip moment of DC / mu
-    Pot2 = dip-slip moment of DC / mu
-    Pot3 = tensile = M_TENSILE / lambda
-    Pot4 = inflation = M_ISO / mu
-    Moment in newton meters
-    """
-    # compute the DC moment, ISO moment, and tensile moment.
-    iso, clvd, dc = MT_calculations.decompose_iso_dc_clvd(MT)
-    dc_moment = dc[0][0]
-    tensile_moment = 0  # THIS IS WHAT OKADA NEEDS.  WILL COMPUTE SEPARATELY WITH MINSON ET AL 2007. NOT DONE YET.
-    iso_moment = 0  # SAME. NOT DONE YET.
-
-    strike_slip_fraction, dip_slip_fraction = fault_vector_functions.get_rtlat_dip_slip(1.0, rake)
-    strike_slip_fraction = -1 * strike_slip_fraction  # DC3D0 wants left lateral slip.
-
-    p1 = dc_moment * strike_slip_fraction / mu
-    p2 = dc_moment * dip_slip_fraction / mu
-    p3 = tensile_moment / lame1
-    p4 = iso_moment / mu
-    return [p1, p2, p3, p4]

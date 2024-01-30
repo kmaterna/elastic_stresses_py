@@ -2,8 +2,8 @@
 
 import numpy as np
 import pygmt, os
+from .inputs_object import io_mt
 from . import io_additionals, utilities
-from .inputs_object import io_intxt
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -169,7 +169,7 @@ def annotate_figure_with_sources(fig, inputs, mu=30e9, fmscale="0.3c", dotstyle=
     for source in point_sources:  # draw focal mechanisms
         [x_total, y_total, _, _] = source.get_fault_four_corners()
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat)
-        mag = io_intxt.get_mag_from_dc_potency(source.potency, mu, source.rake)
+        mag = io_mt.get_mag_from_dc_potency(source.potency, mu, source.rake)
         focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
         fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top)
     # draw the fault patches, no special color code
