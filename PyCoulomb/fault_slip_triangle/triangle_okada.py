@@ -9,6 +9,25 @@ import cutde.halfspace as HS
 from . import fault_slip_triangle
 
 
+def compute_ll_def_tris(inputs, params, obs_disp_points):
+    """
+    Similar to the okada_wrapper version in run_dc3d.py.
+
+    :param inputs: pycoulomb Inputs object
+    :param params: pycoulomb Params object
+    :param obs_disp_points: list of disp_points
+    :return: list of disp_points
+    """
+    tri_faults = []
+    for source in inputs.source_object:
+        two_tris = fault_slip_triangle.convert_pycoulomb_rectangle_into_two_triangles(source, source.zerolon,
+                                                                                      source.zerolat)
+        tri_faults.append(two_tris[0])
+        tri_faults.append(two_tris[1])
+    modeled_tri_points = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
+    return modeled_tri_points
+
+
 def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio):
     """
     Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points). Only lon and lat of disp_points will be used.
