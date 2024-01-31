@@ -1,6 +1,6 @@
 [io-config]
 exp_name = my_experiment
-input_file = M6.8_2014.inzero
+input_file = M6.8_2014.intxt
 output_dir = Outputs/
 plot_stress = 1
 plot_grd_disp = 1

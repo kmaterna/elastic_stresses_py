@@ -1,4 +1,33 @@
 import numpy as np
+from Tectonic_Utils.geodesy import fault_vector_functions
+from . import coulomb_collections
+from .disp_points_object.disp_points_object import Displacement_points
+
+
+def compute_ll_def_mogi(inputs, params, disp_points, coords='geographic'):
+    """
+    Wrapper for the rest of the functions in this file
+
+    :param inputs: Inputs object
+    :param params: Params object
+    :param disp_points: list of disp_points
+    :param coords: string, either 'geographic' or 'cartesian'
+    :return: list of disp_points
+    """
+    model_disp_points = []
+    for point in disp_points:
+        if coords == 'cartesian':
+            xi = point.lon
+            yi = point.lat
+        else:
+            [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
+        u_mogi, v_mogi, w_mogi = compute_surface_disp_point(inputs.source_object, params.nu, xi, yi)
+        model_point = Displacement_points(lon=point.lon, lat=point.lat,
+                                          dE_obs=point.dE_obs+u_mogi,
+                                          dN_obs=point.dN_obs+v_mogi,
+                                          dU_obs=point.dU_obs+w_mogi, name=point.name)
+        model_disp_points.append(model_point)
+    return model_disp_points
 
 
 def compute_surface_disp_point(sources, nu, x, y, compute_depth=0):
@@ -6,7 +35,7 @@ def compute_surface_disp_point(sources, nu, x, y, compute_depth=0):
     A compute loop for each source object at one x/y point.
     x/y in the same coordinate system as the fault object. Computes displacement.
 
-    :param sources: list of mogi_source objects
+    :param sources: list of mogi_source objects or fault objects
     :param nu: float, poisson's ratio
     :param x: float
     :param y: float
@@ -16,11 +45,12 @@ def compute_surface_disp_point(sources, nu, x, y, compute_depth=0):
     u_disp, v_disp, w_disp = 0, 0, 0
 
     for source in sources:
-        dx, dy, dz = compute_disps_from_one_mogi(source, x, y, nu, compute_depth)
-        # Update the displacements from all sources
-        u_disp = u_disp + dx
-        v_disp = v_disp + dy
-        w_disp = w_disp + dz  # vertical
+        if isinstance(source, coulomb_collections.Mogi_Source):
+            dx, dy, dz = compute_disps_from_one_mogi(source, x, y, nu, compute_depth)
+            # Update the displacements from all sources
+            u_disp = u_disp + dx
+            v_disp = v_disp + dy
+            w_disp = w_disp + dz  # vertical
     return u_disp, v_disp, w_disp
 
 

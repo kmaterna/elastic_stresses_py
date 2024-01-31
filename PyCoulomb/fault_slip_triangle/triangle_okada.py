@@ -21,6 +21,8 @@ def convert_rect_sources_into_tris(rect_sources):
                                                                                           source.zerolat)
             tri_faults.append(two_tris[0])
             tri_faults.append(two_tris[1])
+        if isinstance(source, fault_slip_triangle.TriangleFault):
+            tri_faults.append(source)
     return tri_faults
 
 

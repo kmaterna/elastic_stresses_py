@@ -3,7 +3,7 @@
 import numpy as np
 from . import coulomb_collections as cc
 from . import conversion_math
-from . import run_mogi, utilities, pyc_fault_object
+from . import run_mogi, pyc_fault_object
 from .fault_slip_triangle import triangle_okada
 from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
@@ -25,7 +25,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     # Computes here.
     [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params)
     model_disp_points = compute_ll_def(subfaulted_inputs, params, disp_points)
-    strain_tensor_results = compute_ll_strain(subfaulted_inputs, params, strain_points)
+    strain_tensor_results = triangle_okada.compute_ll_strain_tris(inputs, params, strain_points)
     receiver_normal, receiver_shear, receiver_coulomb = compute_strains_stresses(params, subfaulted_inputs)
     receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs)
 
@@ -136,25 +136,26 @@ def compute_grid_def(inputs, params):
     y = np.linspace(inputs.start_gridy, inputs.finish_gridy,
                     int((inputs.finish_gridy - inputs.start_gridy) / inputs.yinc))
     [x2d, y2d] = np.meshgrid(x, y)
-    u_displacements = np.zeros((len(y), len(x)))
-    v_displacements = np.zeros((len(y), len(x)))
-    w_displacements = np.zeros((len(y), len(x)))
+    u_disps = np.zeros((len(y), len(x)))
+    v_disps = np.zeros((len(y), len(x)))
+    w_disps = np.zeros((len(y), len(x)))
 
     if not params.plot_grd_disp:
-        return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements]
+        return [x, y, x2d, y2d, u_disps, v_disps, w_disps]
 
     print("Computing synthetic grid of displacements")
-    numrows = np.shape(u_displacements)[0]
-    numcols = np.shape(u_displacements)[1]
-    rectangles, points, mogis = utilities.separate_source_types(inputs.source_object)
+    numrows, numcols = np.shape(u_disps)
 
+    disp_points = []
     for ky in range(numrows):
         for kx in range(numcols):
-            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs, params, x2d[ky][kx], y2d[ky][kx])
-            u_mogi, v_mogi, w_mogi = run_mogi.compute_surface_disp_point(mogis, params.nu, x2d[ky][kx], y2d[ky][kx])
-            u_displacements[ky][kx] = u_disp + u_mogi
-            v_displacements[ky][kx] = v_disp + v_mogi
-            w_displacements[ky][kx] = w_disp + w_mogi
+            disp_points.append(Displacement_points(lon=x2d[ky][kx], lat=y2d[ky][kx]))
+
+    okada_modeled_disps = triangle_okada.compute_ll_def_tris(inputs, params, disp_points, coords='cartesian')
+    modeled_disps = run_mogi.compute_ll_def_mogi(inputs, params, okada_modeled_disps, coords='cartesian')
+    u_displacements = np.array([x.dE_obs for x in modeled_disps]).reshape(np.shape(u_disps))
+    v_displacements = np.array([x.dN_obs for x in modeled_disps]).reshape(np.shape(v_disps))
+    w_displacements = np.array([x.dU_obs for x in modeled_disps]).reshape(np.shape(w_disps))
     return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements]
 
 
@@ -162,19 +163,8 @@ def compute_ll_strain(inputs, params, strain_points):
     """
     Loop through a list of lon/lat and compute their strains due to all sources put together.
     """
-    if not strain_points:
-        return []
-    if isinstance(strain_points, Displacement_points):
-        strain_points = [strain_points]
-    strain_tensor_results = []  # For each coordinate requested.
-    disp_points = []
-    for point in strain_points:
-        [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
-        disp_point = Displacement_points(lon=xi, lat=yi, depth=point.depth)
-        disp_points.append(disp_point)
-        strain_tensor = triangle_okada.compute_ll_strain_tris(inputs, params, [disp_point], coords='cartesian')[0]
-        strain_tensor_results.append(strain_tensor)
-    return strain_tensor_results
+    strain_tensors = triangle_okada.compute_ll_strain_tris(inputs, params, strain_points)
+    return strain_tensors
 
 
 def compute_ll_def(inputs, params, disp_points):
@@ -185,37 +175,9 @@ def compute_ll_def(inputs, params, disp_points):
         return []
     if isinstance(disp_points, Displacement_points):
         disp_points = [disp_points]
-    model_disp_points = []
-    for point in disp_points:
-        [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
-        rectangles, points, mogis = utilities.separate_source_types(inputs.source_object)
-        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs, params, xi, yi)
-        u_mogi, v_mogi, w_mogi = run_mogi.compute_surface_disp_point(mogis, params.nu, xi, yi)
-        model_point = Displacement_points(lon=point.lon, lat=point.lat,
-                                          dE_obs=u_disp+u_mogi,
-                                          dN_obs=v_disp+v_mogi,
-                                          dU_obs=w_disp+w_mogi,
-                                          Se_obs=0, Sn_obs=0, Su_obs=0, name=point.name)
-        model_disp_points.append(model_point)
+    okada_model_pts = triangle_okada.compute_ll_def_tris(inputs, params, disp_points)
+    model_disp_points = run_mogi.compute_ll_def_mogi(inputs, params, okada_model_pts)
     return model_disp_points
-
-
-def compute_surface_disp_point(inputs, params, x, y, compute_depth=0):
-    """
-    A major compute loop for each fault source object at one x/y point.
-    x/y in the same coordinate system as the fault object. Computes displacement and strain tensor.
-
-    :param inputs: an Input object
-    :param params: object of type Params
-    :param x: float, km
-    :param y: float, km
-    :param compute_depth: depth of observation. Default depth is at surface of earth
-    :returns: three floats and a 3x3 matrix
-    """
-    disp_point = Displacement_points(lon=x, lat=y, depth=compute_depth)
-    strain_tensor = triangle_okada.compute_ll_strain_tris(inputs, params, [disp_point], coords='cartesian')[0]
-    modeled_disp_point = triangle_okada.compute_ll_def_tris(inputs, params, [disp_point], coords='cartesian')[0]
-    return modeled_disp_point.dE_obs, modeled_disp_point.dN_obs, modeled_disp_point.dU_obs, strain_tensor
 
 
 def compute_stresses_horiz_profile(params, inputs):
