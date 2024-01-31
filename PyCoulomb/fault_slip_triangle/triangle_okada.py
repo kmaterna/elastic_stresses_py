@@ -24,13 +24,14 @@ def convert_rect_sources_into_tris(rect_sources):
     return tri_faults
 
 
-def compute_ll_def_tris(inputs, params, obs_disp_points):
+def compute_ll_def_tris(inputs, params, obs_disp_points, coords='geographic'):
     """
     Similar to the okada_wrapper version in run_dc3d.py.
 
     :param inputs: pycoulomb Inputs object
     :param params: pycoulomb Params object
     :param obs_disp_points: list of disp_points
+    :param coords: string telling us whether disp_points are in km or lon/lat
     :return: list of disp_points
     """
     if not obs_disp_points:
@@ -38,12 +39,11 @@ def compute_ll_def_tris(inputs, params, obs_disp_points):
     if isinstance(obs_disp_points, Displacement_points):
         obs_disp_points = [obs_disp_points]
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    print("Number of disp_points:", len(obs_disp_points))
-    modeled_tri_points, _ = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
+    modeled_tri_points, _ = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu, coords)
     return modeled_tri_points
 
 
-def compute_ll_strain_tris(inputs, params, strain_points):
+def compute_ll_strain_tris(inputs, params, strain_points, coords='geographic'):
     """
     Similar to the compute_ll_strain in PyCoulomb.
     Loop through a list of lon/lat and compute their strains due to all sources put together.
@@ -53,12 +53,11 @@ def compute_ll_strain_tris(inputs, params, strain_points):
     if isinstance(strain_points, Displacement_points):
         strain_points = [strain_points]
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    print("Number of strain_points:", len(strain_points))
-    _, strain_tensor = compute_disp_points_from_triangles(tri_faults, strain_points, params.nu)
+    _, strain_tensor = compute_disp_points_from_triangles(tri_faults, strain_points, params.nu, coords=coords)
     return strain_tensor
 
 
-def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio):
+def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio, coords='geographic'):
     """
     Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points). Only lon and lat of disp_points will be used.
     Requires all fault_triangles to have the same reference lon/lat
@@ -66,18 +65,25 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     :param fault_triangles: list
     :param disp_points: list
     :param poisson_ratio: float
-    :returns: list of disp_points objects
+    :param coords: string telling us whether disp_points are in km or lon/lat
+    :returns: list of disp_points objects, list of strain tensors in 3x3 matrix
     """
     proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
     if not proceed_code:
         raise ValueError("Error! Triangular faults do not have same reference")
-    obsx, obsy, pts = [], [], []
+    obsx, obsy, obsz, pts = [], [], [], []
 
-    for point in disp_points:
-        [x, y] = fault_vector_functions.latlon2xy(point.lon, point.lat, fault_triangles[0].lon, fault_triangles[0].lat)
-        obsx.append(x*1000)
-        obsy.append(y*1000)  # calculation works in meters
-    pts = np.vstack([obsx, obsy, np.zeros(np.shape(obsx))]).T   # shape: (Npts, 3)
+    if coords == 'cartesian':
+        obsx = [point.lon*1000 for point in disp_points]
+        obsy = [point.lat*1000 for point in disp_points]
+    else:
+        for point in disp_points:
+            [x, y] = fault_vector_functions.latlon2xy(point.lon, point.lat, fault_triangles[0].lon,
+                                                      fault_triangles[0].lat)
+            obsx.append(x*1000)
+            obsy.append(y*1000)  # calculation works in meters
+    obsz = [point.depth * -1000 for point in disp_points]  # in meters, negative is down
+    pts = np.vstack([obsx, obsy, obsz]).T   # shape: (Npts, 3)
 
     slip_array = np.array([[-src.rtlat_slip, src.dip_slip, src.tensile] for src in fault_triangles])  # shape:(Ntris, 3)
     fault_pts, fault_tris = fault_slip_triangle.extract_mesh_vertices(fault_triangles)
@@ -93,11 +99,12 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     strain_tensors = strain.reshape((*np.array(obsx).shape, 6))  # strain_tensors shape: Npts, 6
     # strain[:,0] is the xx component of strain, 1 is yy, 2 is zz, 3 is xy, 4 is xz, and 5 is yz.
 
+    # Package the results into usable formats
     modeled_disp_points = []
     for i, item in enumerate(disp_points):
         new_disp_pt = Displacement_points(lon=item.lon, lat=item.lat, dE_obs=disp_grid[i][0],
-                                          dN_obs=disp_grid[i][1], dU_obs=disp_grid[i][2], Se_obs=0,
-                                          Sn_obs=0, Su_obs=0, endtime=item.endtime, starttime=item.starttime,
+                                          dN_obs=disp_grid[i][1], dU_obs=disp_grid[i][2], Se_obs=0, Sn_obs=0, Su_obs=0,
+                                          depth=item.depth, endtime=item.endtime, starttime=item.starttime,
                                           meas_type=item.meas_type, refframe=item.refframe, name=item.name)
         modeled_disp_points.append(new_disp_pt)
 

@@ -1,10 +1,10 @@
-# Running dc3d, given an input namedtuple.
+# Running dc3d, given an input object and params object.
 
 import numpy as np
-from okada_wrapper import dc3dwrapper, dc3d0wrapper
 from . import coulomb_collections as cc
 from . import conversion_math
 from . import run_mogi, utilities, pyc_fault_object
+from .fault_slip_triangle import triangle_okada
 from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
 
@@ -26,7 +26,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params)
     model_disp_points = compute_ll_def(subfaulted_inputs, params, disp_points)
     strain_tensor_results = compute_ll_strain(subfaulted_inputs, params, strain_points)
-    [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs)
+    receiver_normal, receiver_shear, receiver_coulomb = compute_strains_stresses(params, subfaulted_inputs)
     receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs)
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_disps, v_disp=v_disps, w_disp=w_disps,
@@ -147,12 +147,10 @@ def compute_grid_def(inputs, params):
     numrows = np.shape(u_displacements)[0]
     numcols = np.shape(u_displacements)[1]
     rectangles, points, mogis = utilities.separate_source_types(inputs.source_object)
-    fault_sources = rectangles + points
 
     for ky in range(numrows):
         for kx in range(numcols):
-            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(fault_sources, params.alpha,
-                                                                   x2d[ky][kx], y2d[ky][kx])
+            u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs, params, x2d[ky][kx], y2d[ky][kx])
             u_mogi, v_mogi, w_mogi = run_mogi.compute_surface_disp_point(mogis, params.nu, x2d[ky][kx], y2d[ky][kx])
             u_displacements[ky][kx] = u_disp + u_mogi
             v_displacements[ky][kx] = v_disp + v_mogi
@@ -169,10 +167,12 @@ def compute_ll_strain(inputs, params, strain_points):
     if isinstance(strain_points, Displacement_points):
         strain_points = [strain_points]
     strain_tensor_results = []  # For each coordinate requested.
-    print("Number of strain_points:", len(strain_points))
+    disp_points = []
     for point in strain_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
-        _, _, _, strain_tensor = compute_surface_disp_point(inputs.source_object, params.alpha, xi, yi)
+        disp_point = Displacement_points(lon=xi, lat=yi, depth=point.depth)
+        disp_points.append(disp_point)
+        strain_tensor = triangle_okada.compute_ll_strain_tris(inputs, params, [disp_point], coords='cartesian')[0]
         strain_tensor_results.append(strain_tensor)
     return strain_tensor_results
 
@@ -186,11 +186,10 @@ def compute_ll_def(inputs, params, disp_points):
     if isinstance(disp_points, Displacement_points):
         disp_points = [disp_points]
     model_disp_points = []
-    print("Number of disp_points:", len(disp_points))
     for point in disp_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
         rectangles, points, mogis = utilities.separate_source_types(inputs.source_object)
-        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(rectangles + points, params.alpha, xi, yi)
+        u_disp, v_disp, w_disp, _ = compute_surface_disp_point(inputs, params, xi, yi)
         u_mogi, v_mogi, w_mogi = run_mogi.compute_surface_disp_point(mogis, params.nu, xi, yi)
         model_point = Displacement_points(lon=point.lon, lat=point.lat,
                                           dE_obs=u_disp+u_mogi,
@@ -201,35 +200,22 @@ def compute_ll_def(inputs, params, disp_points):
     return model_disp_points
 
 
-def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
+def compute_surface_disp_point(inputs, params, x, y, compute_depth=0):
     """
     A major compute loop for each fault source object at one x/y point.
     x/y in the same coordinate system as the fault object. Computes displacement and strain tensor.
 
-    :param sources: list of fault objects
-    :param alpha: float
-    :param x: float
-    :param y: float
+    :param inputs: an Input object
+    :param params: object of type Params
+    :param x: float, km
+    :param y: float, km
     :param compute_depth: depth of observation. Default depth is at surface of earth
     :returns: three floats and a 3x3 matrix
     """
-    u_disp, v_disp, w_disp = 0, 0, 0
-    strain_tensor_total = np.zeros((3, 3))
-
-    for source in sources:
-        desired_coords_grad_u, desired_coords_u = compute_strains_stresses_from_one_fault(source, x, y, compute_depth,
-                                                                                          alpha)
-
-        # Strain tensor math
-        strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u)
-        strain_tensor_total = np.add(strain_tensor, strain_tensor_total)
-
-        # Update the displacements from all sources
-        u_disp = u_disp + desired_coords_u[0][0]
-        v_disp = v_disp + desired_coords_u[1][0]
-        w_disp = w_disp + desired_coords_u[2][0]  # vertical
-
-    return u_disp, v_disp, w_disp, strain_tensor_total
+    disp_point = Displacement_points(lon=x, lat=y, depth=compute_depth)
+    strain_tensor = triangle_okada.compute_ll_strain_tris(inputs, params, [disp_point], coords='cartesian')[0]
+    modeled_disp_point = triangle_okada.compute_ll_def_tris(inputs, params, [disp_point], coords='cartesian')[0]
+    return modeled_disp_point.dE_obs, modeled_disp_point.dN_obs, modeled_disp_point.dU_obs, strain_tensor
 
 
 def compute_stresses_horiz_profile(params, inputs):
@@ -254,29 +240,20 @@ def compute_stresses_horiz_profile(params, inputs):
 
     for i in range(len(inputs.receiver_horiz_profile.lon1d)):
         [xi, yi] = fault_vector_functions.latlon2xy(profile.lon1d[i], profile.lat1d[i], inputs.zerolon, inputs.zerolat)
-        normal_sum, shear_sum, coulomb_sum = 0, 0, 0
-        for source in inputs.source_object:
-            # A major compute loop for each source object.
 
-            desired_coords_grad_u, _ = compute_strains_stresses_from_one_fault(source, xi, yi, profile.depth_km,
-                                                                               params.alpha)
+        strain_point = Displacement_points(lon=xi, lat=yi)
+        strain_tensor = triangle_okada.compute_ll_strain_tris(inputs, params, [strain_point], coords='cartesian')[0]
+        stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
 
-            # Then rotate again into receiver coordinates.
-            strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u)
-            stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
+        # Then compute shear, normal, and coulomb stresses.
+        [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec_strike_v,
+                                                                                 profile.rake, rec_dip_v,
+                                                                                 rec_plane_normal, inputs.FRIC,
+                                                                                 params.B)
 
-            # Then compute shear, normal, and coulomb stresses.
-            [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec_strike_v,
-                                                                                     profile.rake,
-                                                                                     rec_dip_v, rec_plane_normal,
-                                                                                     inputs.FRIC, params.B)
-            normal_sum = normal_sum + normal
-            shear_sum = shear_sum + shear
-            coulomb_sum = coulomb_sum + coulomb
-
-        receiver_normal.append(normal_sum)
-        receiver_shear.append(shear_sum)
-        receiver_coulomb.append(coulomb_sum)
+        receiver_normal.append(normal)
+        receiver_shear.append(shear)
+        receiver_coulomb.append(coulomb)
 
     return receiver_normal, receiver_shear, receiver_coulomb
 
@@ -292,72 +269,26 @@ def compute_strains_stresses(params, inputs):
     receiver_shear, receiver_normal, receiver_coulomb = [], [], []
     if not inputs.receiver_object:
         return [receiver_normal, receiver_shear, receiver_coulomb]
-
     if not params.plot_stress:
         return [receiver_normal, receiver_shear, receiver_coulomb]
 
     print("Resolving stresses on receiver fault(s).")
-    for receiver in inputs.receiver_object:
-        centercoords = receiver.get_fault_center()
-        normal_sum, shear_sum, coulomb_sum = 0, 0, 0
+    for rec in inputs.receiver_object:
+        centercoords = rec.get_fault_center()  # in cartesian coordinates
+        strain_point = Displacement_points(lon=centercoords[0], lat=centercoords[1], depth=centercoords[2])
+        strain_tensor = triangle_okada.compute_ll_strain_tris(inputs, params, [strain_point], coords='cartesian')[0]
+        stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
 
-        for source in inputs.source_object:
-            # A major compute loop for each source object.
-            desired_coords_grad_u, _ = compute_strains_stresses_from_one_fault(source, centercoords[0],
-                                                                               centercoords[1], centercoords[2],
-                                                                               params.alpha)
+        # Then compute shear, normal, and coulomb stresses.
+        [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor,
+                                                                                 rec.strike_unit_vector, rec.rake,
+                                                                                 rec.dip_unit_vector,
+                                                                                 rec.plane_normal,
+                                                                                 inputs.FRIC, params.B)
 
-            # Then rotate again into receiver coordinates.
-            strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u)
-            stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
-
-            # Then compute shear, normal, and coulomb stresses.
-            [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor,
-                                                                                     receiver.strike_unit_vector,
-                                                                                     receiver.rake,
-                                                                                     receiver.dip_unit_vector,
-                                                                                     receiver.plane_normal,
-                                                                                     inputs.FRIC, params.B)
-            normal_sum = normal_sum + normal
-            shear_sum = shear_sum + shear
-            coulomb_sum = coulomb_sum + coulomb
-
-        receiver_normal.append(normal_sum)
-        receiver_shear.append(shear_sum)
-        receiver_coulomb.append(coulomb_sum)
+        receiver_normal.append(normal)
+        receiver_shear.append(shear)
+        receiver_coulomb.append(coulomb)
 
     # return lists of normal, shear, coulomb values for each receiver.
-    return [receiver_normal, receiver_shear, receiver_coulomb]
-
-
-def compute_strains_stresses_from_one_fault(source, x, y, z, alpha):
-    """
-    The main math of DC3D
-    Operates on a source object (e.g., fault),
-    and an xyz position in the same cartesian reference frame.
-    """
-    R = source.R
-    R2 = source.R2
-    strike_slip = source.rtlat * -1  # The dc3d coordinate system has left-lateral positive.
-
-    # Compute the position relative to the translated, rotated fault.
-    translated_pos = np.array(
-        [[x - source.xstart], [y - source.ystart], [-z]])
-    xyz = R.dot(translated_pos)
-    if source.potency:
-        success, u, grad_u = dc3d0wrapper(alpha, [xyz[0], xyz[1], xyz[2]], source.top, source.dipangle,
-                                          [source.potency[0], source.potency[1], source.potency[2],
-                                           source.potency[3]])
-        grad_u = grad_u * 1e-9  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
-        u = u * 1e-6  # Unit correction: potency from N-m results in displacements in microns.
-    else:
-        success, u, grad_u = dc3dwrapper(alpha, [xyz[0], xyz[1], xyz[2]], source.top, source.dipangle,
-                                         [0, source.L], [-source.W, 0],
-                                         [strike_slip, source.reverse, source.tensile])
-        grad_u = grad_u * 1e-3  # DC3D Unit correction.
-    # Solve for displacement gradients at certain xyz position
-
-    # Rotate grad_u back into the unprimed coordinates.
-    desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T))
-    desired_coords_u = R2.dot(np.array([[u[0]], [u[1]], [u[2]]]))
-    return desired_coords_grad_u, desired_coords_u
+    return receiver_normal, receiver_shear, receiver_coulomb

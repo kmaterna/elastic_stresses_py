@@ -11,8 +11,8 @@ class Displacement_points:
     Meas_type can be 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', 'insar', etc.
     starttime and endtime are optional datetime objects.  Lon is between -180 and 180.
     """
-    def __init__(self,  lon, lat, dE_obs, dN_obs, dU_obs, Se_obs=0, Sn_obs=0, Su_obs=0, name=None, starttime=None,
-                 endtime=None, refframe=None, meas_type=None):
+    def __init__(self,  lon, lat, dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0, Sn_obs=0, Su_obs=0, name=None, starttime=None,
+                 endtime=None, refframe=None, meas_type=None, depth=0):
         self.lon = geod_utilities.wrap_lon(lon)
         self.lat = lat
         self.dE_obs = dE_obs  # meters
@@ -26,6 +26,7 @@ class Displacement_points:
         self.endtime = endtime  # datetime object
         self.refframe = refframe  # string
         self.meas_type = meas_type  # string
+        self.depth = depth  # float, in km, positive downwards
 
     # ------------ PREDICATES -------------- #
     def is_within_bbox(self, bbox) -> bool:

@@ -26,8 +26,8 @@ class Tests(unittest.TestCase):
                                                             source_object=pycoulomb_sources, xinc=None, yinc=None)
 
         # The heart of the test: same interface, different guts
-        modeled_tri_points = fst.triangle_okada.compute_ll_def_tris(inputs, test_params, obs_disp_points)
         modeled_rect_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points)
+        modeled_tri_points = fst.triangle_okada.compute_ll_def_tris(inputs, test_params, obs_disp_points)
         strain_tensor_results = PyCoulomb.run_dc3d.compute_ll_strain(inputs, test_params, obs_disp_points[0:3])
         strain_tensor_results2 = fst.triangle_okada.compute_ll_strain_tris(inputs, test_params, obs_disp_points[0:3])
 
