@@ -340,22 +340,18 @@ def extract_mesh_vertices(triangle_fault_list):
     mesh_points, index_list = [], []
     for tri in triangle_fault_list:
         for vertex in [tri.vertex1, tri.vertex2, tri.vertex3]:
-            if vertex_tuple(vertex) not in lookup.keys():
-                lookup[vertex_tuple(vertex)] = index
+            if tuple(vertex) not in lookup.keys():
+                lookup[tuple(vertex)] = index
                 mesh_points.append(vertex)
                 index += 1
 
     for tri in triangle_fault_list:  # create the list of indices
-        id1 = lookup[vertex_tuple(tri.vertex1)]
-        id2 = lookup[vertex_tuple(tri.vertex2)]
-        id3 = lookup[vertex_tuple(tri.vertex3)]
+        id1 = lookup[tuple(tri.vertex1)]
+        id2 = lookup[tuple(tri.vertex2)]
+        id3 = lookup[tuple(tri.vertex3)]
         index_list.append([id1, id2, id3])
 
     return np.array(mesh_points), np.array(index_list)
-
-
-def vertex_tuple(vertex_array):
-    return (vertex_array[0], vertex_array[1], vertex_array[2])
 
 
 def flip_depth_sign(mesh_points):

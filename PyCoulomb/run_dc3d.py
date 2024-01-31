@@ -25,7 +25,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     # Computes here.
     [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params)
     model_disp_points = compute_ll_def(subfaulted_inputs, params, disp_points)
-    strain_tensor_results = compute_ll_strain(subfaulted_inputs, params.alpha, strain_points)
+    strain_tensor_results = compute_ll_strain(subfaulted_inputs, params, strain_points)
     [receiver_normal, receiver_shear, receiver_coulomb] = compute_strains_stresses(params, subfaulted_inputs)
     receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs)
 
@@ -160,26 +160,20 @@ def compute_grid_def(inputs, params):
     return [x, y, x2d, y2d, u_displacements, v_displacements, w_displacements]
 
 
-def compute_ll_strain(inputs, alpha, strain_points):
+def compute_ll_strain(inputs, params, strain_points):
     """
     Loop through a list of lon/lat and compute their strains due to all sources put together.
     """
     if not strain_points:
         return []
-    x, y = [], []
+    if isinstance(strain_points, Displacement_points):
+        strain_points = [strain_points]
+    strain_tensor_results = []  # For each coordinate requested.
     print("Number of strain_points:", len(strain_points))
-    for i in range(len(strain_points)):
-        [xi, yi] = fault_vector_functions.latlon2xy(strain_points[i].lon, strain_points[i].lat, inputs.zerolon,
-                                                    inputs.zerolat)
-        x.append(xi)
-        y.append(yi)
-
-    strain_tensor_results = []
-    # For each coordinate requested.
-    for k in range(len(x)):
-        _, _, _, strain_tensor = compute_surface_disp_point(inputs.source_object, alpha, x[k], y[k])
+    for point in strain_points:
+        [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
+        _, _, _, strain_tensor = compute_surface_disp_point(inputs.source_object, params.alpha, xi, yi)
         strain_tensor_results.append(strain_tensor)
-
     return strain_tensor_results
 
 
@@ -189,6 +183,8 @@ def compute_ll_def(inputs, params, disp_points):
     """
     if not disp_points:
         return []
+    if isinstance(disp_points, Displacement_points):
+        disp_points = [disp_points]
     model_disp_points = []
     print("Number of disp_points:", len(disp_points))
     for point in disp_points:

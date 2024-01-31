@@ -7,6 +7,21 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 from ..disp_points_object.disp_points_object import Displacement_points
 import cutde.halfspace as HS
 from . import fault_slip_triangle
+from .. import pyc_fault_object
+
+def convert_rect_sources_into_tris(rect_sources):
+    """
+    :param rect_sources: list of sources that include PyCoulomb fault rectangles
+    :return: list of triangular faults
+    """
+    tri_faults = []
+    for source in rect_sources:
+        if isinstance(source, pyc_fault_object.Faults_object):
+            two_tris = fault_slip_triangle.convert_pycoulomb_rectangle_into_two_triangles(source, source.zerolon,
+                                                                                          source.zerolat)
+            tri_faults.append(two_tris[0])
+            tri_faults.append(two_tris[1])
+    return tri_faults
 
 
 def compute_ll_def_tris(inputs, params, obs_disp_points):
@@ -18,14 +33,29 @@ def compute_ll_def_tris(inputs, params, obs_disp_points):
     :param obs_disp_points: list of disp_points
     :return: list of disp_points
     """
-    tri_faults = []
-    for source in inputs.source_object:
-        two_tris = fault_slip_triangle.convert_pycoulomb_rectangle_into_two_triangles(source, source.zerolon,
-                                                                                      source.zerolat)
-        tri_faults.append(two_tris[0])
-        tri_faults.append(two_tris[1])
-    modeled_tri_points = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
+    if not obs_disp_points:
+        return []
+    if isinstance(obs_disp_points, Displacement_points):
+        obs_disp_points = [obs_disp_points]
+    tri_faults = convert_rect_sources_into_tris(inputs.source_object)
+    print("Number of disp_points:", len(obs_disp_points))
+    modeled_tri_points, _ = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
     return modeled_tri_points
+
+
+def compute_ll_strain_tris(inputs, params, strain_points):
+    """
+    Similar to the compute_ll_strain in PyCoulomb.
+    Loop through a list of lon/lat and compute their strains due to all sources put together.
+    """
+    if not strain_points:
+        return []
+    if isinstance(strain_points, Displacement_points):
+        strain_points = [strain_points]
+    tri_faults = convert_rect_sources_into_tris(inputs.source_object)
+    print("Number of strain_points:", len(strain_points))
+    _, strain_tensor = compute_disp_points_from_triangles(tri_faults, strain_points, params.nu)
+    return strain_tensor
 
 
 def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio):
@@ -59,6 +89,9 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
 
     # Get strain
     strain_mat = HS.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # strain_mat shape: (Npts, 6, Ntris, 3)
+    strain = strain_mat.reshape((-1, np.size(slip_array))).dot(slip_array.flatten())  # reshape by len total slip vector
+    strain_tensors = strain.reshape((*np.array(obsx).shape, 6))  # strain_tensors shape: Npts, 6
+    # strain[:,0] is the xx component of strain, 1 is yy, 2 is zz, 3 is xy, 4 is xz, and 5 is yz.
 
     modeled_disp_points = []
     for i, item in enumerate(disp_points):
@@ -67,4 +100,12 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
                                           Sn_obs=0, Su_obs=0, endtime=item.endtime, starttime=item.starttime,
                                           meas_type=item.meas_type, refframe=item.refframe, name=item.name)
         modeled_disp_points.append(new_disp_pt)
-    return modeled_disp_points
+
+    modeled_strain_tensors = []
+    for i, item in enumerate(strain_tensors):
+        comps = strain_tensors[i]
+        new_strain_tensor = np.array([[comps[0], comps[3], comps[4]],
+                                      [comps[3], comps[1], comps[5]],
+                                      [comps[4], comps[5], comps[2]]])
+        modeled_strain_tensors.append(new_strain_tensor)
+    return modeled_disp_points, modeled_strain_tensors
