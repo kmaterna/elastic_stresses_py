@@ -90,8 +90,8 @@ def surface_def_plot(out_object, outfile):
         for j in np.arange(0, len(out_object.x), 5):
             plt.quiver(out_object.x2d[i][j], out_object.y2d[i][j], out_object.u_disp[i][j], out_object.v_disp[i][j],
                        units='width', scale=0.2)
-    rectangles, points, mogis = utilities.separate_source_types(out_object.source_object)
-    fault_sources = rectangles + points
+    rectangles, mogis = utilities.separate_source_types(out_object.source_object)
+    fault_sources = rectangles
     for source in fault_sources:
         [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners()
         plt.plot(x_total, y_total, 'k', linewidth=1)

@@ -20,4 +20,4 @@ dependencies:
  - jinja2=3.0.3
  - jupyterlab
  - jupyter
-
+ - cutde~=22.3.17

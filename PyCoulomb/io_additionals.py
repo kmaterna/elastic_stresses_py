@@ -73,8 +73,7 @@ def write_fault_traces_gmt(fault_list, outfile):
     """
     Write the top edge of each fault in GMT map coordinates
     """
-    rectangles, points, mogis = utilities.separate_source_types(fault_list)
-    fault_list = rectangles + points
+    fault_list, mogis = utilities.separate_source_types(fault_list)
     if not fault_list:
         return
     print("Writing %s" % outfile)

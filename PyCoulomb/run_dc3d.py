@@ -2,8 +2,7 @@
 
 import numpy as np
 from . import coulomb_collections as cc
-from . import conversion_math
-from . import run_mogi, pyc_fault_object
+from . import run_mogi, pyc_fault_object, conversion_math
 from .fault_slip_triangle import triangle_okada
 from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
@@ -136,9 +135,7 @@ def compute_grid_def(inputs, params):
     y = np.linspace(inputs.start_gridy, inputs.finish_gridy,
                     int((inputs.finish_gridy - inputs.start_gridy) / inputs.yinc))
     [x2d, y2d] = np.meshgrid(x, y)
-    u_disps = np.zeros((len(y), len(x)))
-    v_disps = np.zeros((len(y), len(x)))
-    w_disps = np.zeros((len(y), len(x)))
+    u_disps, v_disps, w_disps = np.zeros(np.shape(x2d)), np.zeros(np.shape(x2d)), np.zeros(np.shape(x2d))
 
     if not params.plot_grd_disp:
         return [x, y, x2d, y2d, u_disps, v_disps, w_disps]
@@ -195,17 +192,19 @@ def compute_stresses_horiz_profile(params, inputs):
     # Build a regular grid and iterate through.
     print("Resolving stresses on a horizontal profile.")
     profile = inputs.receiver_horiz_profile
-    receiver_normal, receiver_shear, receiver_coulomb = [], [], []
+    receiver_normal, receiver_shear, receiver_coulomb, strain_points = [], [], [], []
 
     # perf improvement: Compute receiver geometry just once, since it's a profile of fixed geometry
     rec_strike_v, rec_dip_v, rec_plane_normal = conversion_math.get_geom_attributes_from_receiver_profile(profile)
 
     for i in range(len(inputs.receiver_horiz_profile.lon1d)):
         [xi, yi] = fault_vector_functions.latlon2xy(profile.lon1d[i], profile.lat1d[i], inputs.zerolon, inputs.zerolat)
+        strain_points.append(Displacement_points(lon=xi, lat=yi, depth=profile.depth_km))
 
-        strain_point = Displacement_points(lon=xi, lat=yi)
-        strain_tensor = triangle_okada.compute_ll_strain_tris(inputs, params, [strain_point], coords='cartesian')[0]
-        stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
+    strain_tensors = triangle_okada.compute_ll_strain_tris(inputs, params, strain_points, coords='cartesian')
+
+    for i in range(len(strain_tensors)):
+        stress_tensor = conversion_math.get_stress_tensor(strain_tensors[i], params.lame1, params.mu)
 
         # Then compute shear, normal, and coulomb stresses.
         [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec_strike_v,
@@ -242,11 +241,10 @@ def compute_strains_stresses(params, inputs):
         stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
 
         # Then compute shear, normal, and coulomb stresses.
-        [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor,
-                                                                                 rec.strike_unit_vector, rec.rake,
-                                                                                 rec.dip_unit_vector,
-                                                                                 rec.plane_normal,
-                                                                                 inputs.FRIC, params.B)
+        [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec.strike_unit_vector,
+                                                                                 rec.rake, rec.dip_unit_vector,
+                                                                                 rec.plane_normal, inputs.FRIC,
+                                                                                 params.B)
 
         receiver_normal.append(normal)
         receiver_shear.append(shear)
