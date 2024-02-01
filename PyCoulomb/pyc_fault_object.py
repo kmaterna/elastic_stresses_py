@@ -34,11 +34,12 @@ class Faults_object:
         if strike > 360:
             raise ValueError("Error! Provided bad strike of %s (should be between 0 and 360) " % strike)
         self.R, self.R2 = conversion_math.get_R_from_strike(strike)
-        self.L = fvf.get_strike_length(xstart, xfinish, ystart, yfinish)
-        self.W = fvf.get_downdip_width(top, bottom, dipangle)
+        self.L = fvf.get_strike_length(xstart, xfinish, ystart, yfinish)  # in km
+        self.W = fvf.get_downdip_width(top, bottom, dipangle)  # in km
         self.strike_unit_vector = fvf.get_strike_vector(self.strike)  # 3d vector in horiz. plane.
         self.dip_unit_vector = fvf.get_dip_vector(strike, dipangle)  # 3d vector.
         self.plane_normal = fvf.get_plane_normal(strike, dipangle)  # 3d vector.
+        self.area = self.L * self.W  # in km^2
 
     def modify_fault_object(self, xstart=None, xfinish=None, ystart=None, yfinish=None, rtlat=None,
                             reverse=None, tensile=None, potency=None, strike=None, dipangle=None, rake=None,
