@@ -22,8 +22,8 @@ e.g., Beeler et al., 2000.
 ### Requirements:
 * Python 3.9+
 * gfortran and gcc (For mac/linux, this is done through brew, port, apt-get, whatever works for your system)
-* Ben Thompson's Python [cutde](https://github.com/tbenthompson/cutde). Install with ```pip install okada_wrapper```.
-* Kathryn Materna's [Tectonic_Utils](https://github.com/kmaterna/Tectonic_Utils).  Install with ```pip install Tectonic-Utils```.
+* Ben Thompson's Python [cutde](https://github.com/tbenthompson/cutde). 
+* Kathryn Materna's [Tectonic_Utils](https://github.com/kmaterna/Tectonic_Utils).  
 * Several standard Python libraries such as numpy, matplotlib, and [PYGMT](https://www.pygmt.org/dev/); these are listed in ```requirements.yml```.  
 
 
