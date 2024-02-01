@@ -1,10 +1,10 @@
 # Elastic_stresses_py
-[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![DOI](https://zenodo.org/badge/141371162.svg)](https://zenodo.org/badge/latestdoi/141371162)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/kmaterna/Strain_2D/blob/dev/license.md)
 
 
-This code uses Okada's (1992) DC3D function to compute elastic displacements, strains, stresses, and Coulomb failure stresses (e.g., King et al., 1994) in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases (in ```Examples/```), it reproduces the Coulomb outputs. 
+This code uses Okada's (1992) formulation to compute elastic displacements, strains, stresses, and Coulomb failure stresses (e.g., King et al., 1994) in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases (in ```Examples/```), it reproduces the Coulomb outputs. 
 
 The equation being solved, following the sign conventions used in Coulomb, is:
 
@@ -20,18 +20,17 @@ e.g., Beeler et al., 2000.
 ## Installation and Usage
 
 ### Requirements:
-* Python 3.9-3.11 (not 3.12 for the moment)
+* Python 3.9+
 * gfortran and gcc (For mac/linux, this is done through brew, port, apt-get, whatever works for your system)
-* Ben Thompson's Python [Okada wrapper](https://github.com/tbenthompson/okada_wrapper). Install with ```pip install okada_wrapper```.
+* Ben Thompson's Python [cutde](https://github.com/tbenthompson/cutde). Install with ```pip install okada_wrapper```.
 * Kathryn Materna's [Tectonic_Utils](https://github.com/kmaterna/Tectonic_Utils).  Install with ```pip install Tectonic-Utils```.
 * Several standard Python libraries such as numpy, matplotlib, and [PYGMT](https://www.pygmt.org/dev/); these are listed in ```requirements.yml```.  
 
 
 ### Installation on command line
 To install Elastic_stresses_py, first clone this library onto your computer with ```git clone ``` and the address of the git repository (see the green **Code** button). 
-The easiest way to gather all the dependencies is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository.
-Then, from the conda environment you've just created, run ```pip install okada_wrapper``` and ```pip install Tectonic-Utils```.  
-Then, run ```python setup.py install``` from the directory where you've cloned the repository. 
+The easiest way to gather all the dependencies is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository. 
+Then, in the new conda environment ```elastic_py``` or similar, run ```pip install . ``` from the directory where you've cloned the repository. 
 
 **NOTE 1:** Mac users switching from Intel architecture to M1 architecture may experience some errors when compiling code on their new architectures for the first time.  
 Such errors may appear as ```(mach-o file, but is an incompatible architecture)``` or similar.  If this happens, please re-install Xcode on your new architecture with ```xcode-select --install``` and try again.
@@ -42,14 +41,8 @@ Such errors may appear as ```(mach-o file, but is an incompatible architecture)`
 * Download the code's zip file from this Github page. Click Code --> Download Zip.  Save it somewhere onto your local disk. 
   
 * Create a new Python environment in the Anaconda GUI. Environments Tab --> Import --> Local drive --> navigate to the local Elastic_stresses_py folder and select ```requirements.yml``` --> Open.  Select name=espy (or desired) --> Create environment.  This will take a few minutes. 
-  
-* Click the play button beside the environment name for the environment you just created. Select 'Open Terminal'. Type ```pip install Tectonic-Utils``` 
-  
-* Also type ```pip install okada_wrapper```  
-  * This step assumes you already have properly working C and fortran compilers, such as gcc and gfortran. You might have to get those separately.
-  * **NOTE 1 AGAIN:** If you are working on Mac, you may need to ensure your Xcode installation is fully updated, including the command line tools. When Apple pushes out updates to the Xcode application, it often breaks the command line tools. To do so, run: ```xcode-select --install```
-  
-* To install ```Elastic_stresses_py``` itself, we will use the terminal once more. Move to the location where you downloaded the source code and type ```python setup.py install``` 
+    
+* To install ```Elastic_stresses_py``` itself, we will use the terminal once more. Move to the location where you downloaded the source code and type ```pip install .``` 
   
 * After refreshing the Anaconda navigator, you will be able to see all the installed packages in your new environment, including Elastic_stresses_py. 
 
@@ -157,7 +150,6 @@ Set domain elastic parameters at the computation level through lame1 and mu in t
 
 ### Future work: 
 * Output computations at depths other than the surface
-* Read in full moment tensor (not just double couple focal mechanisms)
 * Read .inr files (like Coulomb)
 
 
