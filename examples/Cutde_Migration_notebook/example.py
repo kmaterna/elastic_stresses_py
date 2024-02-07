@@ -1,21 +1,28 @@
 #!/usr/bin/env python
 
+"""
+Can the same fault be used in Okada_wrapper and CUTDE triangles?  This script should produce the same outputs
+for strain tensor and displacement vector from the same inputs.
+"""
+
+# Standard imports
 import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 import cutde.halfspace as HS
-
+# My own library imports (working to remove for purposes of this example script)
 from Tectonic_Utils.geodesy import fault_vector_functions
 from Elastic_stresses_py.PyCoulomb import fault_slip_object as fso
 from Elastic_stresses_py.PyCoulomb.fault_slip_triangle import fault_slip_triangle as fst
 
 
+# Global settings for this example
 zerolon, zerolat = -115.5, 32.5  # center of cartesian coordinate system
 target_lon, target_lat = -115.67, 32.68  # query point of interest
 target_depth = 0  # in km
 mu = 3e10  # shear modulus
 lame1 = 3e10  # first lame parameter
 
-
+# Mathematical functions that frequently get used in manipulating faults and displacements
 def get_poissons_ratio_and_alpha(mu, lame1):
     """
     Return the poisson's ratio from a given mu (shear modulus) and lame1 (lame's first parameter)
@@ -47,6 +54,7 @@ def get_R_from_strike(strike):
     return R, R2
 
 
+# Rectangular fault displacements and strains
 def compute_strains_disps_rectangle(source):
     """
     Pseudocode: From a rectangular source and a coordinate system, derive Okada displacements and strain
@@ -102,6 +110,7 @@ def convert_pycoulomb_rectangle_into_two_triangles(source, startlon, startlat):
     return list_of_two_triangles
 
 
+# CUTDE triangular fault displacements and strains
 def compute_strains_disps_triangles(source):
     """
     Compute strains and displacements in cutde
@@ -146,13 +155,16 @@ def compute_strains_disps_triangles(source):
 
 
 if __name__ == "__main__":
+    # Generate a source fault in a convenient input format for fault objects
     test_rect = fso.fault_slip_object.FaultSlipObject(lon=zerolon + 0.01, lat=zerolat - 0.2, strike=50, dip=70,
                                                       depth=3, segment=0, length=15, width=5, rake=170, slip=-0.2)
-    # ^^ A convenient input format for fault objects
+
+    # Convert to a particular internal format
     pycoulomb_source = fso.fault_slip_object.fault_object_to_coulomb_fault([test_rect], zerolon_system=zerolon,
                                                                            zerolat_system=zerolat)
-    strain_tensor, u = compute_strains_disps_rectangle(pycoulomb_source)
+
+    strain_tensor, u = compute_strains_disps_rectangle(pycoulomb_source)  # compute Okada_wrapper displacements
     print(strain_tensor, u)
 
-    strain_tensor, u = compute_strains_disps_triangles(pycoulomb_source)
+    strain_tensor, u = compute_strains_disps_triangles(pycoulomb_source)  # compute CUTDE displacements
     print(strain_tensor, u)
