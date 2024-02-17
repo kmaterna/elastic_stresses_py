@@ -5,13 +5,12 @@ using Wells and Coppersmith 1994, in the same way that Coulomb does.
 """
 
 import numpy as np
-from .io_mt import get_mag_from_dc_potency
+from . import io_mt
 from .. import coulomb_collections as cc
 from .. import conversion_math
 from .input_obj import Input_object
 from ..pyc_fault_object import Faults_object
-from ..fault_slip_object import fault_slip_object
-from Tectonic_Utils.seismo import wells_and_coppersmith, moment_calculations
+from Tectonic_Utils.seismo import wells_and_coppersmith
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
@@ -93,7 +92,7 @@ def write_intxt(input_object, output_file, label=None, mu=30e9, lame1=30e9):
             if src.potency:  # write a DC focal mechanism
                 fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
                                                                         src.zerolon, src.zerolat)
-                mag = get_mag_from_dc_potency(src.potency, mu, src.rake)
+                mag = io_mt.get_mag_from_dc_potency(src.potency, mu, src.rake)
                 ofile.write("Source_FM: %.3f %.3f %.3f %f %f %.3f %.3f\n" % (src.strike, src.rake, src.dipangle,
                                                                              fault_lon, fault_lat, src.top, mag))
     for rec in input_object.receiver_object:
@@ -186,11 +185,10 @@ def get_FocalMech_source(line, zerolon, zerolat, mu):
     Create a source object from a point source focal mechanism
     """
     [strike, rake, dip, lon, lat, depth, magnitude] = read_point_source_line(line)
-    moment = moment_calculations.moment_from_mw(magnitude)
-    slip = moment / (0.5 * 0.5 * mu)
-    small_rect = fault_slip_object.FaultSlipObject(lon=lon, lat=lat, strike=strike, dip=dip, depth=depth, segment=0,
-                                                   length=0.0005, width=0.0005, rake=rake, slip=slip, tensile=0)
-    one_source_object = small_rect.fault_object_to_coulomb_fault(zerolon_system=zerolon, zerolat_system=zerolat)
+    [x, y, potency, comment] = io_mt.compute_params_for_point_source(rake, magnitude, lon, lat, zerolon, zerolat, mu)
+    one_source_object = Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, rtlat=0, reverse=0, potency=potency,
+                                      strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat, rake=rake,
+                                      top=depth, bottom=depth, comment=comment)
     defensive_programming_faults(one_source_object)
     return one_source_object
 
