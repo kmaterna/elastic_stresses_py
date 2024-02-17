@@ -17,6 +17,16 @@ def compute_ll_def_point(inputs, params, disp_points):
     model_disp_points = compute_cartesian_def_point(inputs, params, disp_points)
     return model_disp_points
 
+def compute_ll_strain_point(inputs, params, strain_points):
+    """
+    :param inputs: Inputs object
+    :param params: Params object
+    :param strain_points: list of disp_points, in lat-lon coordinates
+    :return: list of disp_points
+    """
+    strain_points = convert_ll2xy_disp_points(strain_points, inputs.zerolon, inputs.zerolat)
+    strain_tensors = compute_cartesian_strain_point(inputs, params, strain_points)
+    return strain_tensors
 
 def compute_cartesian_def_point(inputs, params, disp_points):
     """
@@ -43,6 +53,29 @@ def compute_cartesian_def_point(inputs, params, disp_points):
                                           dU_obs=point.dU_obs+disp_u[2], name=point.name)
         model_disp_points.append(model_point)
     return model_disp_points
+
+
+def compute_cartesian_strain_point(inputs, params, strain_points):
+    """
+    Adds the results of the point-source strain
+
+    :param inputs:
+    :param params:
+    :param strain_points:
+    :return: list of strain tensors
+    """
+    if not strain_points:
+        return []
+    strain_tensors = []
+    for point in strain_points:
+        point_strain_tensor = np.zeros((3, 3))
+        for source in inputs.source_object:
+            if source.potency:
+                new_strain, _ = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
+                                                                    params.alpha)
+                point_strain_tensor = np.add(point_strain_tensor, new_strain)
+        strain_tensors.append(point_strain_tensor)
+    return strain_tensors
 
 
 def compute_displacements_strains_point(source, x, y, z, alpha):

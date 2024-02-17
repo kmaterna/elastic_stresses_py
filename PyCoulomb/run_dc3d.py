@@ -23,11 +23,11 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     subfaulted_inputs = split_subfault_receivers(params, inputs)
 
     # Computes here.
-    [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params)  # inputs ll, outputs cartesian
-    model_disp_points = compute_ll_def(subfaulted_inputs, params, disp_points)   # inputs ll, outputs ll
-    strain_tensor_results = compute_ll_strain(inputs, params, strain_points)  # inputs ll, outputs ll
-    receiver_normal, receiver_shear, receiver_coulomb = compute_strains_stresses(params, subfaulted_inputs)  # inputs ll, outputs null
-    receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs)  # inputs ll, outputs cartesian??
+    [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params)
+    model_disp_points = compute_ll_def(subfaulted_inputs, params, disp_points)
+    strain_tensor_results = compute_ll_strain(inputs, params, strain_points)
+    receiver_normal, receiver_shear, receiver_coulomb = compute_strains_stresses(params, subfaulted_inputs)
+    receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs)
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_disps, v_disp=v_disps, w_disp=w_disps,
                                 strains=strain_tensor_results, model_disp_points=model_disp_points,
@@ -131,8 +131,11 @@ def compute_ll_strain(inputs, params, strain_points):
     """
     Loop through a list of lon/lat and compute their strains due to all sources put together.
     """
-    strain_tensors = triangle_okada.compute_ll_strain_tris(inputs, params, strain_points)
-    return strain_tensors
+    # NEED TO ADD MOGI-SOURCE STRAINS
+    strain_tensors1 = triangle_okada.compute_ll_strain_tris(inputs, params, strain_points)
+    strain_tensors2 = point_sources.compute_ll_strain_point(inputs, params, strain_points)
+    strain_tensors_total = [np.add(x, y) for x, y in zip(strain_tensors1, strain_tensors2)]
+    return strain_tensors_total
 
 
 def compute_ll_def(inputs, params, disp_points):
@@ -148,17 +151,20 @@ def compute_ll_def(inputs, params, disp_points):
 def compute_xy_strain(inputs, params, strain_points):
     """ Loop through inputs and compute strain from all sources at given points, in cartesian coords.
     Strain_points is a list. """
-    strain_tensors = triangle_okada.compute_cartesian_strain_tris(inputs, params, strain_points)
-    return strain_tensors
+    # NEED TO ADD MOGI-SOURCE STRAINS
+    strain_tensors1 = triangle_okada.compute_cartesian_strain_tris(inputs, params, strain_points)
+    strain_tensors2 = point_sources.compute_cartesian_strain_point(inputs, params, strain_points)
+    strain_tensors_total = [np.add(x, y) for x, y in zip(strain_tensors1, strain_tensors2)]
+    return strain_tensors_total
 
 
 def compute_xy_def(inputs, params, disp_points):
     """ Loop through inputs and compute displacements from all sources at given points, in cartesian coords.
     Disp_points is a list."""
-    modeled_disps = triangle_okada.compute_cartesian_def_tris(inputs, params, disp_points)
-    modeled_disps = run_mogi.compute_cartesian_def_mogi(inputs, params, modeled_disps)
-    modeled_disps = point_sources.compute_cartesian_def_point(inputs, params, modeled_disps)
-    return modeled_disps
+    modeled_disp_points = triangle_okada.compute_cartesian_def_tris(inputs, params, disp_points)
+    modeled_disp_points = run_mogi.compute_cartesian_def_mogi(inputs, params, modeled_disp_points)
+    modeled_disp_points = point_sources.compute_cartesian_def_point(inputs, params, modeled_disp_points)
+    return modeled_disp_points
 
 
 def compute_grid_def(inputs, params):
@@ -240,7 +246,7 @@ def compute_strains_stresses(params, inputs):
     """
 
     # The values we're actually going to output.
-    receiver_shear, receiver_normal, receiver_coulomb = [], [], []
+    receiver_shear, receiver_normal, receiver_coulomb, target_points = [], [], [], []
     if not inputs.receiver_object:
         return [receiver_normal, receiver_shear, receiver_coulomb]
     if not params.plot_stress:
@@ -250,7 +256,11 @@ def compute_strains_stresses(params, inputs):
     for rec in inputs.receiver_object:
         centercoords = rec.get_fault_center()  # in cartesian coordinates
         strain_point = Displacement_points(lon=centercoords[0], lat=centercoords[1], depth=centercoords[2])
-        strain_tensor = compute_xy_strain(inputs, params, [strain_point])[0]
+        target_points.append(strain_point)
+
+    strain_tensors = compute_xy_strain(inputs, params, target_points)
+
+    for rec, strain_tensor in zip(inputs.receiver_object, strain_tensors):
         stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
 
         # Then compute shear, normal, and coulomb stresses.
@@ -258,7 +268,6 @@ def compute_strains_stresses(params, inputs):
                                                                                  rec.rake, rec.dip_unit_vector,
                                                                                  rec.plane_normal, inputs.FRIC,
                                                                                  params.B)
-
         receiver_normal.append(normal)
         receiver_shear.append(shear)
         receiver_coulomb.append(coulomb)
