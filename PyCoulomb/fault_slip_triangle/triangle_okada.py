@@ -3,11 +3,11 @@ Implementing Okada on a fault_slip_triangle object using Ben Thompson's cutde li
 """
 
 import numpy as np
-from Tectonic_Utils.geodesy import fault_vector_functions
 from ..disp_points_object.disp_points_object import Displacement_points
 import cutde.halfspace as HS
 from . import fault_slip_triangle
 from .. import pyc_fault_object
+from .. import utilities
 
 def convert_rect_sources_into_tris(rect_sources):
     """
@@ -26,40 +26,44 @@ def convert_rect_sources_into_tris(rect_sources):
     return tri_faults
 
 
-def compute_ll_def_tris(inputs, params, obs_disp_points, coords='geographic'):
+def compute_ll_def_tris(inputs, params, obs_disp_points):
     """
     Similar to the okada_wrapper version in run_dc3d.py.
 
     :param inputs: pycoulomb Inputs object
     :param params: pycoulomb Params object
     :param obs_disp_points: list of disp_points
-    :param coords: string telling us whether disp_points are in km or lon/lat
     :return: list of disp_points
     """
-    if not obs_disp_points:
-        return []
-    if isinstance(obs_disp_points, Displacement_points):
-        obs_disp_points = [obs_disp_points]
+    obs_disp_points = utilities.convert_ll2xy_disp_points(obs_disp_points, inputs.zerolon, inputs.zerolat)
+    modeled_tri_points = compute_cartesian_def_tris(inputs, params, obs_disp_points)
+    return modeled_tri_points
+
+def compute_ll_strain_tris(inputs, params, strain_points):
+    """
+    Loop through a list of lon/lat and compute their strains due to all sources put together.
+    Returns list of strain tensors
+    """
+    strain_points = utilities.convert_ll2xy_disp_points(strain_points, inputs.zerolon, inputs.zerolat)
+    strain_tensors = compute_cartesian_strain_tris(inputs, params, strain_points)
+    return strain_tensors
+
+def compute_cartesian_strain_tris(inputs, params, strain_points):
+    """
+    Loop through a list of lon/lat and compute their strains due to all sources put together.
+    Returns list of strain tensors
+    """
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    modeled_tri_points, _ = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu, coords)
+    _, strain_tensors = compute_disp_points_from_triangles(tri_faults, strain_points, params.nu)
+    return strain_tensors
+
+def compute_cartesian_def_tris(inputs, params, obs_disp_points):
+    tri_faults = convert_rect_sources_into_tris(inputs.source_object)
+    modeled_tri_points, _ = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
     return modeled_tri_points
 
 
-def compute_ll_strain_tris(inputs, params, strain_points, coords='geographic'):
-    """
-    Similar to the compute_ll_strain in PyCoulomb.
-    Loop through a list of lon/lat and compute their strains due to all sources put together.
-    """
-    if not strain_points:
-        return []
-    if isinstance(strain_points, Displacement_points):
-        strain_points = [strain_points]
-    tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    _, strain_tensor = compute_disp_points_from_triangles(tri_faults, strain_points, params.nu, coords=coords)
-    return strain_tensor
-
-
-def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio, coords='geographic'):
+def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio):
     """
     Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points). Only lon and lat of disp_points will be used.
     Requires all fault_triangles to have the same reference lon/lat
@@ -67,23 +71,16 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     :param fault_triangles: list
     :param disp_points: list
     :param poisson_ratio: float
-    :param coords: string telling us whether disp_points are in km or lon/lat
     :returns: list of disp_points objects, list of strain tensors in 3x3 matrix
     """
     proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
+    if not disp_points:
+        return [], []
     if not proceed_code:
         raise ValueError("Error! Triangular faults do not have same reference")
-    obsx, obsy, obsz, pts = [], [], [], []
 
-    if coords == 'cartesian':
-        obsx = [point.lon*1000 for point in disp_points]
-        obsy = [point.lat*1000 for point in disp_points]
-    else:
-        for point in disp_points:
-            [x, y] = fault_vector_functions.latlon2xy(point.lon, point.lat, fault_triangles[0].lon,
-                                                      fault_triangles[0].lat)
-            obsx.append(x*1000)
-            obsy.append(y*1000)  # calculation works in meters
+    obsx = [point.lon*1000 for point in disp_points]
+    obsy = [point.lat*1000 for point in disp_points]   # calculation works in meters
     obsz = [point.depth * -1000 for point in disp_points]  # in meters, negative is down
     pts = np.vstack([obsx, obsy, obsz]).T   # shape: (Npts, 3)
 

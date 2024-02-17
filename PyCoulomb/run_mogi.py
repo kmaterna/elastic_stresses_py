@@ -1,27 +1,35 @@
 import numpy as np
-from Tectonic_Utils.geodesy import fault_vector_functions
+from . import utilities
 from . import coulomb_collections
 from .disp_points_object.disp_points_object import Displacement_points
 
 
-def compute_ll_def_mogi(inputs, params, disp_points, coords='geographic'):
+def compute_ll_def_mogi(inputs, params, disp_points):
     """
     Wrapper for the rest of the functions in this file
 
     :param inputs: Inputs object
     :param params: Params object
     :param disp_points: list of disp_points
-    :param coords: string, either 'geographic' or 'cartesian'
     :return: list of disp_points
     """
+    disp_points = utilities.convert_ll2xy_disp_points(disp_points, inputs.zerolon, inputs.zerolat)
+    model_disp_points = compute_cartesian_def_mogi(inputs, params, disp_points)
+    return model_disp_points
+
+
+def compute_cartesian_def_mogi(inputs, params, disp_points):
+    """
+    :param inputs: Inputs object
+    :param params: Params object
+    :param disp_points: list of disp_points, in km from the center of the coordinate system
+    :return: list of disp_points
+    """
+    if not disp_points:
+        return []
     model_disp_points = []
     for point in disp_points:
-        if coords == 'cartesian':
-            xi = point.lon
-            yi = point.lat
-        else:
-            [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
-        u_mogi, v_mogi, w_mogi = compute_surface_disp_point(inputs.source_object, params.nu, xi, yi)
+        u_mogi, v_mogi, w_mogi = compute_surface_disp_point(inputs.source_object, params.nu, point.lon, point.lat)
         model_point = Displacement_points(lon=point.lon, lat=point.lat,
                                           dE_obs=point.dE_obs+u_mogi,
                                           dN_obs=point.dN_obs+v_mogi,

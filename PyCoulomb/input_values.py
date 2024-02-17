@@ -9,6 +9,7 @@ Read the Coulomb or user-defined input files:
 
 from .inputs_object import io_inp, io_inr, io_intxt
 from . import io_additionals, utilities
+from .disp_points_object.disp_points_object import Displacement_points
 
 
 def read_inputs(params):
@@ -30,6 +31,10 @@ def read_inputs(params):
         disp_points = io_additionals.read_disp_points(params.disp_points_file)
     if params.strain_file:
         strain_points = io_additionals.read_disp_points(params.strain_file)
+    if isinstance(strain_points, Displacement_points):
+        strain_points = [strain_points]
+    if isinstance(disp_points, Displacement_points):
+        disp_points = [disp_points]
 
     assert input_object.source_object, ValueError("You have not specified any sources.")
     assert input_object.xinc > 0, ValueError("Your cartesian coordinate system's x-increment defaults to zero.")

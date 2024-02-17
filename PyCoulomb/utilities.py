@@ -5,6 +5,8 @@ from Tectonic_Utils.seismo import moment_calculations
 import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
 import Elastic_stresses_py.PyCoulomb.pyc_fault_object as pycfaults
 from . import coulomb_collections as cc
+from .disp_points_object.disp_points_object import Displacement_points
+from Tectonic_Utils.geodesy import fault_vector_functions
 
 
 def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_labeling_interval=None):
@@ -184,6 +186,22 @@ def separate_source_types(source_object):
         if isinstance(source, cc.Faults_object):
             rect_sources.append(source)
     return rect_sources, mogi_sources
+
+
+def convert_ll2xy_disp_points(disp_points, zerolon, zerolat):
+    """
+    :param disp_points: list of disp_points
+    :param zerolon: longitude for center of coordinate system
+    :param zerolat: latitude for center of coordinate system
+    :return: list of disp_points relative to center of coordinate system. All lon/lat/depths are in km.
+    """
+    cartesian_disp_points = []
+    for point in disp_points:
+        [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, zerolon, zerolat)
+        model_point = Displacement_points(lon=xi, lat=yi, depth=point.depth, dE_obs=point.dE_obs, dN_obs=point.dN_obs,
+                                          dU_obs=point.dU_obs, name=point.name)
+        cartesian_disp_points.append(model_point)
+    return cartesian_disp_points
 
 
 def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=lambda x: x.get_total_slip()):
