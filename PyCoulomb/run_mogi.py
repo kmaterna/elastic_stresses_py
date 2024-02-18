@@ -1,21 +1,6 @@
 import numpy as np
-from . import utilities
 from . import coulomb_collections
 from .disp_points_object.disp_points_object import Displacement_points
-
-
-def compute_ll_def_mogi(inputs, params, disp_points):
-    """
-    Wrapper for the rest of the functions in this file
-
-    :param inputs: Inputs object
-    :param params: Params object
-    :param disp_points: list of disp_points
-    :return: list of disp_points
-    """
-    disp_points = utilities.convert_ll2xy_disp_points(disp_points, inputs.zerolon, inputs.zerolat)
-    model_disp_points = compute_cartesian_def_mogi(inputs, params, disp_points)
-    return model_disp_points
 
 
 def compute_cartesian_def_mogi(inputs, params, disp_points):

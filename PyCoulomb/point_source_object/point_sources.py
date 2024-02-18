@@ -1,32 +1,7 @@
 from .okada_pt_src import DC3D0
 import numpy as np
 from ..disp_points_object.disp_points_object import Displacement_points
-from ..utilities import convert_ll2xy_disp_points
 
-
-def compute_ll_def_point(inputs, params, disp_points):
-    """
-    Wrapper for the rest of the functions in this file
-
-    :param inputs: Inputs object
-    :param params: Params object
-    :param disp_points: list of disp_points, in lat-lon coordinates
-    :return: list of disp_points
-    """
-    disp_points = convert_ll2xy_disp_points(disp_points, inputs.zerolon, inputs.zerolat)
-    model_disp_points = compute_cartesian_def_point(inputs, params, disp_points)
-    return model_disp_points
-
-def compute_ll_strain_point(inputs, params, strain_points):
-    """
-    :param inputs: Inputs object
-    :param params: Params object
-    :param strain_points: list of disp_points, in lat-lon coordinates
-    :return: list of disp_points
-    """
-    strain_points = convert_ll2xy_disp_points(strain_points, inputs.zerolon, inputs.zerolat)
-    strain_tensors = compute_cartesian_strain_point(inputs, params, strain_points)
-    return strain_tensors
 
 def compute_cartesian_def_point(inputs, params, disp_points):
     """
@@ -43,7 +18,7 @@ def compute_cartesian_def_point(inputs, params, disp_points):
     for point in disp_points:
         disp_u = np.zeros((3,))
         for source in inputs.source_object:
-            if source.potency:
+            if source.is_point_source:
                 _, new_disp = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
                                                                   params.alpha)
                 disp_u = np.add(disp_u, new_disp)
@@ -70,7 +45,7 @@ def compute_cartesian_strain_point(inputs, params, strain_points):
     for point in strain_points:
         point_strain_tensor = np.zeros((3, 3))
         for source in inputs.source_object:
-            if source.potency:
+            if source.is_point_source:
                 new_strain, _ = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
                                                                     params.alpha)
                 point_strain_tensor = np.add(point_strain_tensor, new_strain)

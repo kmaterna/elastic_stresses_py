@@ -7,6 +7,7 @@ from .fault_slip_triangle import triangle_okada
 from .point_source_object import point_sources
 from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
+from . import utilities
 
 
 def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
@@ -130,11 +131,10 @@ def get_split_z_array(top, bottom, dip_split):
 def compute_ll_strain(inputs, params, strain_points):
     """
     Loop through a list of lon/lat and compute their strains due to all sources put together.
+    NEED TO ADD MOGI-SOURCE STRAINS
     """
-    # NEED TO ADD MOGI-SOURCE STRAINS
-    strain_tensors1 = triangle_okada.compute_ll_strain_tris(inputs, params, strain_points)
-    strain_tensors2 = point_sources.compute_ll_strain_point(inputs, params, strain_points)
-    strain_tensors_total = [np.add(x, y) for x, y in zip(strain_tensors1, strain_tensors2)]
+    strain_points = utilities.convert_ll2xy_disp_points(strain_points, inputs.zerolon, inputs.zerolat)
+    strain_tensors_total = compute_xy_strain(inputs, params, strain_points)
     return strain_tensors_total
 
 
@@ -142,16 +142,14 @@ def compute_ll_def(inputs, params, disp_points):
     """
     Loop through a list of lon/lat and compute their displacements due to all sources put together.
     """
-    model_disp_points = triangle_okada.compute_ll_def_tris(inputs, params, disp_points)
-    model_disp_points = run_mogi.compute_ll_def_mogi(inputs, params, model_disp_points)
-    model_disp_points = point_sources.compute_ll_def_point(inputs, params, model_disp_points)
+    disp_points = utilities.convert_ll2xy_disp_points(disp_points, inputs.zerolon, inputs.zerolat)
+    model_disp_points = compute_xy_def(inputs, params, disp_points)
     return model_disp_points
 
 
 def compute_xy_strain(inputs, params, strain_points):
     """ Loop through inputs and compute strain from all sources at given points, in cartesian coords.
-    Strain_points is a list. """
-    # NEED TO ADD MOGI-SOURCE STRAINS
+    Strain_points is a list. # NEED TO ADD MOGI-SOURCE STRAINS  """
     strain_tensors1 = triangle_okada.compute_cartesian_strain_tris(inputs, params, strain_points)
     strain_tensors2 = point_sources.compute_cartesian_strain_point(inputs, params, strain_points)
     strain_tensors_total = [np.add(x, y) for x, y in zip(strain_tensors1, strain_tensors2)]

@@ -7,7 +7,7 @@ from ..disp_points_object.disp_points_object import Displacement_points
 import cutde.halfspace as HS
 from . import fault_slip_triangle
 from .. import pyc_fault_object
-from .. import utilities
+
 
 def convert_rect_sources_into_tris(rect_sources):
     """
@@ -17,6 +17,8 @@ def convert_rect_sources_into_tris(rect_sources):
     tri_faults = []
     for source in rect_sources:
         if isinstance(source, pyc_fault_object.Faults_object):
+            if source.is_point_source:
+                continue
             two_tris = fault_slip_triangle.convert_pycoulomb_rectangle_into_two_triangles(source, source.zerolon,
                                                                                           source.zerolat)
             tri_faults.append(two_tris[0])
@@ -25,28 +27,6 @@ def convert_rect_sources_into_tris(rect_sources):
             tri_faults.append(source)
     return tri_faults
 
-
-def compute_ll_def_tris(inputs, params, obs_disp_points):
-    """
-    Similar to the okada_wrapper version in run_dc3d.py.
-
-    :param inputs: pycoulomb Inputs object
-    :param params: pycoulomb Params object
-    :param obs_disp_points: list of disp_points
-    :return: list of disp_points
-    """
-    obs_disp_points = utilities.convert_ll2xy_disp_points(obs_disp_points, inputs.zerolon, inputs.zerolat)
-    modeled_tri_points = compute_cartesian_def_tris(inputs, params, obs_disp_points)
-    return modeled_tri_points
-
-def compute_ll_strain_tris(inputs, params, strain_points):
-    """
-    Loop through a list of lon/lat and compute their strains due to all sources put together.
-    Returns list of strain tensors
-    """
-    strain_points = utilities.convert_ll2xy_disp_points(strain_points, inputs.zerolon, inputs.zerolat)
-    strain_tensors = compute_cartesian_strain_tris(inputs, params, strain_points)
-    return strain_tensors
 
 def compute_cartesian_strain_tris(inputs, params, strain_points):
     """
