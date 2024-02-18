@@ -164,15 +164,14 @@ def annotate_figure_with_sources(fig, inputs, mu=30e9, fmscale="0.3c", dotstyle=
         eq_lat.append(source_lat)
     fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, fill="purple", pen="thin,black")
 
-    rect_sources, _ = utilities.separate_source_types(inputs.source_object)
-    for source in rect_sources:  # draw focal mechanisms
+    rect_sources, pt_sources, _ = utilities.separate_source_types(inputs.source_object)
+    for source in pt_sources:  # draw focal mechanisms
         # Draw small sources with focal mechanisms
-        if source.area < 0.001 * 0.001:  # If the area is < 1 m^2:
-            [x_total, y_total, _, _] = source.get_fault_four_corners()
-            lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat)
-            _, mag = source.get_fault_slip_moment(mu)
-            focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
-            fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top)
+        [x_total, y_total, _, _] = source.get_fault_four_corners()
+        lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat)
+        _, mag = source.get_fault_slip_moment(mu)
+        focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
+        fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top)
     # draw the fault patches, no special color code
     utilities.write_fault_edges_to_gmt_file(rect_sources, "tmp.txt")
     fig.plot(data='tmp.txt', pen="0.2p,black")

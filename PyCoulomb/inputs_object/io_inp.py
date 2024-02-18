@@ -174,7 +174,7 @@ def get_map_info(input_file):
 
 
 def write_inp(data_obj, outfile):
-    sources, _ = utilities.separate_source_types(data_obj.source_object)
+    sources, _, _ = utilities.separate_source_types(data_obj.source_object)
     receivers = data_obj.receiver_object
     num_faults = len(sources) + len(receivers)
     ofile = open(outfile, 'w')
