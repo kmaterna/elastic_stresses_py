@@ -10,3 +10,5 @@ from . import utilities
 from . import disp_points_object
 from . import inputs_object
 from . import pyc_fault_object
+from . import run_okada_wrapper
+from . import point_source_object

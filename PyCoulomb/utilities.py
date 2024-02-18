@@ -203,6 +203,28 @@ def convert_ll2xy_disp_points(disp_points, zerolon, zerolat):
         cartesian_disp_points.append(model_point)
     return cartesian_disp_points
 
+def get_zeros_disp_points(disp_points):
+    """
+    :param disp_points: list of disp points
+    :return: matching list of disp points where all data values will be set to zero
+    """
+    zero_disp_points = []
+    for item in disp_points:
+        new_pt = Displacement_points(lon=item.lon, lat=item.lat, depth=item.depth, dE_obs=0, dN_obs=0, dU_obs=0,
+                                     name=item.name)
+        zero_disp_points.append(new_pt)
+    return zero_disp_points
+
+def get_zeros_strain_points(strain_points):
+    """
+    :param strain_points: list of disp points
+    :return: list of 3x3 zero matrices, for holding null strain tensor results
+    """
+    zero_strains = []
+    for _x in strain_points:
+        new_strain_tensor = np.zeros((3, 3))
+        zero_strains.append(new_strain_tensor)
+    return zero_strains
 
 def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=lambda x: x.get_total_slip()):
     """

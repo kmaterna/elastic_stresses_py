@@ -16,16 +16,16 @@ def compute_cartesian_def_point(inputs, params, disp_points):
         return []
     model_disp_points = []
     for point in disp_points:
-        disp_u = np.zeros((3,))
+        disp_u = np.zeros((3, 1))
         for source in inputs.source_object:
             if source.is_point_source:
                 _, new_disp = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
                                                                   params.alpha)
                 disp_u = np.add(disp_u, new_disp)
         model_point = Displacement_points(lon=point.lon, lat=point.lat,
-                                          dE_obs=point.dE_obs+disp_u[0],
-                                          dN_obs=point.dN_obs+disp_u[1],
-                                          dU_obs=point.dU_obs+disp_u[2], name=point.name)
+                                          dE_obs=point.dE_obs+disp_u[0][0],
+                                          dN_obs=point.dN_obs+disp_u[1][0],
+                                          dU_obs=point.dU_obs+disp_u[2][0], name=point.name)
         model_disp_points.append(model_point)
     return model_disp_points
 

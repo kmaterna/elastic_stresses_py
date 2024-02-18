@@ -26,59 +26,64 @@ def UA0(X, Y, D, POT1, POT2, POT3, POT4):
 
     # Strike-slip contribution
     if POT1 != F0:
-        DU[0] = ALP1 * Q / R ** 3 + ALP2 * X ** 2 * QR
-        DU[1] = ALP1 * X / R ** 3 * SD + ALP2 * XY * QR
-        DU[2] = -ALP1 * X / R ** 3 * CD + ALP2 * X * D * QR
+        DU[0] = ALP1 * Q / R3 + ALP2 * X2 * QR
+        DU[1] = ALP1 * X / R3 * SD + ALP2 * XY * QR
+        DU[2] = -ALP1 * X / R3 * CD + ALP2 * X * D * QR
         DU[3] = X * QR * (-ALP1 + ALP2 * (F1 + A5))
-        DU[4] = ALP1 * A3 / R ** 3 * SD + ALP2 * Y * QR * A5
-        DU[5] = -ALP1 * A3 / R ** 3 * CD + ALP2 * D * QR * A5
-        DU[6] = ALP1 * (SD / R ** 3 - Y * QR) + ALP2 * F3 * X ** 2 / R ** 5 * UY
-        DU[7] = F3 * X / R ** 5 * (-ALP1 * Y * SD + ALP2 * (Y * UY + Q))
-        DU[8] = F3 * X / R ** 5 * (ALP1 * Y * CD + ALP2 * D * UY)
-        DU[9] = ALP1 * (CD / R ** 3 + D * QR) + ALP2 * F3 * X ** 2 / R ** 5 * UZ
-        DU[10] = F3 * X / R ** 5 * (ALP1 * D * SD + ALP2 * Y * UZ)
-        DU[11] = F3 * X / R ** 5 * (-ALP1 * D * CD + ALP2 * (D * UZ - Q))
+        DU[4] = ALP1 * A3 / R3 * SD + ALP2 * Y * QR * A5
+        DU[5] = -ALP1 * A3 / R3 * CD + ALP2 * D * QR * A5
+        DU[6] = ALP1 * (SD / R3 - Y * QR) + ALP2 * F3 * X2 / R5 * UY
+        DU[7] = F3 * X / R5 * (-ALP1 * Y * SD + ALP2 * (Y * UY + Q))
+        DU[8] = F3 * X / R5 * (ALP1 * Y * CD + ALP2 * D * UY)
+        DU[9] = ALP1 * (CD / R3 + D * QR) + ALP2 * F3 * X2 / R5 * UZ
+        DU[10] = F3 * X / R5 * (ALP1 * D * SD + ALP2 * Y * UZ)
+        DU[11] = F3 * X / R5 * (-ALP1 * D * CD + ALP2 * (D * UZ - Q))
         U += POT1 / PI2 * DU
 
     # Dip-slip contribution
     if POT2 != F0:
         DU[0] = ALP2 * X * P * QR
-        DU[1] = ALP1 * S / R ** 3 + ALP2 * Y * P * QR
-        DU[2] = -ALP1 * T / R ** 3 + ALP2 * D * P * QR
+        DU[1] = ALP1 * S / R3 + ALP2 * Y * P * QR
+        DU[2] = -ALP1 * T / R3 + ALP2 * D * P * QR
         DU[3] = ALP2 * P * QR * A5
-        DU[4] = -ALP1 * F3 * X * S / R ** 5 - ALP2 * Y * P * QRX
-        DU[5] = ALP1 * F3 * X * T / R ** 5 - ALP2 * D * P * QRX
-        DU[6] = ALP2 * F3 * X / R ** 5 * VY
-        DU[7] = ALP1 * (S2D / R ** 3 - F3 * Y * S / R ** 5) + ALP2 * (F3 * Y / R ** 5 * VY + P * QR)
-        DU[8] = -ALP1 * (C2D / R ** 3 - F3 * Y * T / R ** 5) + ALP2 * F3 * D / R ** 5 * VY
-        DU[9] = ALP2 * F3 * X / R ** 5 * VZ
-        DU[10] = ALP1 * (C2D / R ** 3 + F3 * D * S / R ** 5) + ALP2 * F3 * Y / R ** 5 * VZ
-        DU[11] = ALP1 * (S2D / R ** 3 - F3 * D * T / R ** 5) + ALP2 * (F3 * D / R ** 5 * VZ - P * QR)
+        DU[4] = -ALP1 * F3 * X * S / R5 - ALP2 * Y * P * QRX
+        DU[5] = ALP1 * F3 * X * T / R5 - ALP2 * D * P * QRX
+        DU[6] = ALP2 * F3 * X / R5 * VY
+        DU[7] = ALP1 * (S2D / R3 - F3 * Y * S / R5) + ALP2 * (F3 * Y / R5 * VY + P * QR)
+        DU[8] = -ALP1 * (C2D / R3 - F3 * Y * T / R5) + ALP2 * F3 * D / R5 * VY
+        DU[9] = ALP2 * F3 * X / R5 * VZ
+        DU[10] = ALP1 * (C2D / R3 + F3 * D * S / R5) + ALP2 * F3 * Y / R5 * VZ
+        DU[11] = ALP1 * (S2D / R3 - F3 * D * T / R5) + ALP2 * (F3 * D / R5 * VZ - P * QR)
         U += POT2 / PI2 * DU
 
     # Tensile-fault contribution
     if POT3 != F0:
-        DU[0] = ALP1 * X / R ** 3 - ALP2 * X * Q * QR
-        DU[1] = ALP1 * T / R ** 3 - ALP2 * Y * Q * QR
-        DU[2] = ALP1 * S / R ** 3 - ALP2 * D * Q * QR
-        DU[3] = ALP1 * A3 / R ** 3 - ALP2 * Q * QR * A5
-        DU[4] = -ALP1 * F3 * X * T / R ** 5 + ALP2 * Y * Q * QRX
-        DU[5] = -ALP1 * F3 * X * S / R ** 5 + ALP2 * D * Q * QRX
-        DU[6] = -ALP1 * F3 * XY / R ** 5 - ALP2 * X * QR * WY
-        DU[7] = ALP1 * (C2D / R ** 3 - F3 * Y * T / R ** 5) - ALP2 * (Y * WY + Q) * QR
-        DU[8] = ALP1 * (S2D / R ** 3 - F3 * Y * S / R ** 5) - ALP2 * D * QR * WY
-        DU[9] = ALP1 * F3 * X * D / R ** 5 - ALP2 * X * QR * WZ
-        DU[10] = -ALP1 * (S2D / R ** 3 - F3 * D * T / R ** 5) - ALP2 * Y * QR * WZ
-        DU[11] = ALP1 * (C2D / R ** 3 + F3 * D * S / R ** 5) - ALP2 * (D * WZ - Q) * QR
+        DU[0] = ALP1 * X / R3 - ALP2 * X * Q * QR
+        DU[1] = ALP1 * T / R3 - ALP2 * Y * Q * QR
+        DU[2] = ALP1 * S / R3 - ALP2 * D * Q * QR
+        DU[3] = ALP1 * A3 / R3 - ALP2 * Q * QR * A5
+        DU[4] = -ALP1 * F3 * X * T / R5 + ALP2 * Y * Q * QRX
+        DU[5] = -ALP1 * F3 * X * S / R5 + ALP2 * D * Q * QRX
+        DU[6] = -ALP1 * F3 * XY / R5 - ALP2 * X * QR * WY
+        DU[7] = ALP1 * (C2D / R3 - F3 * Y * T / R5) - ALP2 * (Y * WY + Q) * QR
+        DU[8] = ALP1 * (S2D / R3 - F3 * Y * S / R5) - ALP2 * D * QR * WY
+        DU[9] = ALP1 * F3 * X * D / R5 - ALP2 * X * QR * WZ
+        DU[10] = -ALP1 * (S2D / R3 - F3 * D * T / R5) - ALP2 * Y * QR * WZ
+        DU[11] = ALP1 * (C2D / R3 + F3 * D * S / R5) - ALP2 * (D * WZ - Q) * QR
         U += POT3 / PI2 * DU
 
     # Inflate source contribution
     if POT4 != F0:
-        DU[0:3] = -ALP1 * np.array([X, Y, D]) / R ** 3
-        DU[3] = -ALP1 * A3 / R ** 3
-        DU[4:6] = ALP1 * F3 * np.array([XY, X * D]) / R ** 5
-        DU[6:9] = DU[4:7]
-        DU[9:12] = ALP1 * np.array([C3, F3 * D * S, -C3]) / R ** 3
+        DU[0:3] = -ALP1 * np.array([X, Y, D]) / R3
+        DU[3] = -ALP1 * A3 / R3
+        DU[4] = ALP1 * F3 * XY / R5
+        DU[5] = ALP1 * F3 * X * D / R5
+        DU[6] = DU[4]
+        DU[7] = -ALP1 * B3 / R3
+        DU[8] = ALP1 * F3 * Y * D / R5
+        DU[9] = -DU[5]
+        DU[10] = -DU[9]
+        DU[11] = ALP1 * C3 / R3
         U += POT4 / PI2 * DU
 
     return U
@@ -167,11 +172,15 @@ def UB0(X, Y, D, Z, POT1, POT2, POT3, POT4):
 
     # Inflate source contribution
     if POT4 != F0:
-        DU[0:3] = ALP3 * np.array([X, Y, D]) / R ** 3
-        DU[3] = ALP3 * A3 / R ** 3
-        DU[4:6] = -ALP3 * F3 * np.array([XY, X * D]) / R ** 5
-        DU[6:9] = DU[4:7]
-        DU[9:12] = -ALP3 * np.array([C3, F3 * D * S, -C3]) / R ** 3
+        DU[0:3] = ALP3 * np.array([X, Y, D]) / R3
+        DU[3] = ALP3 * A3 / R3
+        DU[4:6] = -ALP3 * F3 * np.array([XY, X * D]) / R5
+        DU[6] = DU[4]
+        DU[7] = ALP3 * B3 / R3
+        DU[8] = -ALP3 * F3 * Y * D / R5
+        DU[9] = -DU[5]
+        DU[10] = -DU[8]
+        DU[11] = -ALP3 * C3 / R3
         U += POT4 / PI2 * DU
 
     return U
@@ -210,12 +219,12 @@ def UC0(X, Y, D, Z, POT1, POT2, POT3, POT4):
         DU[3] = ALP4 * F3 * X / R5 * (F2 + A5) * CD - ALP5 * C * QRX * (F2 + A7)
         DU[4] = F3 / R5 * (ALP4 * Y * A5 * CD + ALP5 * C * (A5 * SD - Y * QR5 * A7))
         DU[5] = F3 / R5 * (-ALP4 * Y * A5 * SD + ALP5 * C * (A5 * CD + D * QR5 * A7))
-        DU[6:8] = DU[4:6]
-        DU[8] = F3 * X / R5 * (ALP4 * B5 * CD - ALP5 * F5 * C / R2 * (F2 * Y * SD + Q * B7))
-        DU[9] = F3 * X / R5 * (-ALP4 * B5 * SD + ALP5 * F5 * C / R2 * (D * B7 * SD - Y * C7 * CD))
-        DU[10] = F3 / R5 * (-ALP4 * D * A5 * CD + ALP5 * C * (A5 * CD + D * QR5 * A7))
-        DU[11] = F15 * X / R7 * (ALP4 * Y * D * CD + ALP5 * C * (D * B7 * SD - Y * C7 * CD))
-        DU[12] = F15 * X / R7 * (-ALP4 * Y * D * SD + ALP5 * C * (F2 * D * CD - Q * C7))
+        DU[6] = DU[4]
+        DU[7] = F3 * X / R5 * (ALP4 * B5 * CD - ALP5 * F5 * C / R2 * (F2 * Y * SD + Q * B7))
+        DU[8] = F3 * X / R5 * (-ALP4 * B5 * SD + ALP5 * F5 * C / R2 * (D * B7 * SD - Y * C7 * CD))
+        DU[9] = F3 / R5 * (-ALP4 * D * A5 * CD + ALP5 * C * (A5 * CD + D * QR5 * A7))
+        DU[10] = F15 * X / R7 * (ALP4 * Y * D * CD + ALP5 * C * (D * B7 * SD - Y * C7 * CD))
+        DU[11] = F15 * X / R7 * (-ALP4 * Y * D * SD + ALP5 * C * (F2 * D * CD - Q * C7))
         U += POT1 / PI2 * DU
 
     # Dip-slip contribution
@@ -226,14 +235,14 @@ def UC0(X, Y, D, Z, POT1, POT2, POT3, POT4):
         DU[3] = ALP4 * F3 * T / R5 * A5 - ALP5 * F5 * C * P * QR / R2 * A7
         DU[4] = F3 * X / R5 * (ALP4 * (C2D - F5 * Y * T / R2) - ALP5 * F5 * C / R2 * (S - Y * P * QR7))
         DU[5] = F3 * X / R5 * (ALP4 * (F2 + A5) * SDCD - ALP5 * F5 * C / R2 * (T + D * P * QR7))
-        DU[6:8] = DU[4:6]
-        DU[8] = F3 / R5 * (ALP4 * (F2 * Y * C2D + T * B5)
+        DU[6] = DU[4]
+        DU[7] = F3 / R5 * (ALP4 * (F2 * Y * C2D + T * B5)
                            + ALP5 * C * (S2D - F10 * Y * S / R2 - P * QR5 * B7))
-        DU[9] = F3 / R5 * (ALP4 * Y * A5 * SDCD - ALP5 * C * ((F3 + A5) * C2D + Y * P * DR5 * QR7))
-        DU[10] = F3 * X / R5 * (-ALP4 * (S2D - T * DR5) - ALP5 * F5 * C / R2 * (T + D * P * QR7))
-        DU[11] = F3 / R5 * (-ALP4 * (D * B5 * C2D + Y * C5 * S2D)
+        DU[8] = F3 / R5 * (ALP4 * Y * A5 * SDCD - ALP5 * C * ((F3 + A5) * C2D + Y * P * DR5 * QR7))
+        DU[9] = F3 * X / R5 * (-ALP4 * (S2D - T * DR5) - ALP5 * F5 * C / R2 * (T + D * P * QR7))
+        DU[10] = F3 / R5 * (-ALP4 * (D * B5 * C2D + Y * C5 * S2D)
                             - ALP5 * C * ((F3 + A5) * C2D + Y * P * DR5 * QR7))
-        DU[12] = F3 / R5 * (-ALP4 * D * A5 * SDCD - ALP5 * C * (S2D - F10 * D * T / R2 + P * QR5 * C7))
+        DU[11] = F3 / R5 * (-ALP4 * D * A5 * SDCD - ALP5 * C * (S2D - F10 * D * T / R2 + P * QR5 * C7))
         U += POT2 / PI2 * DU
 
     # Tensile-fault contribution
@@ -247,28 +256,35 @@ def UC0(X, Y, D, Z, POT1, POT2, POT3, POT4):
                                - ALP5 * F5 / R2 * (C * (T - Y + Y * Q * QR7) - Y * Z))
         DU[5] = F3 * X / R5 * (
                 ALP4 * (F1 - (F2 + A5) * SDSD) + ALP5 * F5 / R2 * (C * (S - D + D * Q * QR7) - D * Z))
-        DU[6:8] = DU[4:6]
-        DU[8] = F3 / R5 * (-ALP4 * (F2 * Y * S2D + S * B5)
+        DU[6] = DU[4]
+        DU[7] = F3 / R5 * (-ALP4 * (F2 * Y * S2D + S * B5)
                            - ALP5 * (C * (F2 * SDSD + F10 * Y * (T - Y) / R2 - Q * QR5 * B7) + Z * B5))
-        DU[9] = F3 / R5 * (
+        DU[8] = F3 / R5 * (
                 ALP4 * Y * (F1 - A5 * SDSD) + ALP5 * (C * (F3 + A5) * S2D - Y * DR5 * (C * D7 + Z)))
-        DU[10] = F3 * X / R5 * (-ALP4 * (C2D + S * DR5)
-                                + ALP5 * (F5 * C / R2 * (S - D + D * Q * QR7) - F1 - Z * DR5))
-        DU[11] = F3 / R5 * (
-                -ALP4 * (D * B5 * S2D - Y * C5 * C2D) - ALP5 * (
+        DU[9] = F3 * X / R5 * (-ALP4 * (C2D + S * DR5)
+                               + ALP5 * (F5 * C / R2 * (S - D + D * Q * QR7) - F1 - Z * DR5))
+        DU[10] = F3 / R5 * (
+                -ALP4 * (D * B5 * S2D - Y * C5 * C2D) + ALP5 * (
                   C * ((F3 + A5) * S2D - Y * DR5 * D7) - Y * (F1 + Z * DR5)))
-        DU[12] = F3 / R5 * (
+        DU[11] = F3 / R5 * (
                 -ALP4 * D * (F1 - A5 * SDSD) - ALP5 * (
                   C * (C2D + F10 * D * (S - D) / R2 - Q * QR5 * C7) + Z * (F1 + C5)))
         U += POT3 / PI2 * DU
 
     # Inflate source contribution
     if POT4 != F0:
-        DU[0:3] = ALP4 * np.array([F3 * X / R5 * D, F3 * Y / R5 * D, C3 / R3])
+        DU[0] = ALP4 * F3 * X * D / R5
+        DU[1] = ALP4 * F3 * Y * D / R5
+        DU[2] = ALP4 * C3 / R3
         DU[3] = ALP4 * F3 * D / R5 * A5
-        DU[4:6] = -ALP4 * F15 * np.array([XY, F3 * X / R5 * C5]) * D / R7
-        DU[6:9] = DU[4:7]
-        DU[9:12] = ALP4 * F3 * D / R5 * np.array([F2 + C5, -F3 * Y / R5 * C5, F3 * D / R5 * (F2 + C5)])
+        DU[4] = -ALP4 * F15 * XY * D / R7
+        DU[5] = -ALP4 * F3 * X / R5 * C5
+        DU[6] = DU[4]
+        DU[7] = ALP4 * F3 * D / R5 * B5
+        DU[8] = -ALP4 * F3 * Y / R5 * C5
+        DU[9] = DU[5]
+        DU[10] = DU[8]
+        DU[11] = ALP4 * F3 * D / R5 * (F2+C5)
         U += POT4 / PI2 * DU
 
     return U
@@ -398,6 +414,7 @@ def DC3D0(ALPHA, X, Y, Z, DEPTH, DIP, POT1, POT2, POT3, POT4):
 
     # Constants
     F0 = 0.0
+    global R
     R = 0.0
 
     # Arrays
@@ -451,6 +468,6 @@ def DC3D0(ALPHA, X, Y, Z, DEPTH, DIP, POT1, POT2, POT3, POT4):
 
     # Assign values to variables
     u = np.array([U[0], U[1], U[2]])
-    grad_u = np.array([U[3], U[4], U[5]], [U[6], U[7], U[8]], [U[9], U[10], U[11]])  # strain tensor components
+    grad_u = np.array([[U[3], U[4], U[5]], [U[6], U[7], U[8]], [U[9], U[10], U[11]]])  # strain tensor components
 
     return IRET, u, grad_u

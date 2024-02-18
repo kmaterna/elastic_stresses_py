@@ -6,7 +6,7 @@ import numpy as np
 from ..disp_points_object.disp_points_object import Displacement_points
 import cutde.halfspace as HS
 from . import fault_slip_triangle
-from .. import pyc_fault_object
+from .. import pyc_fault_object, utilities
 
 
 def convert_rect_sources_into_tris(rect_sources):
@@ -52,9 +52,11 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     :param poisson_ratio: float
     :returns: list of disp_points objects, list of strain tensors in 3x3 matrix
     """
-    proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
     if not disp_points:
         return [], []
+    if len(fault_triangles) == 0:
+        return utilities.get_zeros_disp_points(disp_points), utilities.get_zeros_strain_points(disp_points)
+    proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
     if not proceed_code:
         raise ValueError("Error! Triangular faults do not have same reference")
 
