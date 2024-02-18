@@ -27,7 +27,6 @@ def convert_rect_sources_into_tris(rect_sources):
             tri_faults.append(source)
     return tri_faults
 
-
 def compute_cartesian_strain_tris(inputs, params, strain_points):
     """
     Loop through a list of lon/lat and compute their strains due to all sources put together.

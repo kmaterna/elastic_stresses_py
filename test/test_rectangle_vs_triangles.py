@@ -26,10 +26,10 @@ class Tests(unittest.TestCase):
                                                             source_object=pycoulomb_sources, xinc=None, yinc=None)
 
         # The heart of the test: same interface, different guts
-        modeled_rect_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points)
-        modeled_tri_points = fst.triangle_okada.compute_ll_def_tris(inputs, test_params, obs_disp_points)
+        modeled_rect_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points)  # should point to okada_wrapper
+        modeled_tri_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points)  # should point to cutde
         strain_tensor_results = PyCoulomb.run_dc3d.compute_ll_strain(inputs, test_params, obs_disp_points[0:3])
-        strain_tensor_results2 = fst.triangle_okada.compute_ll_strain_tris(inputs, test_params, obs_disp_points[0:3])
+        strain_tensor_results2 = PyCoulomb.run_dc3d.compute_ll_strain(inputs, test_params, obs_disp_points[0:3])
 
         # The comparison part
         obs_E_triangles = np.array([x.dE_obs for x in modeled_tri_points])

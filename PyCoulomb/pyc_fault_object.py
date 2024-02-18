@@ -27,7 +27,7 @@ class Faults_object:
         self.comment = comment  # string
         self.Kode = Kode  # not sure what this is used for
         self.segment = segment  # integer
-        self.is_point_source = True if potency is not None else False
+        self.is_point_source = True if potency else False
         if bottom < top:
             raise ValueError("Error! Provided bad fault- top depth (%f km) below bottom depth (%f km)" % (top, bottom) )
         if dipangle > 90 or dipangle < 0:
