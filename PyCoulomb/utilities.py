@@ -208,6 +208,15 @@ def convert_ll2xy_disp_points(disp_points, zerolon, zerolat):
         cartesian_disp_points.append(model_point)
     return cartesian_disp_points
 
+def transform_disp_points_ll_by_key_array(cart_disp_points, ll_disp_points):
+    result_disp_points = []
+    for cart, ll in zip(cart_disp_points, ll_disp_points):
+        new_disp_point = Displacement_points(lon=ll.lon, lat=ll.lat, depth=ll.depth, dE_obs=cart.dE_obs,
+                                             dN_obs=cart.dN_obs, dU_obs=cart.dU_obs, Se_obs=cart.Se_obs,
+                                             Sn_obs=cart.Sn_obs, Su_obs=cart.Su_obs, name=cart.name)
+        result_disp_points.append(new_disp_point)
+    return result_disp_points
+
 def get_zeros_disp_points(disp_points):
     """
     :param disp_points: list of disp points

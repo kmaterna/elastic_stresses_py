@@ -142,8 +142,9 @@ def compute_ll_def(inputs, params, disp_points):
     """
     Loop through a list of lon/lat and compute their displacements due to all sources put together.
     """
-    disp_points = utilities.convert_ll2xy_disp_points(disp_points, inputs.zerolon, inputs.zerolat)
-    model_disp_points = compute_xy_def(inputs, params, disp_points)
+    cart_disp_points = utilities.convert_ll2xy_disp_points(disp_points, inputs.zerolon, inputs.zerolat)  # ll to cart.
+    model_disp_points = compute_xy_def(inputs, params, cart_disp_points)
+    model_disp_points = utilities.transform_disp_points_ll_by_key_array(model_disp_points, disp_points)  # back to ll
     return model_disp_points
 
 
