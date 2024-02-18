@@ -2,6 +2,7 @@ import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 from Tectonic_Utils.geodesy import fault_vector_functions
 from .disp_points_object.disp_points_object import Displacement_points
+from . import conversion_math, utilities
 
 
 def compute_ll_def(inputs, params, disp_points):
@@ -46,6 +47,46 @@ def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
         w_disp = w_disp + desired_coords_u[2][0]  # vertical
 
     return u_disp, v_disp, w_disp
+
+
+def compute_ll_strain(inputs, params, strain_points):
+    """
+    Loop through a list of lon/lat and compute their strains due to all sources put together.
+    """
+    if not strain_points:
+        return []
+    print("Number of strain_points:", len(strain_points))
+    cartesian_strain_points = utilities.convert_ll2xy_disp_points(strain_points, inputs.zerolon, inputs.zerolat)
+
+    strain_tensor_results = []
+    # For each coordinate requested.
+    for point in cartesian_strain_points:
+        strain_tensor = compute_strain_point(inputs.source_object, params.alpha, point.lon, point.lat, point.depth)
+        strain_tensor_results.append(strain_tensor)
+
+    return strain_tensor_results
+
+
+def compute_strain_point(sources, alpha, x, y, compute_depth=0):
+    """
+    A major compute loop for each fault source object at one x/y point.
+    x/y in the same coordinate system as the fault object. Computes strain tensor.
+
+    :param sources: list of fault objects
+    :param alpha: float
+    :param x: float
+    :param y: float
+    :param compute_depth: depth of observation. Default depth is at surface of earth
+    :returns: 3x3 matrix
+    """
+    strain_tensor_total = np.zeros((3, 3))
+    for source in sources:
+        desired_coords_grad_u, desired_coords_u = compute_strains_stresses_from_one_fault(source, x, y, compute_depth,
+                                                                                          alpha)
+        # Strain tensor math
+        strain_tensor = conversion_math.get_strain_tensor(desired_coords_grad_u)
+        strain_tensor_total = np.add(strain_tensor, strain_tensor_total)
+    return strain_tensor_total
 
 
 def compute_strains_stresses_from_one_fault(source, x, y, z, alpha):

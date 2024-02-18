@@ -26,20 +26,20 @@ class Tests(unittest.TestCase):
                                                             source_object=pycoulomb_sources, xinc=None, yinc=None)
 
         # The heart of the test: same interface, different guts
-        modeled_rect_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points)  # should point to okada_wrapper
-        modeled_tri_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points)  # should point to cutde
-        strain_tensor_results = PyCoulomb.run_dc3d.compute_ll_strain(inputs, test_params, obs_disp_points[0:3])
-        strain_tensor_results2 = PyCoulomb.run_dc3d.compute_ll_strain(inputs, test_params, obs_disp_points[0:3])
+        rect_points = PyCoulomb.run_okada_wrapper.compute_ll_def(inputs, test_params, obs_disp_points)  # okada_wrapper
+        tri_points = PyCoulomb.run_dc3d.compute_ll_def(inputs, test_params, obs_disp_points)  # cutde version
+        rect_strains = PyCoulomb.run_okada_wrapper.compute_ll_strain(inputs, test_params, obs_disp_points[0:3])
+        tri_strains = PyCoulomb.run_dc3d.compute_ll_strain(inputs, test_params, obs_disp_points[0:3])
 
         # The comparison part
-        obs_E_triangles = np.array([x.dE_obs for x in modeled_tri_points])
-        obs_E_rectangles = np.array([x.dE_obs for x in modeled_rect_points])
+        obs_E_triangles = np.array([x.dE_obs for x in tri_points])
+        obs_E_rectangles = np.array([x.dE_obs for x in rect_points])
         np.testing.assert_allclose(obs_E_rectangles, obs_E_triangles, atol=0.0001)
-        obs_N_triangles = np.array([x.dN_obs for x in modeled_tri_points])
-        obs_N_rectangles = np.array([x.dN_obs for x in modeled_rect_points])
+        obs_N_triangles = np.array([x.dN_obs for x in tri_points])
+        obs_N_rectangles = np.array([x.dN_obs for x in rect_points])
         np.testing.assert_allclose(obs_N_rectangles, obs_N_triangles, atol=0.0001)
 
-        for rect_strain, tri_strain in zip(strain_tensor_results, strain_tensor_results2):
+        for rect_strain, tri_strain in zip(rect_strains, tri_strains):
             np.testing.assert_allclose(rect_strain[0][0], tri_strain[0][0], atol=0.0001)
             np.testing.assert_allclose(rect_strain[0][1], tri_strain[0][1], atol=0.0001)
             np.testing.assert_allclose(rect_strain[0][2], tri_strain[0][2], atol=0.0001)
