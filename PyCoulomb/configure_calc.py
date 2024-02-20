@@ -1,6 +1,7 @@
 # Configures a stress calculation
 
-import os, configparser
+import os
+import configparser
 from . import conversion_math
 
 
@@ -13,7 +14,7 @@ class Params:
 
     def __init__(self, config_file=None, input_file=None, outdir=os.path.join('output', ''),
                  aftershocks=None, disp_points_file=None, strain_file=None,
-                 strike_num_receivers=1, dip_num_receivers=1, fixed_rake=None, mu=30e9, lame1=30e9, B=0,
+                 strike_num_receivers=1, dip_num_receivers=1, fixed_rake=None, mu=30e9, lame1=30e9, B=0.0,
                  plot_stress=1, plot_grd_disp=1):
         self.config_file = config_file  # string, filename
         self.input_file = input_file  # string, filename

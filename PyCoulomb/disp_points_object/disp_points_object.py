@@ -1,6 +1,5 @@
 
 from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions
-from Tectonic_Utils.geodesy import utilities as geod_utilities
 import numpy as np
 
 
@@ -12,7 +11,7 @@ class Displacement_points:
     starttime and endtime are optional datetime objects.  Lon is between -180 and 180.
     """
     def __init__(self,  lon, lat, dE_obs=0, dN_obs=0, dU_obs=0, Se_obs=0, Sn_obs=0, Su_obs=0, name=None, starttime=None,
-                 endtime=None, refframe=None, meas_type=None, depth=0, wrap_lon=True):
+                 endtime=None, refframe=None, meas_type=None, depth=0):
         self.lon = lon
         self.lat = lat
         self.dE_obs = dE_obs  # meters

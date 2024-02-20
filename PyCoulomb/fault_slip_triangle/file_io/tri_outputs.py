@@ -6,6 +6,7 @@ def return_total_slip(fault_object):
     """ lambda function to get the slip of the object, for plotting."""
     return fault_object.get_total_slip()
 
+
 def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_total_slip):
     """
     Write triangle edges out to file for GMT plots, in X-Y cartesian space in m.
@@ -14,7 +15,7 @@ def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_tota
     :param outfile: string
     :param color_mappable: a simple function of one fault object that returns the plotting value
     """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile) )
+    print("Writing %d triangles to file %s " % (len(triangle_list), outfile))
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
             total_slip = color_mappable(item)
@@ -34,7 +35,7 @@ def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=return_tot
     :param outfile: string
     :param color_mappable: a simple function of one fault object that returns the plotting value
     """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile) )
+    print("Writing %d triangles to file %s " % (len(triangle_list), outfile))
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
             slip_for_coloring = color_mappable(item)
@@ -55,7 +56,7 @@ def write_colored_triangles(triangle_list, outfile, color_array):
     :param outfile: string
     :param color_array: 1-d array with the same length as triangle_list
     """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile) )
+    print("Writing %d triangles to file %s " % (len(triangle_list), outfile))
     if len(triangle_list) != len(color_array):
         raise ValueError("Error! List of fault elements and list of colors have different sizes.")
     with open(outfile, 'w') as ofile:
@@ -102,6 +103,7 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=ret
     ofile.close()
     return
 
+
 def write_centroid_with_value(fault_object_list, outfile, color_array):
     """
     Write the lon/lat of the centroid of each triangle, with a color array.
@@ -110,11 +112,11 @@ def write_centroid_with_value(fault_object_list, outfile, color_array):
     :param outfile: string
     :param color_array: list of floats, same length as fault_object_list
     """
-    print("Writing %d triangles to file %s " % (len(fault_object_list), outfile) )
+    print("Writing %d triangles to file %s " % (len(fault_object_list), outfile))
     if len(fault_object_list) != len(color_array):
         raise ValueError("Error! List of fault elements and list of colors have different sizes.")
     with open(outfile, 'w') as ofile:
         for i, fault in enumerate(fault_object_list):
             centroid_ll = fault.get_llz_point(fault.compute_triangle_centroid())
-            ofile.write("%f %f %f\n" % (centroid_ll[0], centroid_ll[1], color_array[i]) )
+            ofile.write("%f %f %f\n" % (centroid_ll[0], centroid_ll[1], color_array[i]))
     return

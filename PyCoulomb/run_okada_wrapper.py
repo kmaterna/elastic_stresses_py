@@ -24,6 +24,7 @@ def compute_ll_def(inputs, params, disp_points):
         model_disp_points.append(model_point)
     return model_disp_points
 
+
 def compute_surface_disp_point(sources, alpha, x, y, compute_depth=0):
     """
     A major compute loop for each fault source object at one x/y point.

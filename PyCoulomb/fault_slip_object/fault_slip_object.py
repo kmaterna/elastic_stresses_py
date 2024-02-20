@@ -8,6 +8,7 @@ from Tectonic_Utils.geodesy import fault_vector_functions, haversine, insar_vect
 from Tectonic_Utils.seismo import moment_calculations
 import numpy as np
 
+
 class FaultSlipObject:
     """
     An object for a rectangular fault patch, potentially with slip on it.

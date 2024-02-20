@@ -14,6 +14,7 @@ Displacement_points = disp_points_object.Displacement_points
 # PyCoulomb faults object
 Faults_object = pyc_fault_object.Faults_object
 
+
 # Output from the Coulomb stress calculation
 class Out_object:
     def __init__(self, x, y, x2d, y2d, u_disp, v_disp, w_disp, zerolon, zerolat, model_disp_points, strains,

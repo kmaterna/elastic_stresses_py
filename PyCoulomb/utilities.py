@@ -2,8 +2,8 @@ import numpy as np
 from subprocess import call
 import os
 from Tectonic_Utils.seismo import moment_calculations
-import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
-import Elastic_stresses_py.PyCoulomb.pyc_fault_object as pycfaults
+from . import fault_slip_object as fso
+from . import pyc_fault_object as pycfaults
 from . import coulomb_collections as cc
 from .disp_points_object.disp_points_object import Displacement_points
 from Tectonic_Utils.geodesy import fault_vector_functions
@@ -166,9 +166,9 @@ def print_metrics_on_sources(source_object, mu):
     print("Number of total sources:", len(source_object))
     rect_sources, pt_sources, mogi_sources = separate_source_types(source_object)
     if len(rect_sources) > 0:
-        Mw = moment_calculations.mw_from_moment(pycfaults.get_faults_slip_moment(rect_sources, mu))
-        print("Number of rectangular sources: %d" % len(rect_sources) )
-        print("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f" % (mu/1e9, Mw))
+        mw = moment_calculations.mw_from_moment(pycfaults.get_faults_slip_moment(rect_sources, mu))
+        print("Number of rectangular sources: %d" % len(rect_sources))
+        print("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f" % (mu/1e9, mw))
     if len(pt_sources) > 0:
         print("Number of point sources: %d" % len(pt_sources))
     if len(mogi_sources) > 0:
@@ -208,6 +208,7 @@ def convert_ll2xy_disp_points(disp_points, zerolon, zerolat):
         cartesian_disp_points.append(model_point)
     return cartesian_disp_points
 
+
 def transform_disp_points_ll_by_key_array(cart_disp_points, ll_disp_points):
     result_disp_points = []
     for cart, ll in zip(cart_disp_points, ll_disp_points):
@@ -216,6 +217,7 @@ def transform_disp_points_ll_by_key_array(cart_disp_points, ll_disp_points):
                                              Sn_obs=cart.Sn_obs, Su_obs=cart.Su_obs, name=cart.name)
         result_disp_points.append(new_disp_point)
     return result_disp_points
+
 
 def get_zeros_disp_points(disp_points):
     """
@@ -229,6 +231,7 @@ def get_zeros_disp_points(disp_points):
         zero_disp_points.append(new_pt)
     return zero_disp_points
 
+
 def get_zeros_strain_points(strain_points):
     """
     :param strain_points: list of disp points
@@ -239,6 +242,7 @@ def get_zeros_strain_points(strain_points):
         new_strain_tensor = np.zeros((3, 3))
         zero_strains.append(new_strain_tensor)
     return zero_strains
+
 
 def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=lambda x: x.get_total_slip()):
     """

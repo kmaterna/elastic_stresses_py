@@ -121,12 +121,12 @@ def determine_nx_nz_for_multiple_segments(filename):
 
 def is_segment_break(line):
     """Filter for the various ways that .fsp files encode segment breaks in multi-segment files"""
-    is_segment_break = 0
+    is_segment_break_line = 0
     if '% -------------------------------' in line:  # has leading space
-        is_segment_break = 1
+        is_segment_break_line = 1
     if '%-------------------------------' in line:  # has no leading space
-        is_segment_break = 1
-    return is_segment_break
+        is_segment_break_line = 1
+    return is_segment_break_line
 
 
 def determine_if_single_segment(filename):

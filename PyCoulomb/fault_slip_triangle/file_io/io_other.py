@@ -46,10 +46,11 @@ def read_brawley_lohman_2005(filename):
         new_triangle = fault_slip_triangle.TriangleFault(lon=reference_lon, lat=reference_lat, dip_slip=0,
                                                          rtlat_slip=0, tensile=0, segment=0, vertex1=first_vertex,
                                                          vertex2=second_vertex, vertex3=third_vertex,
-                                                         depth=first_vertex[2]/1000)
+                                                         depth=float(first_vertex[2])/1000)
         triangle_list.append(new_triangle)
     print("--> Returning %d triangular fault patches" % len(triangle_list))
     return triangle_list
+
 
 def extract_given_patch_helper(nodes, idx):
     """ nodes = 1859 x 3.  idx = [a b c]."""
@@ -57,6 +58,7 @@ def extract_given_patch_helper(nodes, idx):
     ys = [nodes[idx[0]-1][1], nodes[idx[1]-1][1], nodes[idx[2]-1][1], nodes[idx[0]-1][1]]
     depths = [nodes[idx[0]-1][2], nodes[idx[1]-1][2], nodes[idx[2]-1][2], nodes[idx[0]-1][2]]
     return xs, ys, depths
+
 
 def read_csz_bartlow_2019(input_file):
     """

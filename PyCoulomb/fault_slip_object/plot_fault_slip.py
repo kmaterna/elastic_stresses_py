@@ -1,7 +1,8 @@
 """Functions to take a slip distribution and make a map. """
 
 import numpy as np
-import pygmt, os
+import pygmt
+import os
 from . import fault_slip_object as fso
 from . import file_io
 from .. import utilities

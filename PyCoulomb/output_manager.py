@@ -1,7 +1,9 @@
 # output_manager
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib, os, shutil
+import matplotlib
+import os
+import shutil
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
 from . import conversion_math, pygmt_plots, io_additionals, utilities
@@ -252,7 +254,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 
         if writefile:   # the x-axis here is an arbitrary position along the orientation of the receiver fault
             ofile = open(writefile, 'a')
-            ofile.write("> -Z%f\n" % stress_component[i] )
+            ofile.write("> -Z%f\n" % stress_component[i])
             ofile.write("%f %f \n" % (-y1, zcoords[0]))
             ofile.write("%f %f \n" % (-y2, zcoords[1]))
             ofile.write("%f %f \n" % (-y3, zcoords[2]))
@@ -283,8 +285,8 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 def map_horiz_profile(horiz_profile, profile_results, outfile):
     """Display a small map of a horizontal profile of stresses. Default colors for now."""
 
-    X = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
-    Y = np.reshape(horiz_profile.lat1d, horiz_profile.shape)
+    x = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
+    y = np.reshape(horiz_profile.lat1d, horiz_profile.shape)
     _normal_stress = np.reshape(profile_results[0], horiz_profile.shape)
     _shear_stress = np.reshape(profile_results[1], horiz_profile.shape)
     coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape)
@@ -293,7 +295,7 @@ def map_horiz_profile(horiz_profile, profile_results, outfile):
     plt.rcParams['figure.dpi'] = 300
     plt.rcParams['savefig.dpi'] = 300
     fig = plt.figure(figsize=(17, 8), dpi=300)
-    dislay_map = plt.contourf(X, Y, coulomb_stress, cmap='RdYlBu_r')
+    dislay_map = plt.contourf(x, y, coulomb_stress, cmap='RdYlBu_r')
     plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
               str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km))
 
@@ -351,10 +353,10 @@ def write_horiz_profile(horiz_profile, profile_results, outfile):
     print("Writing %s " % outfile)
     ofile = open(outfile, 'w')
     ofile.write("# lon lat depth_km normal_kPa shear_kPa coulomb_kPa\n")
-    ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake) )
+    ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake))
     for i in range(len(horiz_profile.lon1d)):
         ofile.write("%f %f %f %f %f %f\n" % (horiz_profile.lon1d[i], horiz_profile.lat1d[i], horiz_profile.depth_km,
-                                             profile_results[0][i], profile_results[1][i], profile_results[2][i]) )
+                                             profile_results[0][i], profile_results[1][i], profile_results[2][i]))
     return
 
 

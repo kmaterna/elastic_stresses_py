@@ -4,6 +4,7 @@ import numpy as np
 ALP1, ALP2, ALP3, ALP4, ALP5, SD, CD, SDSD, CDCD, SDCD, S2D, C2D = [0.0] * 12
 P, Q, S, T, XY, X2, Y2, D2, R, R2, R3, R5, R7, A3, A5, B3, C3, QR, QRX, UY, VY, WY, UZ, VZ, WZ = [0.0] * 25
 
+
 def initialize_globals():
     global ALP1, ALP2, ALP3, ALP4, ALP5, SD, CD, SDSD, CDCD, SDCD, S2D, C2D
     global P, Q, S, T, XY, X2, Y2, D2, R, R2, R3, R5, R7, A3, A5, B3, C3, QR, QRX, UY, VY, WY, UZ, VZ, WZ
@@ -200,7 +201,6 @@ def UC0(X, Y, D, Z, POT1, POT2, POT3, POT4):
     # Initialize variables
     C = D + Z
     Q2 = Q * Q
-    R7 = R5 * R2
     A7 = F1 - F7 * X2 / R2
     B5 = F1 - F5 * Y2 / R2
     B7 = F1 - F7 * Y2 / R2

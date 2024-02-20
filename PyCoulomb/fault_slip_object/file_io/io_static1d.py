@@ -24,14 +24,14 @@ def write_static1D_source_file(fault_object_list, disp_points, filename):
     ofile.write("{0:<6.1f}".format(np.round(top, 1)))
     ofile.write("{0:<6.1f}\n".format(np.round(one_fault.dip, 1)))
 
-    ofile.write("%d \n" % len(fault_object_list) )
+    ofile.write("%d \n" % len(fault_object_list))
     for fault in fault_object_list:
         line = write_fault_slip_line_static1d_visco1d(fault)
         ofile.write(line)
 
     ofile.write("%d\n" % len(disp_points))
     for point in disp_points:
-        ofile.write("{0:>13f}".format(point.lat) )
+        ofile.write("{0:>13f}".format(point.lat))
         ofile.write("{0:>13f}\n".format(point.lon))
     ofile.close()
     return
@@ -106,7 +106,7 @@ def write_fault_slip_line_static1d_visco1d(one_fault):
     fault_lon = lons[2]
     fault_lat = lats[2]  # the deeper edge towards the strike direction
     writestring = (" %f %f %.2f %.2f %.2f %.2f \n" % (fault_lat, fault_lon, one_fault.length, one_fault.strike,
-                                                      one_fault.rake, one_fault.slip*100) )  # lon/lat etc
+                                                      one_fault.rake, one_fault.slip*100))  # lon/lat etc
     # Slip written in cm
     return writestring
 
@@ -161,7 +161,7 @@ def write_disp_points_static1d(disp_points, filename):
     """A very small function for taking cc.displacements_points into static1D format"""
     print("Writing %d points in file %s" % (len(disp_points), filename))
     ofile = open(filename, 'w')
-    ofile.write("%d\n" % (len(disp_points)) )
+    ofile.write("%d\n" % (len(disp_points)))
     for point in disp_points:
         ofile.write('%f %f\n' % (point.lat, point.lon))
     ofile.close()
@@ -172,7 +172,7 @@ def write_stationvel_points_static1d(stationvels, filename):
     """A very small function for taking gnss stationvels into static1D format"""
     print("Writing %d points in file %s" % (len(stationvels), filename))
     ofile = open(filename, 'w')
-    ofile.write("%d\n" % (len(stationvels)) )
+    ofile.write("%d\n" % (len(stationvels)))
     for point in stationvels:
         ofile.write('%f %f\n' % (point.nlat, point.elon))
     ofile.close()
@@ -220,7 +220,7 @@ def write_visco1D_source_file(fault_dict_list, filename):
     # earthquake cycle begins at 1900,
     # sample at year 1990 to 2000, the periodicity is 500 years.
     # 1000 is parameter vmult.  Value of 1000 is arbitrarily high, representing the high-viscosity limit.
-    ofile.write("%d \n" % len(fault_dict_list) )
+    ofile.write("%d \n" % len(fault_dict_list))
     for fault in fault_dict_list:
         line = write_fault_slip_line_static1d_visco1d(fault)
         ofile.write(line)

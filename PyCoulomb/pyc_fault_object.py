@@ -29,7 +29,7 @@ class Faults_object:
         self.segment = segment  # integer
         self.is_point_source = True if potency else False
         if bottom < top:
-            raise ValueError("Error! Provided bad fault- top depth (%f km) below bottom depth (%f km)" % (top, bottom) )
+            raise ValueError("Error! Provided bad fault- top depth (%f km) below bottom depth (%f km)" % (top, bottom))
         if dipangle > 90 or dipangle < 0:
             raise ValueError("Error! Provided bad dip of %s (should be between 0 and 90) " % dipangle)
         if strike > 360:

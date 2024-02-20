@@ -20,3 +20,5 @@ build/*
 *.cpt
 how_to_make_docs.txt
 docs/*
+*DS_Store
+

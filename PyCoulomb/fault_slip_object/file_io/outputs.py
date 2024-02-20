@@ -8,8 +8,10 @@ import numpy as np
 def get_blank_fault_function(x):
     return x.get_blank_fault()
 
+
 def get_total_slip(x):
     return x.get_total_slip()
+
 
 def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function, verbose=True):
     """

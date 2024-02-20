@@ -26,6 +26,7 @@ def get_strain_tensor(dUidUj):
             strain_tensor[i][j] = 0.5 * (dUidUj[i][j] + dUidUj[j][i])
     return strain_tensor
 
+
 def get_stress_tensor(eij, lamda, mu):
     """
     Starts with strain tensor (3x3 2D array)
@@ -41,6 +42,7 @@ def get_stress_tensor(eij, lamda, mu):
             else:
                 stress_tensor[i][j] = 2*mu*eij[i][j]
     return stress_tensor
+
 
 def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
     """

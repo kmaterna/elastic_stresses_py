@@ -5,6 +5,7 @@ More specific than the basic ones listed in io_additionals.py.
 
 from .disp_points_object import Displacement_points
 
+
 def read_disp_points_gmt(filename):
     """
     Read disp_points from GMT psvelo format.
@@ -42,7 +43,7 @@ def write_disp_points_gmt(disp_points, filename, write_meas_type=False, multiply
     ofile.write("# lon lat dE dN dU Se Sn Su name\n")
     for item in disp_points:
         ofile.write("%f %f %f %f %f " % (item.lon, item.lat, multiply_by*item.dE_obs, multiply_by*item.dN_obs,
-                                         multiply_by*item.dU_obs) )
+                                         multiply_by*item.dU_obs))
         ofile.write("%f %f %f %s " % (multiply_by*item.Se_obs, multiply_by*item.Sn_obs, multiply_by*item.Su_obs,
                                       item.name))
         if write_meas_type:
@@ -60,5 +61,5 @@ def write_disp_points_lon_lat(disp_points, filename):
     print("Writing %s " % filename)
     with open(filename, 'w') as ofile:
         for item in disp_points:
-            ofile.write("%f %f \n" % (item.lon, item.lat) )
+            ofile.write("%f %f \n" % (item.lon, item.lat))
     return

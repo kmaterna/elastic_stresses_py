@@ -4,7 +4,7 @@ Implementing Okada on a fault_slip_triangle object using Ben Thompson's cutde li
 
 import numpy as np
 from ..disp_points_object.disp_points_object import Displacement_points
-import cutde.halfspace as HS
+import cutde.halfspace as hs
 from . import fault_slip_triangle
 from .. import pyc_fault_object, utilities
 
@@ -27,6 +27,7 @@ def convert_rect_sources_into_tris(rect_sources):
             tri_faults.append(source)
     return tri_faults
 
+
 def compute_cartesian_strain_tris(inputs, params, strain_points):
     """
     Loop through a list of lon/lat and compute their strains due to all sources put together.
@@ -35,6 +36,7 @@ def compute_cartesian_strain_tris(inputs, params, strain_points):
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
     _, strain_tensors = compute_disp_points_from_triangles(tri_faults, strain_points, params.nu)
     return strain_tensors
+
 
 def compute_cartesian_def_tris(inputs, params, obs_disp_points):
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
@@ -69,12 +71,12 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     fault_pts, fault_tris = fault_slip_triangle.extract_mesh_vertices(fault_triangles)
     fault_pts = fault_slip_triangle.flip_depth_sign(fault_pts)  # fault_pts shape: N_vertices, 3
     src_tris = fault_pts[fault_tris]  # src_tris shape: (Ntris, 3, 3)
-    disp_mat = HS.disp_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # disp_mat shape: (Npts, 3, Ntris, 3)
+    disp_mat = hs.disp_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # disp_mat shape: (Npts, 3, Ntris, 3)
     disp = disp_mat.reshape((-1, np.size(slip_array))).dot(slip_array.flatten())   # reshape by len of total slip vector
     disp_grid = disp.reshape((*np.array(obsx).shape, 3))  # disp_grid shape: Npts, 3
 
     # Get strain
-    strain_mat = HS.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # strain_mat shape: (Npts, 6, Ntris, 3)
+    strain_mat = hs.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # strain_mat shape: (Npts, 6, Ntris, 3)
     strain = strain_mat.reshape((-1, np.size(slip_array))).dot(slip_array.flatten())  # reshape by len total slip vector
     strain_tensors = strain.reshape((*np.array(obsx).shape, 6))  # strain_tensors shape: Npts, 6
     # strain[:,0] is the xx component of strain, 1 is yy, 2 is zz, 3 is xy, 4 is xz, and 5 is yz.

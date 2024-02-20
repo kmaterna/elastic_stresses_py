@@ -3,7 +3,7 @@ import numpy as np
 from Tectonic_Utils.geodesy import fault_vector_functions, haversine
 from Tectonic_Utils.seismo import moment_calculations
 from ..pyc_fault_object import Faults_object
-from Elastic_stresses_py.PyCoulomb.fault_slip_object.fault_slip_object import fault_object_to_coulomb_fault
+from ..fault_slip_object.fault_slip_object import fault_object_to_coulomb_fault
 
 
 class TriangleFault:
@@ -64,7 +64,7 @@ class TriangleFault:
 
     def get_centroid_depth(self) -> float:
         """Helper function to return the computed centroid depth of a fault object, in meters, positive downwards."""
-        return self.compute_triangle_centroid()[2]
+        return float(self.compute_triangle_centroid()[2])
 
     def get_segment(self) -> int:
         """Helper function to return the segment_num of a fault object."""
@@ -266,10 +266,10 @@ def convert_pycoulomb_rectangle_into_two_triangles(source, startlon, startlat):
     vertex4 = np.array([x_all[3]*1000, y_all[3]*1000, bottom_depth*1000])
     first_triangle = TriangleFault(lon=startlon, lat=startlat, segment=source.segment,
                                    tensile=source.tensile, vertex1=vertex1, vertex2=vertex3, vertex3=vertex2,
-                                   dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2]/1000)
+                                   dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=float(vertex1[2])/1000)
     second_triangle = TriangleFault(lon=startlon, lat=startlat, segment=source.segment,
                                     tensile=source.tensile, vertex1=vertex1, vertex2=vertex4, vertex3=vertex3,
-                                    dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2]/1000)
+                                    dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=float(vertex1[2])/1000)
     list_of_two_triangles = [first_triangle, second_triangle]
     return list_of_two_triangles
 

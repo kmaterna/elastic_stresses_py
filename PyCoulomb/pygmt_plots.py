@@ -1,7 +1,8 @@
 # output_manager
 
 import numpy as np
-import pygmt, os
+import pygmt
+import os
 from . import io_additionals, utilities
 from Tectonic_Utils.geodesy import fault_vector_functions
 
