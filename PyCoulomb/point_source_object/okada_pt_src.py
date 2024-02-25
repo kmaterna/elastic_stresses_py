@@ -264,7 +264,7 @@ def UC0(X, Y, D, Z, POT1, POT2, POT3, POT4):
         DU[9] = F3 * X / R5 * (-ALP4 * (C2D + S * DR5)
                                + ALP5 * (F5 * C / R2 * (S - D + D * Q * QR7) - F1 - Z * DR5))
         DU[10] = F3 / R5 * (
-                -ALP4 * (D * B5 * S2D - Y * C5 * C2D) + ALP5 * (
+                ALP4 * (D * B5 * S2D - Y * C5 * C2D) + ALP5 * (
                   C * ((F3 + A5) * S2D - Y * DR5 * D7) - Y * (F1 + Z * DR5)))
         DU[11] = F3 / R5 * (
                 -ALP4 * D * (F1 - A5 * SDSD) - ALP5 * (
@@ -447,7 +447,7 @@ def DC3D0(ALPHA, X, Y, Z, DEPTH, DIP, POT1, POT2, POT3, POT4):
     # Calculate displacement for real-source contribution
     DUA = UA0(XX, YY, DD, PP1, PP2, PP3, PP4)
     for i in range(12):
-        if i < 10:
+        if i < 9:
             U[i] = U[i] - DUA[i]
         else:
             U[i] = U[i] + DUA[i]
@@ -462,7 +462,7 @@ def DC3D0(ALPHA, X, Y, Z, DEPTH, DIP, POT1, POT2, POT3, POT4):
     # Calculate displacement for image-source contribution
     for i in range(12):
         DU = DUA[i] + DUB[i] + ZZ * DUC[i]
-        if i >= 10:
+        if i >= 9:
             DU = DU + DUC[i - 9]
         U[i] = U[i] + DU
 

@@ -15,7 +15,8 @@ def compute_ll_def(inputs, params, disp_points):
     print("Number of disp_points:", len(disp_points))
     for point in disp_points:
         [xi, yi] = fault_vector_functions.latlon2xy(point.lon, point.lat, inputs.zerolon, inputs.zerolat)
-        u_disp, v_disp, w_disp = compute_surface_disp_point(inputs.source_object, params.alpha, xi, yi)
+        u_disp, v_disp, w_disp = compute_surface_disp_point(inputs.source_object, params.alpha, xi, yi,
+                                                            compute_depth=point.depth)
         model_point = Displacement_points(lon=point.lon, lat=point.lat,
                                           dE_obs=u_disp,
                                           dN_obs=v_disp,
@@ -105,13 +106,13 @@ def compute_strains_stresses_from_one_fault(source, x, y, z, alpha):
         [[x - source.xstart], [y - source.ystart], [-z]])
     xyz = R.dot(translated_pos)
     if source.potency:
-        success, u, grad_u = dc3d0wrapper(alpha, [xyz[0], xyz[1], xyz[2]], source.top, source.dipangle,
+        success, u, grad_u = dc3d0wrapper(alpha, [xyz[0][0], xyz[1][0], xyz[2][0]], source.top, source.dipangle,
                                           [source.potency[0], source.potency[1], source.potency[2],
                                            source.potency[3]])
         grad_u = grad_u * 1e-9  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
         u = u * 1e-6  # Unit correction: potency from N-m results in displacements in microns.
     else:
-        success, u, grad_u = dc3dwrapper(alpha, [xyz[0], xyz[1], xyz[2]], source.top, source.dipangle,
+        success, u, grad_u = dc3dwrapper(alpha, [xyz[0][0], xyz[1][0], xyz[2][0]], source.top, source.dipangle,
                                          [0, source.L], [-source.W, 0],
                                          [strike_slip, source.reverse, source.tensile])
         grad_u = grad_u * 1e-3  # DC3D Unit correction.

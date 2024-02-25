@@ -60,7 +60,20 @@ class Displacement_points:
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=east_value, dN_obs=self.dN_obs,
                                    dU_obs=self.dU_obs, Se_obs=self.Se_obs, Sn_obs=self.Sn_obs, Su_obs=self.Su_obs,
                                    name=self.name, starttime=self.starttime, endtime=self.endtime,
-                                   refframe=self.refframe, meas_type=self.meas_type)
+                                   refframe=self.refframe, meas_type=self.meas_type, depth=self.depth)
+        return obj2
+
+    def with_depth_as(self, depth_value):
+        """
+        Return a new copy of the object after setting the value of depth to a new value.
+        Different from functions that modify the same object in-place.
+
+        :param depth_value: float
+        """
+        obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=self.dE_obs, dN_obs=self.dN_obs,
+                                   dU_obs=self.dU_obs, Se_obs=self.Se_obs, Sn_obs=self.Sn_obs, Su_obs=self.Su_obs,
+                                   name=self.name, starttime=self.starttime, endtime=self.endtime,
+                                   refframe=self.refframe, meas_type=self.meas_type, depth=depth_value)
         return obj2
 
     def set_east_value(self, east_value):
@@ -76,7 +89,7 @@ class Displacement_points:
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=value * self.dE_obs, dN_obs=value * self.dN_obs,
                                    dU_obs=value * self.dU_obs, Se_obs=self.Se_obs, Sn_obs=self.Sn_obs,
                                    Su_obs=self.Su_obs, name=self.name, starttime=self.starttime, endtime=self.endtime,
-                                   refframe=self.refframe, meas_type=self.meas_type)
+                                   refframe=self.refframe, meas_type=self.meas_type, depth=self.depth)
         return obj2
 
     def project_into_los(self, lkv_e, lkv_n, lkv_u) -> float:
@@ -99,5 +112,5 @@ class Displacement_points:
                                    dN_obs=self.dN_obs + ep_vn / 1000, dU_obs=self.dU_obs + ep_vu / 1000,
                                    Se_obs=self.Se_obs, Sn_obs=self.Sn_obs, Su_obs=self.Su_obs, name=self.name,
                                    starttime=self.starttime, endtime=self.endtime, refframe=self.refframe,
-                                   meas_type=self.meas_type)
+                                   meas_type=self.meas_type, depth=self.depth)
         return obj2

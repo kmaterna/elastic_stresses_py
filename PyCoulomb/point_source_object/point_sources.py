@@ -66,7 +66,7 @@ def compute_displacements_strains_point(source, x, y, z, alpha):
     translated_pos = np.array(
         [[x - source.xstart], [y - source.ystart], [-z]])
     xyz = R.dot(translated_pos)
-    success, u, grad_u = DC3D0(alpha, xyz[0], xyz[1], xyz[2], source.top, source.dipangle,
+    success, u, grad_u = DC3D0(alpha, xyz[0][0], xyz[1][0], xyz[2][0], source.top, source.dipangle,
                                source.potency[0], source.potency[1], source.potency[2], source.potency[3])
     grad_u = grad_u * 1e-9  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
     u = u * 1e-6  # Unit correction: potency from N-m results in displacements in microns.

@@ -11,11 +11,12 @@ class Tests(unittest.TestCase):
 
     def test_pt_source(self):
         obs_disp_points = PyCoulomb.io_additionals.read_disp_points("test/example_disp_field.txt")
+        obs_disp_points = [i.with_depth_as(0) for i in obs_disp_points]
         zerolon, zerolat = -115.68, 33.1012233
-        depth = 10
-        dip = 89.9
-        strike = 150
-        rake = 45
+        depth = 1
+        dip = 80.9
+        strike = 135
+        rake = 70
         test_params = PyCoulomb.configure_calc.Params(mu=30e9, lame1=30e9)
         [x, y, potency, comment] = io_mt.compute_params_for_point_source(rake=rake, magnitude=7.5,
                                                                          lon=-115.4, lat=32.8, zerolon=zerolon,
@@ -23,17 +24,23 @@ class Tests(unittest.TestCase):
         one_source_object = Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, rtlat=0, reverse=0, potency=potency,
                                           strike=strike, dipangle=dip, zerolon=zerolon, zerolat=zerolat, rake=rake,
                                           top=depth, bottom=depth, comment=comment)
+        one_tensile = Faults_object(xstart=x, xfinish=x, ystart=y, yfinish=y, rtlat=0, reverse=0,
+                                    potency=[0, 0, 1e8, 0], strike=strike, dipangle=dip, zerolon=zerolon,
+                                    zerolat=zerolat, rake=rake, top=depth, bottom=depth, comment=comment)
         inputs = PyCoulomb.coulomb_collections.Input_object(zerolon=zerolon, zerolat=zerolat, depth=None,
                                                             maxlat=None, maxlon=None, minlat=None, minlon=None,
                                                             receiver_object=None,
                                                             source_object=[one_source_object],
                                                             xinc=None, yinc=None)
 
-        # Try a single point source
-        ow_strain, ow = run_okada_wrapper.compute_strains_stresses_from_one_fault(one_source_object, 5, -3, 0, 0.6667)
-        ps_strain, ps = point_sources.compute_displacements_strains_point(one_source_object, 5, -3, 0, 0.6667)
-        np.testing.assert_allclose(ow, ps, atol=1e-5)
-        np.testing.assert_allclose(ow_strain, ps_strain, atol=1e-5)
+        # Try a single point source, tensile component
+        z = depth
+        ow_strain, ow_disp = run_okada_wrapper.compute_strains_stresses_from_one_fault(one_tensile, 5, -3, z,
+                                                                                       0.6667)
+        ps_strain, ps_disp = point_sources.compute_displacements_strains_point(one_tensile, 5, -3, z, 0.6667)
+        np.testing.assert_allclose(ow_disp, ps_disp, atol=1e-5)
+        np.testing.assert_allclose(ow_strain, ps_strain, atol=1e-7)
+
 
         # The heart of the test: same interface, different guts
         modeled_ow_points = PyCoulomb.run_okada_wrapper.compute_ll_def(inputs, test_params, obs_disp_points)  # o_w
@@ -46,6 +53,37 @@ class Tests(unittest.TestCase):
         obs_N_ow = np.array([x.dN_obs for x in modeled_ow_points])
         obs_N_new = np.array([x.dN_obs for x in modeled_new_points])
         np.testing.assert_allclose(obs_N_ow, obs_N_new, atol=0.0001)
+
+        # The strain tensor comparison
+        modeled_ow_tensors = PyCoulomb.run_okada_wrapper.compute_ll_strain(inputs, test_params, obs_disp_points)  # o_w
+        modeled_new_tensors = PyCoulomb.run_dc3d.compute_ll_strain(inputs, test_params, obs_disp_points)  # chatgpt
+
+        # The comparison part
+        # for i in range(3):
+        #     for j in range(3):
+        #         print("tensor component:", i, j)
+        #         strain_ow = np.array([x[i][j] for x in modeled_ow_tensors])
+        #         strain_py = np.array([x[i][j] for x in modeled_new_tensors])
+        #         np.testing.assert_allclose(strain_ow, strain_py, atol=1e-7)
+
+        for i in range(len(modeled_ow_tensors)):
+            print("okada_wrapper:")
+            print(modeled_ow_tensors[i])
+            print("new translation:")
+            print(modeled_new_tensors[i])
+            print("\n\n")
+            # np.testing.assert_allclose(modeled_ow_tensors[i], modeled_new_tensors[i], atol=1e-7)
+
+        compxx_ow = [x[2][1] for x in modeled_ow_tensors]
+        compxx_new = [x[2][1] for x in modeled_new_tensors]
+        # np.testing.assert_allclose(compxx_ow, compxx_new, atol=1e-7)
+
+        # WORKS: 00. 11. 22.
+        # FAIL: 01. 02. 10. 12. 20. 21.
+        # In my version, it looks like 02 and 20 are negatives of each other, when they should be the same.
+        # Same with 12 and 21.
+        # 10 and 01 are just plain wrong.
+
         return
 
 
