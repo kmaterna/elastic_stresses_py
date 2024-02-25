@@ -1,6 +1,7 @@
 from .okada_pt_src import DC3D0
 import numpy as np
 from ..disp_points_object.disp_points_object import Displacement_points
+from .. import conversion_math
 
 
 def compute_cartesian_def_point(inputs, params, disp_points):
@@ -25,7 +26,7 @@ def compute_cartesian_def_point(inputs, params, disp_points):
         model_point = Displacement_points(lon=point.lon, lat=point.lat,
                                           dE_obs=point.dE_obs+disp_u[0][0],
                                           dN_obs=point.dN_obs+disp_u[1][0],
-                                          dU_obs=point.dU_obs+disp_u[2][0], name=point.name)
+                                          dU_obs=point.dU_obs+disp_u[2][0], name=point.name, depth=point.depth)
         model_disp_points.append(model_point)
     return model_disp_points
 
@@ -46,8 +47,10 @@ def compute_cartesian_strain_point(inputs, params, strain_points):
         point_strain_tensor = np.zeros((3, 3))
         for source in inputs.source_object:
             if source.is_point_source:
-                new_strain, _ = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
-                                                                    params.alpha)
+                grad_u, _ = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
+                                                                params.alpha)
+                # Strain tensor math -- displacement gradients into formal strain tensors
+                new_strain = conversion_math.get_strain_tensor(grad_u)
                 point_strain_tensor = np.add(point_strain_tensor, new_strain)
         strain_tensors.append(point_strain_tensor)
     return strain_tensors

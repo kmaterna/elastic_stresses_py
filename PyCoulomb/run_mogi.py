@@ -14,11 +14,12 @@ def compute_cartesian_def_mogi(inputs, params, disp_points):
         return []
     model_disp_points = []
     for point in disp_points:
-        u_mogi, v_mogi, w_mogi = compute_surface_disp_point(inputs.source_object, params.nu, point.lon, point.lat)
+        u_mogi, v_mogi, w_mogi = compute_surface_disp_point(inputs.source_object, params.nu, point.lon, point.lat,
+                                                            compute_depth=point.depth)
         model_point = Displacement_points(lon=point.lon, lat=point.lat,
                                           dE_obs=point.dE_obs+u_mogi,
                                           dN_obs=point.dN_obs+v_mogi,
-                                          dU_obs=point.dU_obs+w_mogi, name=point.name)
+                                          dU_obs=point.dU_obs+w_mogi, name=point.name, depth=point.depth)
         model_disp_points.append(model_point)
     return model_disp_points
 
