@@ -211,8 +211,12 @@ def get_receiver_profile(line):
     endlon = fault_vector_functions.xy2lonlat(length, 0, centerlon, centerlat)[0]
     startlat = fault_vector_functions.xy2lonlat(0, -width, centerlon, centerlat)[1]
     endlat = fault_vector_functions.xy2lonlat(0, width, centerlon, centerlat)[1]
-    lonpts = np.arange(startlon, endlon, inc / 111.00)
-    latpts = np.arange(startlat, endlat, inc / 111.00)
+    nlonpts = (2.0 * length + 1.e-4) / inc
+    nlatpts = (2.0 * width + 1.e-4) / inc
+    lon_inc = (endlon - startlon) / float(nlonpts)
+    lat_inc = (endlat - startlat) / float(nlatpts)
+    lonpts = np.arange(startlon, endlon, lon_inc)
+    latpts = np.arange(startlat, endlat, lat_inc)
     X, Y = np.meshgrid(lonpts, latpts)
     lon1d = np.reshape(X, (np.size(X),))
     lat1d = np.reshape(Y, (np.size(X),))
