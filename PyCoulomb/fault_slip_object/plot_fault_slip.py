@@ -99,7 +99,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame=str(fig_width_deg/5))
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='lightblue')
 
-    # Draw fault slip for a list of faults draw a color scale.
+    # Draw fault slip for a list of faults and draw a color scale.
     if len(fault_dict_list) > 0:
         fault_colors = [_i.slip for _i in fault_dict_list]
         if slip_cbar_opts:
@@ -117,6 +117,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
                          truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
                          frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""])
+        os.remove("mycpt.cpt")
 
     # Draw pre-written fault edges from GMT format, with colorbar (useful for triangles or descriptive data)
     if fault_traces_from_file:
@@ -128,6 +129,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
                      truncate=str(slip_cbar_opts[0]) + "/" + str(slip_cbar_opts[1]),
                      frame=["x" + str(slip_cbar_opts[2]), "y+L\"Slip(m)\""])
+        os.remove("mycpt.cpt")
 
     # Draw fault traces (lines) on the plot
     if fault_traces_from_memory:
@@ -171,7 +173,6 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w" +
                                                                                               str(map_scale))
     fig.savefig(outfile)
-    os.remove('mycpt.cpt')
     return
 
 
