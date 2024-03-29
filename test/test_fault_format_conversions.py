@@ -1,7 +1,7 @@
 # Test the conversion between four different formats for slip distributions and fault geometry.
 
 import unittest
-import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
+import elastic_stresses_py.PyCoulomb.fault_slip_object as fso
 
 
 example_fault = fso.fault_slip_object.FaultSlipObject(strike=5, dip=75, length=40, width=20, lon=-123.00, lat=40.00,

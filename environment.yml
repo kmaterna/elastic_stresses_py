@@ -1,5 +1,5 @@
-# create environment : conda env create -f requirements.yml
-# update dependencies: conda env update -f requirements.yml
+# create environment : conda env create -f environment.yml
+# update dependencies: conda env update -f environment.yml
 # remove environment : conda env remove -n elastic_py
 # enter  environment : conda activate elastic_py
 # exit   environment : conda deactivate
@@ -9,9 +9,9 @@ channels:
  - anaconda
  - defaults
 dependencies:
+ - numpy~=1.26.4
  - python>=3.9
  - matplotlib
- - numpy
  - scipy
  - xarray
  - gmt

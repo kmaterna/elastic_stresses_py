@@ -24,12 +24,12 @@ e.g., Beeler et al., 2000.
 * gfortran and gcc (For mac/linux, this is done through brew, port, apt-get, whatever works for your system)
 * Ben Thompson's Python [cutde](https://github.com/tbenthompson/cutde). 
 * Kathryn Materna's [Tectonic_Utils](https://github.com/kmaterna/Tectonic_Utils).  
-* Several standard Python libraries such as numpy, matplotlib, and [PYGMT](https://www.pygmt.org/dev/); these are listed in ```requirements.yml```.  
+* Several standard Python libraries such as numpy, matplotlib, and [PYGMT](https://www.pygmt.org/dev/); these are listed in ```environment.yml```.  
 
 
 ### Installation on command line
 To install Elastic_stresses_py, first clone this library onto your computer with ```git clone ``` and the address of the git repository (see the green **Code** button). 
-The easiest way to gather all the dependencies is to create a new conda environment with ```conda env create -f requirements.yml``` in the directory where you've cloned the repository. 
+The easiest way to gather all the dependencies is to create a new conda environment with ```conda env create -f environment.yml``` in the directory where you've cloned the repository. 
 Then, in the new conda environment ```elastic_py``` or similar, run ```pip install . ``` from the directory where you've cloned the repository. 
 
 **NOTE 1:** Mac users switching from Intel architecture to M1 architecture may experience some errors when compiling code on their new architectures for the first time.  
@@ -40,7 +40,7 @@ Such errors may appear as ```(mach-o file, but is an incompatible architecture)`
 
 * Download the code's zip file from this Github page. Click Code --> Download Zip.  Save it somewhere onto your local disk. 
   
-* Create a new Python environment in the Anaconda GUI. Environments Tab --> Import --> Local drive --> navigate to the local Elastic_stresses_py folder and select ```requirements.yml``` --> Open.  Select name=espy (or desired) --> Create environment.  This will take a few minutes. 
+* Create a new Python environment in the Anaconda GUI. Environments Tab --> Import --> Local drive --> navigate to the local Elastic_stresses_py folder and select ```environment.yml``` --> Open.  Select name=espy (or desired) --> Create environment.  This will take a few minutes. 
     
 * To install ```Elastic_stresses_py``` itself, we will use the terminal once more. Move to the location where you downloaded the source code and type ```pip install .``` 
   

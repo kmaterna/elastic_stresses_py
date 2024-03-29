@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from Elastic_stresses_py import PyCoulomb
+from elastic_stresses_py import PyCoulomb
 
 # My configuration: special experiment, focal mechanism as a function of depth.  This is my "lab notebook".
 # First column: depth.  Second column: Directory name.

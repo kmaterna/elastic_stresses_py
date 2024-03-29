@@ -1,8 +1,8 @@
 import unittest
-import Elastic_stresses_py.PyCoulomb as PyCoulomb
-from Elastic_stresses_py.PyCoulomb import fault_slip_triangle as fst
-from Elastic_stresses_py.PyCoulomb import fault_slip_object as fso
-from Elastic_stresses_py.PyCoulomb import run_okada_wrapper, run_dc3d
+import elastic_stresses_py.PyCoulomb as PyCoulomb
+from elastic_stresses_py.PyCoulomb import fault_slip_triangle as fst
+from elastic_stresses_py.PyCoulomb import fault_slip_object as fso
+from elastic_stresses_py.PyCoulomb import run_okada_wrapper, run_dc3d
 import numpy as np
 
 

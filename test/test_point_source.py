@@ -1,10 +1,10 @@
 import unittest
-import Elastic_stresses_py.PyCoulomb as PyCoulomb
-from Elastic_stresses_py.PyCoulomb.pyc_fault_object import Faults_object
+import elastic_stresses_py.PyCoulomb as PyCoulomb
+from elastic_stresses_py.PyCoulomb.pyc_fault_object import Faults_object
 import numpy as np
-import Elastic_stresses_py.PyCoulomb.inputs_object.io_mt as io_mt
-from Elastic_stresses_py.PyCoulomb.point_source_object import point_sources
-from Elastic_stresses_py.PyCoulomb import run_okada_wrapper
+import elastic_stresses_py.PyCoulomb.inputs_object.io_mt as io_mt
+from elastic_stresses_py.PyCoulomb.point_source_object import point_sources
+from elastic_stresses_py.PyCoulomb import run_okada_wrapper
 
 
 class Tests(unittest.TestCase):

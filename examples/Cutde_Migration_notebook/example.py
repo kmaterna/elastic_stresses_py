@@ -11,8 +11,8 @@ from okada_wrapper import dc3dwrapper, dc3d0wrapper
 import cutde.halfspace as HS
 # My own library imports (working to remove for purposes of this example script)
 from Tectonic_Utils.geodesy import fault_vector_functions
-from Elastic_stresses_py.PyCoulomb import fault_slip_object as fso
-from Elastic_stresses_py.PyCoulomb.fault_slip_triangle import fault_slip_triangle as fst
+from elastic_stresses_py.PyCoulomb import fault_slip_object as fso
+from elastic_stresses_py.PyCoulomb.fault_slip_triangle import fault_slip_triangle as fst
 
 
 # Global settings for this example
@@ -22,6 +22,7 @@ target_depth = 0  # in km
 mu = 3e10  # shear modulus
 lame1 = 3e10  # first lame parameter
 
+
 # Mathematical functions that frequently get used in manipulating faults and displacements
 def get_poissons_ratio_and_alpha(mu, lame1):
     """
@@ -30,6 +31,7 @@ def get_poissons_ratio_and_alpha(mu, lame1):
     poissons_ratio = lame1 / (2 * (lame1 + mu))
     alpha = (lame1 + mu) / (lame1 + 2 * mu)
     return [poissons_ratio, alpha]
+
 
 def get_strain_tensor(dUidUj):
     """
@@ -42,6 +44,7 @@ def get_strain_tensor(dUidUj):
         for j in range(cols):
             strain_tensor[i][j] = 0.5 * (dUidUj[i][j] + dUidUj[j][i])
     return strain_tensor
+
 
 def get_R_from_strike(strike):
     """Compute the rotation matrix into a system with a given fault strike"""
@@ -65,29 +68,29 @@ def compute_strains_disps_rectangle(source):
 
     z = target_depth
     R, R2 = get_R_from_strike(source.strike)  # rotation matrix from the fault strike
-    strike_slip = source.rtlat * -1;  # The dc3d coordinate system has left-lateral positive.
+    strike_slip = source.rtlat * -1  # The dc3d coordinate system has left-lateral positive.
     _poisson_ratio, alpha = get_poissons_ratio_and_alpha(mu, lame1)  # derived from mu and lame1
 
     # Compute the position relative to the translated, rotated fault.
-    translated_pos = np.array([[xi - source.xstart], [yi - source.ystart], [-z]]);   # positions are in km
-    xyz = R.dot(translated_pos);
+    translated_pos = np.array([[xi - source.xstart], [yi - source.ystart], [-z]])   # positions are in km
+    xyz = R.dot(translated_pos)
     if source.potency:
         success, u, grad_u = dc3d0wrapper(alpha, [xyz[0], xyz[1], xyz[2]], source.top, source.dipangle,
                                           [source.potency[0], source.potency[1], source.potency[2],
-                                           source.potency[3]]);
-        grad_u = grad_u * 1e-9;  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
-        u = u * 1e-6;  # Unit correction: potency from N-m results in displacements in microns.
+                                           source.potency[3]])
+        grad_u = grad_u * 1e-9  # DC3D0 Unit correction: potency from N-m results in strain in nanostrain
+        u = u * 1e-6  # Unit correction: potency from N-m results in displacements in microns.
     else:
         success, u, grad_u = dc3dwrapper(alpha, [xyz[0], xyz[1], xyz[2]], source.top, source.dipangle,
                                          [0, source.L], [-source.W, 0],
-                                         [strike_slip, source.reverse, source.tensile]);
-        grad_u = grad_u * 1e-3;  # DC3D Unit correction. Solve for displacement gradients at certain xyz position
+                                         [strike_slip, source.reverse, source.tensile])
+        grad_u = grad_u * 1e-3  # DC3D Unit correction. Solve for displacement gradients at certain xyz position
 
     # Rotate grad_u back into the unprimed coordinates.
-    desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T));
-    desired_coords_u = R2.dot(np.array([[u[0]], [u[1]], [u[2]]]));
+    desired_coords_grad_u = np.dot(R2, np.dot(grad_u, R2.T))
+    desired_coords_u = R2.dot(np.array([[u[0]], [u[1]], [u[2]]]))
     strain_tensor = get_strain_tensor(desired_coords_grad_u)
-    return strain_tensor, desired_coords_u;
+    return strain_tensor, desired_coords_u
 
 
 def convert_pycoulomb_rectangle_into_two_triangles(source, startlon, startlat):
@@ -151,7 +154,7 @@ def compute_strains_disps_triangles(source):
                                       [comps[4], comps[5], comps[2]]])
         modeled_strain_tensors.append(new_strain_tensor)
 
-    return modeled_strain_tensors, disp_grid;
+    return modeled_strain_tensors, disp_grid
 
 
 if __name__ == "__main__":

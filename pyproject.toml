@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "elastic_stresses_py"
+version = "2.0.0"
+description = "Simple coseismic stress and displacement calculator (a mini-Coulomb, but in Python)"
+authors = ["Kathryn Materna <kmaterna@berkeley.edu>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/kmaterna/Elastic_stresses_py"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+numpy = "^1.26"
+scipy = ">=1.10"
+matplotlib = ">=3.4"
+pygmt = ">0.8"
+pandas = "*"
+Tectonic-Utils = "^0.1.0"
+earthscope-cli = "*"
+
+
+[build-system]
+requires = ["poetry-core", "setuptools", "wheel"]
+build-backend = "poetry.core.masonry.api"
