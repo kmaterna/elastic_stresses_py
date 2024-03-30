@@ -1,4 +1,4 @@
-# Elastic_stresses_py
+# elastic_stresses_py
 [![Python 3.9+](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![DOI](https://zenodo.org/badge/141371162.svg)](https://zenodo.org/badge/latestdoi/141371162)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/kmaterna/Strain_2D/blob/dev/license.md)
@@ -42,7 +42,7 @@ Such errors may appear as ```(mach-o file, but is an incompatible architecture)`
   
 * Create a new Python environment in the Anaconda GUI. Environments Tab --> Import --> Local drive --> navigate to the local Elastic_stresses_py folder and select ```environment.yml``` --> Open.  Select name=espy (or desired) --> Create environment.  This will take a few minutes. 
     
-* To install ```Elastic_stresses_py``` itself, we will use the terminal once more. Move to the location where you downloaded the source code and type ```pip install .``` 
+* To install ```elastic_stresses_py``` itself, we will use the terminal once more. Move to the location where you downloaded the source code and type ```pip install .``` 
   
 * After refreshing the Anaconda navigator, you will be able to see all the installed packages in your new environment, including Elastic_stresses_py. 
 
@@ -85,7 +85,7 @@ To get the hang of the usage, check out our recently added calculation in ```exa
 
 A complete description of the config file is shown below, with both required and optional arguments. Optional arguments can be omitted or be left blank.
 
-![CoulombCalc](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/annotated_config.png)
+![CoulombCalc](https://github.com/kmaterna/elastic_stresses_py/blob/master/examples/pngs/annotated_config.png)
 
 #### Important Config Switches
 * If ```plot_grd_disp```: Will produce grid of 100x100 synthetic points and their surface displacements, in txt/grd/plots [default: True]
@@ -182,7 +182,7 @@ fixed_rake =
 
 should produce files and plots such as:
 
-![Gallery](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/example_plots.png)
+![Gallery](https://github.com/kmaterna/elastic_stresses_py/blob/master/examples/pngs/example_plots.png)
 
 ## Example 2: Jupyter Notebook
 
@@ -196,7 +196,7 @@ This notebook explores modifying the inputs and configuration parameters through
 The code can also be used for larger numbers of source faults and receiver faults. 
 The largest we have tried is 10,000 sources and 10,000 receivers. That application took about half an hour and the results were compiled into something like this:
  
-![NZ](https://github.com/kmaterna/Elastic_stresses_py/blob/master/examples/pngs/nz_example.png)
+![NZ](https://github.com/kmaterna/elastic_stresses_py/blob/master/examples/pngs/nz_example.png)
 
 
 ## References:

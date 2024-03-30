@@ -8,13 +8,12 @@ examples/Example_2/.ipynb_checkpoints/*.ipynb
 examples/Norcia_Example/Outputs/*
 examples/strike-slip-example/output/*
 examples/Example_Mogi/Outputs/*
-PyCoulomb/__pycache__/*
 .idea*
 test/example_*.txt
 test/*.txt
 test/*.png
 dist/*
-Elastic_stresses_py.egg-info/*
+elastic_stresses_py.egg-info/*
 build/*
 *.pptx
 *.cpt
