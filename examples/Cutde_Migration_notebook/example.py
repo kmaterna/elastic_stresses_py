@@ -8,7 +8,7 @@ for strain tensor and displacement vector from the same inputs.
 # Standard imports
 import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
-import cutde.halfspace as HS
+import cutde.halfspace as hs
 # My own library imports (working to remove for purposes of this example script)
 from Tectonic_Utils.geodesy import fault_vector_functions
 from elastic_stresses_py.PyCoulomb import fault_slip_object as fso
@@ -134,13 +134,13 @@ def compute_strains_disps_triangles(source):
     fault_pts, fault_tris = fst.extract_mesh_vertices(fault_triangles)
     fault_pts = fst.flip_depth_sign(fault_pts)  # fault_pts shape: N_vertices, 3
     src_tris = fault_pts[fault_tris]  # src_tris shape: (Ntris, 3, 3)
-    disp_mat = HS.disp_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # disp_mat shape: (Npts, 3, Ntris, 3)
+    disp_mat = hs.disp_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # disp_mat shape: (Npts, 3, Ntris, 3)
     disp = disp_mat.reshape((-1, np.size(slip_array))).dot(
         slip_array.flatten())  # reshape by len of total slip vector
     disp_grid = disp.reshape((*np.array(obsx).shape, 3))  # disp_grid shape: Npts, 3
 
     # Get strain
-    strain_mat = HS.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # strain_mat shape: (Npts, 6, Ntris, 3)
+    strain_mat = hs.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # strain_mat shape: (Npts, 6, Ntris, 3)
     strain = strain_mat.reshape((-1, np.size(slip_array))).dot(
         slip_array.flatten())  # reshape by len total slip vector
     strain_tensors = strain.reshape((*np.array(obsx).shape, 6))  # strain_tensors shape: Npts, 6

@@ -8,11 +8,11 @@ From these components, it resolves stresses on receiver faults.
 This toolbox performs functions similar to Coulomb in matlab, although in command line.
 I found myself running the same thing over and over in Coulomb, so I built a command-line analog.
 The inputs and outputs are not as fancy as Coulomb.
-It only calculates stress on faults, not cross sections.
+It only calculates stress on faults, not cross-sections.
 """
 
 import argparse
-import Elastic_stresses_py.PyCoulomb as PyCoulomb
+import elastic_stresses_py.PyCoulomb as PyCoulomb
 
 
 def welcome_and_parse_runstring():
@@ -33,5 +33,5 @@ def drive_calculation(config_file):
 
 
 if __name__ == "__main__":
-    args = welcome_and_parse_runstring()
-    drive_calculation(args.config)
+    my_args = welcome_and_parse_runstring()
+    drive_calculation(my_args.config)

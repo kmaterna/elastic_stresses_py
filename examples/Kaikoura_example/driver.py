@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # Run this in your pygmt environment
 
-import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
-import Tectonic_Utils.seismo as seismo
-import Elastic_stresses_py.PyCoulomb as PyCoulomb
+import elastic_stresses_py.PyCoulomb.fault_slip_object as fso
+import Tectonic_Utils.seismo.moment_calculations as seismo_mo
+import elastic_stresses_py.PyCoulomb as PyCoulomb
 
 filedict = {"usgs_slip_file": "../../_Data/files_MTMOD_WS/Kaikoura_usgs_finite_fault.fsp",
             "hamling": "../../_Data/files_MTMOD_WS/hamling_coseismic_model/hamling_coseismic_crustal_fault_only.dat",
@@ -13,25 +13,25 @@ filedict = {"usgs_slip_file": "../../_Data/files_MTMOD_WS/Kaikoura_usgs_finite_f
 
 
 def write_pycoulomb_input(filedict, fault_dict_list):
-    params = PyCoulomb.configure_calc.configure_stress_calculation(filedict["demo_config"]);
-    demo_obj = PyCoulomb.inputs_object.io_intxt.read_intxt(params.input_file, params.mu, params.lame1);
+    params = PyCoulomb.configure_calc.configure_stress_calculation(filedict["demo_config"])
+    demo_obj = PyCoulomb.inputs_object.io_intxt.read_intxt(params.input_file, params.mu, params.lame1)
     pycoulomb_faults = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_dict_list, demo_obj.zerolon,
-                                                                           demo_obj.zerolat);
-    inputs = demo_obj.modify_inputs_object(source_object=pycoulomb_faults);
-    PyCoulomb.inputs_object.io_intxt.write_intxt(inputs, filedict["finished_input"], mu=params.mu, lame1=params.lame1);
-    return;
+                                                                           demo_obj.zerolat)
+    inputs = demo_obj.modify_inputs_object(source_object=pycoulomb_faults)
+    PyCoulomb.inputs_object.io_intxt.write_intxt(inputs, filedict["finished_input"], mu=params.mu, lame1=params.lame1)
+    return
 
 
 if __name__ == "__main__":
     # TO READ SRCMOD AND WRITE PYCOULOMB INPUTS
-    # fault_dict_list = fso.io_other.io_hamling_2017(filedict["hamling"]);  # examples of other read functions
-    # fault_dict_list = fso.io_other.io_wallace_sse(filedict["wallace_file2"]);  # examples of other read functions
-    fault_dict_list = fso.file_io.io_srcmod.read_srcmod_distribution(filedict["usgs_slip_file"]);  # read into memory
+    # fault_dict_list = fso.io_other.io_hamling_2017(filedict["hamling"])  # examples of other read functions
+    # fault_dict_list = fso.io_other.io_wallace_sse(filedict["wallace_file2"])  # examples of other read functions
+    fault_dict_list = fso.file_io.io_srcmod.read_srcmod_distribution(filedict["usgs_slip_file"])  # read into memory
     print("Moment Magnitude: ",
-          seismo.moment_calculations.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list)));
-    fso.plot_fault_slip.map_source_slip_distribution(fault_dict_list, "fault_slip_usgs.png");
+          seismo_mo.mw_from_moment(fso.fault_slip_object.get_total_moment(fault_dict_list)))
+    fso.plot_fault_slip.map_source_slip_distribution(fault_dict_list, "fault_slip_usgs.png")
 
     # # Set up calculation
-    write_pycoulomb_input(filedict, fault_dict_list);
+    write_pycoulomb_input(filedict, fault_dict_list)
 
     # NOW GO RUN "elastic_stresses_driver.py real_config.txt" (from the terminal)

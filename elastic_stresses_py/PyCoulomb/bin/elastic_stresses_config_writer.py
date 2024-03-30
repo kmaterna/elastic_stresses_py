@@ -4,7 +4,8 @@
 # Call this from a new experiment directory to get a valid config file template
 
 import argparse
-import Elastic_stresses_py.PyCoulomb as PyCoulomb
+import elastic_stresses_py.PyCoulomb as PyCoulomb
+
 
 def welcome_and_parse_runstring():
     print("\nWrite a default config file for elastic_stresses_py. ")
@@ -16,5 +17,5 @@ def welcome_and_parse_runstring():
 
 
 if __name__ == "__main__":
-    args = welcome_and_parse_runstring()
-    PyCoulomb.configure_calc.write_valid_config_file(args.directory)
+    my_args = welcome_and_parse_runstring()
+    PyCoulomb.configure_calc.write_valid_config_file(my_args.directory)
