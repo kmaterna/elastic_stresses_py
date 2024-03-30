@@ -13,7 +13,7 @@ filedict = {
     'bbox': [-115.65, -115.40, 32.65, 32.85]}
 
 
-if __name__ == "__main__":
+def main():
     # Input stage: Getting things into proper formats
     fault_model_list = fso.file_io.io_slippy.read_slippy_distribution(filedict['fault_model'])
     coulomb_fault_model = fso.fault_slip_object.fault_object_to_coulomb_fault(fault_model_list, filedict['lon0_sys'],
@@ -28,3 +28,8 @@ if __name__ == "__main__":
     outobj = run_dc3d.do_stress_computation(params, inputs, disp_points=disp_points, strain_points=())
     output_manager.produce_outputs(params, inputs, obs_disp_points=disp_points,
                                    obs_strain_points=(), out_object=outobj)
+    return
+
+
+if __name__ == "__main__":
+    main()

@@ -105,10 +105,12 @@ def convert_pycoulomb_rectangle_into_two_triangles(source, startlon, startlat):
     vertex4 = np.array([x_all[3] * 1000, y_all[3] * 1000, bottom_depth * 1000])
     first_triangle = fst.TriangleFault(lon=startlon, lat=startlat, segment=source.segment,
                                        tensile=source.tensile, vertex1=vertex1, vertex2=vertex3, vertex3=vertex2,
-                                       dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2] / 1000)
+                                       dip_slip=source.reverse, rtlat_slip=source.rtlat,
+                                       depth=float(vertex1[2] / 1000))
     second_triangle = fst.TriangleFault(lon=startlon, lat=startlat, segment=source.segment,
                                         tensile=source.tensile, vertex1=vertex1, vertex2=vertex4, vertex3=vertex3,
-                                        dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=vertex1[2] / 1000)
+                                        dip_slip=source.reverse, rtlat_slip=source.rtlat,
+                                        depth=float(vertex1[2] / 1000))
     list_of_two_triangles = [first_triangle, second_triangle]
     return list_of_two_triangles
 

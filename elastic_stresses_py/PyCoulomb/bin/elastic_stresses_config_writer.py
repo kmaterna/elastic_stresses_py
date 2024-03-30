@@ -16,6 +16,11 @@ def welcome_and_parse_runstring():
     return args
 
 
-if __name__ == "__main__":
+def main():
     my_args = welcome_and_parse_runstring()
     PyCoulomb.configure_calc.write_valid_config_file(my_args.directory)
+    return
+
+
+if __name__ == "__main__":
+    main()

@@ -32,6 +32,11 @@ def drive_calculation(config_file):
     return
 
 
-if __name__ == "__main__":
+def main():
     my_args = welcome_and_parse_runstring()
     drive_calculation(my_args.config)
+    return
+
+
+if __name__ == "__main__":
+    main()

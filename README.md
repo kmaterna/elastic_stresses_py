@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/kmaterna/Strain_2D/blob/dev/license.md)
 
 
-This code uses Okada's (1992) formulation to compute elastic displacements, strains, stresses, and Coulomb failure stresses (e.g., King et al., 1994) in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases (in ```Examples/```), it reproduces the Coulomb outputs. 
+This code uses Okada's (1992) formulation to compute elastic displacements, strains, stresses, and Coulomb failure stresses (e.g., King et al., 1994) in a linear, isotropic elastic half-space due to fault slip. It performs a similar type of calculation as Coulomb, and in fact reads Coulomb input files. I wrote this tool to iterate faster than I could using the Coulomb GUI. On test cases (in ```examples/```), it reproduces the Coulomb outputs. 
 
 The equation being solved, following the sign conventions used in Coulomb, is:
 
@@ -65,17 +65,17 @@ Example citation: Materna, K. (2023). Elastic_stresses_py (version 1.0.0). https
 Also cite the underlying theoretical work behind elastic dislocations and Coulomb Failure Stress (Okada, 1992; King et al., 1994; and others). 
 
 ## Software Usage:
-The main executable is ```elastic_stresses_driver.py```, which takes a config file as the first argument.
+The main executable is ```elastic_stresses_driver```, which takes a config file as the first argument.
 
 Most of the behavior of the program is controlled by the config text file.  From an experiment directory on your system, you can generate a default config file in the current working directory (.) with: 
 ```bash
-elastic_stresses_config_writer.py .
+elastic_stresses_config_writer .
 ```
 You should change the parameters to your own experiment needs.  An example config file is provided in examples/. The elastic parameters mu and lambda, as well as your input/output options, are set in config file. 
 
 Then, you call the program by passing the config file into the main executable: 
 ```bash
-elastic_stresses_driver.py my_config.txt
+elastic_stresses_driver my_config.txt
 ```
 
 *New:* 
@@ -157,7 +157,7 @@ Set domain elastic parameters at the computation level through lame1 and mu in t
 
 Running from the command line, from ```examples/Example_1``` in this repository, type:
 ```bash
-elastic_stresses_driver.py my_config.txt
+elastic_stresses_driver my_config.txt
 ```
 where my_config.txt is a text file in the local directory containing:
 ```

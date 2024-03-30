@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import Elastic_stresses_py.PyCoulomb.fault_slip_object as fso
-from Elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals, inputs_object
+import elastic_stresses_py.PyCoulomb.fault_slip_object as fso
+from elastic_stresses_py.PyCoulomb import run_dc3d, configure_calc, output_manager, io_additionals, inputs_object
 
 
 # Definitions

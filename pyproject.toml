@@ -12,6 +12,12 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[tool.poetry.scripts]
+elastic_stresses_config_writer = "elastic_stresses_py.PyCoulomb.bin.elastic_stresses_config_writer:main"
+elastic_stresses_driver = "elastic_stresses_py.PyCoulomb.bin.elastic_stresses_driver:main"
+disp_okada_driver = "elastic_stresses_py.PyCoulomb.bin.disp_okada_driver:main"
+
+
 [tool.poetry.dependencies]
 python = ">=3.9"
 numpy = "^1.26"
