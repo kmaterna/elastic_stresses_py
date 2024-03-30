@@ -69,6 +69,22 @@ def read_disp_points(infile, default_Se_obs=np.nan, default_Sn_obs=np.nan, defau
     return disp_points_list
 
 
+def write_disp_points_locations(disp_points_list, filename):
+    """
+    Write the simplest format for lon/lat points
+
+    :param disp_points_list: list of disp points
+    :param filename: string
+    :return: nothing
+    """
+    print("Writing file %s " % filename)
+    ofile = open(filename, 'w')
+    for item in disp_points_list:
+        ofile.write("%f %f \n" % (item.lon, item.lat))
+    ofile.close()
+    return
+
+
 def write_fault_traces_gmt(fault_list, outfile):
     """
     Write the top edge of each fault in GMT map coordinates

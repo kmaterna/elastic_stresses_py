@@ -43,9 +43,9 @@ class Receiver_Horiz_Profile:
         self.centerlat = centerlat  # degrees
         self.lon1d = lon1d
         self.lat1d = lat1d
-        self.width = width
-        self.length = length
-        self.inc = inc
+        self.width = width  # km
+        self.length = length  # km
+        self.inc = inc  # km
         self.shape = shape
 
 

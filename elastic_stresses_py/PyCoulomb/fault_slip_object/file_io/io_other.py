@@ -116,3 +116,29 @@ def io_iceland_met_office(filename):
     fault_object_list.append(new_fault)
     print("--> Returning %d fault patches " % len(fault_object_list))
     return fault_object_list
+
+
+def read_wang_ridgecrest(filename):
+    """
+    :param filename: string, filename of Kang Wang's Ridgecrest slip distribution
+    :return: list of fault slip objects
+    """
+    fault_object_list = []
+    print("Reading file %s " % filename)
+    (fault_id, _, _, longitude, latitude, vertical, length_m, width_m,
+     strike, dip, _, strike_slip_m, dip_slip_m) = np.loadtxt(filename, skiprows=23, unpack=True)
+    for i in range(len(fault_id)):
+        slip = fault_vector_functions.get_total_slip(-strike_slip_m[i], dip_slip_m[i])
+        rake = fault_vector_functions.get_rake(-strike_slip_m[i], dip_slip_m[i])
+        clean_dip = np.min((dip[i], 89.99))
+        new_fault = fault_slip_object.FaultSlipObject(strike=strike[i], dip=clean_dip,
+                                                      depth=-vertical[i] / 1000,
+                                                      lon=longitude[i],
+                                                      lat=latitude[i],
+                                                      slip=slip, rake=rake,
+                                                      length=length_m[i] / 1000,
+                                                      width=width_m[i] / 1000,
+                                                      segment=fault_id[i], tensile=0)
+        fault_object_list.append(new_fault)
+    print("--> Returning %d fault patches " % len(fault_object_list))
+    return fault_object_list

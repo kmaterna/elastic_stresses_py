@@ -284,7 +284,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     return
 
 
-def map_horiz_profile(horiz_profile, profile_results, outfile):
+def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=200, cap_colorbar=1):
     """Display a small map of a horizontal profile of stresses. Default colors for now."""
 
     x = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
@@ -296,8 +296,12 @@ def map_horiz_profile(horiz_profile, profile_results, outfile):
     # Figure of stresses.
     plt.rcParams['figure.dpi'] = 300
     plt.rcParams['savefig.dpi'] = 300
-    fig = plt.figure(figsize=(17, 8), dpi=300)
-    dislay_map = plt.contourf(x, y, coulomb_stress, cmap='RdYlBu_r')
+    fig = plt.figure(figsize=(14, 8), dpi=300)
+    levels = np.linspace(vmin, vmax, 20)
+    if cap_colorbar:  # do we force the higher values to the top of the colorbar?
+        coulomb_stress[coulomb_stress > vmax] = vmax
+        coulomb_stress[coulomb_stress < vmin] = vmin
+    dislay_map = plt.contourf(x, y, coulomb_stress, levels=levels, cmap='RdYlBu_r', vmin=vmin, vmax=vmax)
     plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
               str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km))
 
