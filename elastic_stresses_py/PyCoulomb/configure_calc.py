@@ -36,10 +36,10 @@ class Params:
 
     def print_summary(self):
         print("Configuring with the following Params:")
-        print("  -Config file: %s " % self.config_file)
-        print("  -Input file: %s " % self.input_file)
-        print("  -Disp_points_file: %s " % self.disp_points_file)
-        print("  -Outdir: %s " % self.outdir)
+        print("  -Config file: %s " % str(self.config_file))
+        print("  -Input file: %s " % str(self.input_file))
+        print("  -Disp_points_file: %s " % str(self.disp_points_file))
+        print("  -Outdir: %s " % str(self.outdir))
         print("  -Elastic moduli: %f, %f " % (self.mu, self.lame1))
         print("  -Poisson's ratio and Alpha: %f, %f" % (self.nu, self.alpha))
         return
@@ -53,7 +53,7 @@ class Params:
         configobj["io-config"] = {}
         ioconfig = configobj["io-config"]
         ioconfig["exp_name"] = os.path.split(os.path.split(self.outdir)[0])[1]
-        ioconfig["input_file"] = self.input_file
+        ioconfig["input_file"] = str(self.input_file)
         ioconfig["output_dir"] = os.path.split(self.outdir)[0]
         ioconfig["plot_stress"] = str(self.plot_stress)
         ioconfig["plot_grd_disp"] = str(self.plot_grd_disp)

@@ -3,7 +3,7 @@ Reading aftershock tables and GPS lon/lat pairs
 """
 
 from .disp_points_object.disp_points_object import Displacement_points
-from . import utilities
+from . import utilities, conversion_math
 import numpy as np
 
 
@@ -119,14 +119,40 @@ def write_strain_results(obs_strain_points, strains, outfile):
     :param outfile: string, name of output file
     """
     if obs_strain_points:
+        print("Writing file %s " % outfile)
         ofile = open(outfile, 'w')
-        ofile.write("# Format: lon lat strain_tensor (microstrain)\n")
+        ofile.write("# Format: lon lat depth_km exx exy exz eyy eyz ezz (microstrain)\n")
         for i in range(len(obs_strain_points)):
             eij = np.multiply(strains[i], 1e6)  # microstrain
-            ofile.write("%f %f\n" % (obs_strain_points[i].lon, obs_strain_points[i].lat))
-            ofile.write("%f %f %f\n" % (eij[0][0], eij[0][1], eij[0][2]))
-            ofile.write("%f %f %f\n" % (eij[1][0], eij[1][1], eij[1][2]))
-            ofile.write("%f %f %f\n" % (eij[2][0], eij[2][1], eij[2][2]))
-            ofile.write("\n")
+            ofile.write("%f %f %f " % (obs_strain_points[i].lon, obs_strain_points[i].lat, obs_strain_points[i].depth))
+            ofile.write("%f %f %f " % (eij[0][0], eij[0][1], eij[0][2]))
+            ofile.write("%f %f %f\n" % (eij[1][1], eij[1][2], eij[2][2]))
+        ofile.close()
+    return
+
+
+def write_stress_results(obs_strain_points, strains, lame1, mu, outfile):
+    """
+    Write the full stress tensor at a calculation point.
+    obs_strain_points is an object of format cc.dips_points
+    strains is a list of tensors
+
+    :param obs_strain_points: a list of disp_points
+    :param strains: a list of strain tensors (matrices)
+    :param lame1: lame's first parameter (Pa)
+    :param mu: shear modulus (Pa)
+    :param outfile: string, name of output file
+    """
+    if obs_strain_points:
+        print("Writing file %s " % outfile)
+        ofile = open(outfile, 'w')
+        ofile.write("# Format: lon lat depth_km sigma_xx sigma_xy sigma_xz sigma_yy sigma_yz sigma_zz (kPa)\n")
+        for i in range(len(obs_strain_points)):
+            eij = strains[i]
+            stress_tensor = conversion_math.get_stress_tensor(eij, lame1, mu)
+            stress_tensor = np.divide(stress_tensor, 1000)  # convert to kPa
+            ofile.write("%f %f %f " % (obs_strain_points[i].lon, obs_strain_points[i].lat, obs_strain_points[i].depth))
+            ofile.write("%f %f %f " % (stress_tensor[0][0], stress_tensor[0][1], stress_tensor[0][2]))
+            ofile.write("%f %f %f\n" % (stress_tensor[1][1], stress_tensor[1][2], stress_tensor[2][2]))
         ofile.close()
     return

@@ -19,8 +19,8 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     """
     if not os.path.exists(params.outdir):
         os.makedirs(params.outdir)
-    if params.config_file:
-        params.write_params_into_config(os.path.join(params.outdir, "used_config.txt"))  # for record-keeping
+    # if params.config_file:
+    params.write_params_into_config(os.path.join(params.outdir, "used_config.txt"))  # for record-keeping
     io_intxt.write_intxt(inputs, os.path.join(params.outdir, "used_inputs.txt"), mu=params.mu, lame1=params.lame1)
     if params.input_file:
         shutil.copy(params.input_file, params.outdir)  # for record-keeping
@@ -29,6 +29,8 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     io_additionals.write_disp_points_results(out_object.model_disp_points, os.path.join(params.outdir, "ll_disps.txt"))
     io_additionals.write_strain_results(obs_strain_points, out_object.strains,
                                         os.path.join(params.outdir, 'll_strains.txt'))
+    io_additionals.write_stress_results(obs_strain_points, out_object.strains, params.lame1, params.mu,
+                                        os.path.join(params.outdir, 'll_stresses.txt'))
     io_additionals.write_fault_traces_gmt(out_object.receiver_object,
                                           os.path.join(params.outdir, "receiver_traces.txt"))
     io_additionals.write_fault_traces_gmt(out_object.source_object, os.path.join(params.outdir, "source_traces.txt"))
