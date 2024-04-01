@@ -84,6 +84,7 @@ To get the hang of the usage, check out our recently added calculation in ```exa
 ### Config Parameters
 
 A complete description of the config file is shown below, with both required and optional arguments. Optional arguments can be omitted or be left blank.
+For lon/lat pairs in gps_disp_points (which is a file), displacements will be calculated. For lon/lat pairs in strain_file, the full strain tensor AND the full stress tensor will be written at the outputs.  
 
 ![CoulombCalc](https://github.com/kmaterna/elastic_stresses_py/blob/master/examples/pngs/annotated_config.png)
 
