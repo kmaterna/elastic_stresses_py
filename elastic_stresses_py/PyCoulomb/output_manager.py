@@ -322,7 +322,7 @@ def write_synthetic_grid_triplets(out_object, outdir, east_model_file, north_mod
     Write lists of lon/lat/def for each component of deformation in synthetic grid.
     Used for GMT plots.
     """
-    print("Writing synthetic grid into files %s etc." % outdir+east_model_file)
+    print("Writing synthetic grid into files %s" % outdir+east_model_file)
     ofile_w = open(outdir + vert_model_file, 'w')
     ofile_u = open(outdir + east_model_file, 'w')
     ofile_v = open(outdir + north_model_file, 'w')

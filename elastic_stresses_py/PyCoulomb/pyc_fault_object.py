@@ -85,13 +85,16 @@ class Faults_object:
 
     def get_fault_slip_moment(self, mu):
         """
-        From a finite source fault object (not point source), calculate seismic moment.
+        From a source fault object, calculate seismic moment.
 
         :param mu: shear modulus, float, in Pa
         :returns: array with two elements, seismic moment (N-m), and moment magnitude
         """
-        if self.potency:  # can't do moment calculation for point sources
-            return 0, 0
+        if self.potency:  # moment calculation for point sources
+            total_potency = np.sqrt(self.potency[0]*self.potency[0] + self.potency[1] * self.potency[1])
+            seismic_moment = mu * total_potency
+            moment_magnitude = moment_calculations.mw_from_moment(seismic_moment)
+            return seismic_moment, moment_magnitude
         area = self.L * self.W * 1000 * 1000
         slip = fvf.get_vector_magnitude([self.rtlat, self.reverse])
         seismic_moment = mu * area * slip

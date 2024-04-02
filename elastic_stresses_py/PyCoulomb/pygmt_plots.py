@@ -171,12 +171,14 @@ def annotate_figure_with_sources(fig, inputs, mu=30e9, fmscale="0.3c", dotstyle=
         [x_total, y_total, _, _] = source.get_fault_four_corners()
         lons, lats = fault_vector_functions.xy2lonlat(x_total, y_total, inputs.zerolon, inputs.zerolat)
         _, mag = source.get_fault_slip_moment(mu)
-        focal_mechanism = dict(strike=source.strike, dip=source.dipangle, rake=source.rake, magnitude=mag)
-        fig.meca(focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top)
-    # draw the fault patches, no special color code
-    utilities.write_fault_edges_to_gmt_file(rect_sources, "tmp.txt")
-    fig.plot(data='tmp.txt', pen="0.2p,black")
-    os.remove('tmp.txt')
+        focal_mechanism = {"strike": source.strike, "dip": source.dipangle, "rake": source.rake,
+                           "magnitude": mag}
+        fig.meca(spec=focal_mechanism, scale=fmscale, longitude=lons[0], latitude=lats[0], depth=source.top)
+    if rect_sources:
+        # draw the fault patches, no special color code
+        utilities.write_fault_edges_to_gmt_file(rect_sources, "tmp.txt")
+        fig.plot(data='tmp.txt', pen="0.2p,black")
+        os.remove('tmp.txt')
     return fig
 
 
