@@ -15,7 +15,7 @@ class Params:
     def __init__(self, config_file=None, input_file=None, outdir=os.path.join('output', ''),
                  aftershocks=None, disp_points_file=None, strain_file=None,
                  strike_num_receivers=1, dip_num_receivers=1, fixed_rake=None, mu=30e9, lame1=30e9, B=0.0,
-                 plot_stress=1, plot_grd_disp=1):
+                 plot_stress=1, plot_grd_disp=1, save_file_type='.png'):
         self.config_file = config_file  # string, filename
         self.input_file = input_file  # string, filename
         self.outdir = os.path.join(outdir, '')  # string, directory name
@@ -31,6 +31,7 @@ class Params:
         self.nu, self.alpha = conversion_math.get_poissons_ratio_and_alpha(mu, lame1)  # derived from mu and lame1
         self.plot_stress = plot_stress  # boolean
         self.plot_grd_disp = plot_grd_disp  # boolean
+        self.save_file_type = save_file_type
         if self.B > 1:
             raise ValueError("Error! Provided Skepmton's coefficient is invalid because 0 <= B <= 1.")
 
@@ -60,6 +61,7 @@ class Params:
         ioconfig["gps_disp_points"] = "" if self.disp_points_file is None else self.disp_points_file
         ioconfig["aftershocks"] = "" if self.aftershocks is None else self.aftershocks
         ioconfig["strain_file"] = "" if self.strain_file is None else self.strain_file
+        ioconfig["save_file_type"] = self.save_file_type
         configobj["compute-config"] = {}
         computeconfig = configobj["compute-config"]
         computeconfig["strike_num_receivers"] = str(self.strike_num_receivers)
@@ -75,7 +77,8 @@ class Params:
 
     def modify_params_object(self, config_file=None, input_file=None, aftershocks=None, disp_points_file=None,
                              strain_file=None, strike_num_receivers=None, dip_num_receivers=None, fixed_rake=None,
-                             mu=None, lame1=None, B=None, plot_stress=None, plot_grd_disp=None, outdir=None):
+                             mu=None, lame1=None, B=None, plot_stress=None, plot_grd_disp=None, outdir=None,
+                             save_file_type=None):
         """
         Set the fields in a Pycoulomb.Params object. By default, none of the properties will be altered.
         """
@@ -92,12 +95,14 @@ class Params:
         B = self.B if B is None else B
         plot_stress = self.plot_stress if plot_stress is None else plot_stress
         plot_grd_disp = self.plot_grd_disp if plot_grd_disp is None else plot_grd_disp
+        save_file_type = self.save_file_type if save_file_type is None else save_file_type
         outdir = self.outdir if outdir is None else os.path.join(outdir, '')
         MyParams = Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                           disp_points_file=disp_points_file, strain_file=strain_file,
                           strike_num_receivers=str_num_receivers, fixed_rake=fixed_rake,
                           dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
-                          plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, outdir=outdir)
+                          plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, save_file_type=save_file_type,
+                          outdir=outdir)
         return MyParams
 
 
@@ -126,6 +131,10 @@ def configure_stress_calculation(config_file):
         plot_grd_disp = configobj.getint('io-config', 'plot_grd_disp')
     else:
         plot_grd_disp = 1
+    if configobj.has_option('io-config', 'save_file_type'):
+        save_file_type = configobj.get('io-config', 'save_file_type')
+    else:
+        save_file_type = '.png'
 
     # Computation parameters
     strike_num_receivers = configobj.getint('compute-config', 'strike_num_receivers')
@@ -142,7 +151,8 @@ def configure_stress_calculation(config_file):
                       disp_points_file=gps_file, strain_file=strain_file,
                       strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
                       dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
-                      plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, outdir=output_dir)
+                      plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, save_file_type=save_file_type,
+                      outdir=output_dir)
     MyParams.print_summary()
     return MyParams
 
@@ -161,6 +171,7 @@ def write_valid_config_file(directory):
     ioconfig["gps_disp_points"] = 'CA_GPS_ll.txt'
     ioconfig["aftershocks"] = 'CA_aftershocks_2014.txt'
     ioconfig["strain_file"] = ''
+    ioconfig["save_file_type"] = '.png'
     configobj["compute-config"] = {}
     computeconfig = configobj["compute-config"]
     computeconfig["strike_num_receivers"] = '10'

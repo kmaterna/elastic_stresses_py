@@ -35,8 +35,9 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
                                           os.path.join(params.outdir, "receiver_traces.txt"))
     io_additionals.write_fault_traces_gmt(out_object.source_object, os.path.join(params.outdir, "source_traces.txt"))
     write_subfaulted_inp(inputs, out_object, os.path.join(params.outdir, "subfaulted.inp"))
+    # map point displacements
     pygmt_plots.map_displacement_vectors(params, inputs, obs_disp_points, out_object.model_disp_points,
-                                         os.path.join(params.outdir, "vector_plot.png"))  # map point displacements
+                                         os.path.join(params.outdir, "vector_plot"+params.save_file_type))
     if params.plot_stress:  # write the outputs of stress calculation, if doing a stress calculation
         fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(out_object.receiver_object)
         fso.file_io.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
@@ -55,15 +56,15 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         stress_cross_section_cartesian(params, out_object, stress_type='Shear')
     if params.plot_grd_disp:  # create synthetic grid outputs, grd files, and plot vertical.
         write_synthetic_grid_full_results(out_object, os.path.join(params.outdir, 'disps_model_grid.txt'))
-        surface_def_plot(out_object, os.path.join(params.outdir, "Displacement_model_on_grid.png"))  # synthetic grid
+        surface_def_plot(out_object, os.path.join(params.outdir, "Displacement_model_on_grid"+params.save_file_type))
         write_synthetic_grid_triplets(out_object, params.outdir, 'xy_east.txt', 'xy_north.txt', 'xy_vert.txt')
         write_disp_grd_files(inputs, params.outdir, 'xy_east.txt', 'xy_north.txt', 'xy_vert.txt')  # from txt files
-        pygmt_plots.map_vertical_def(params, inputs, os.path.join(params.outdir, "vertical_map.png"))
+        pygmt_plots.map_vertical_def(params, inputs, os.path.join(params.outdir, "vertical_map"+params.save_file_type))
     if out_object.receiver_profile:
         write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
                             os.path.join(params.outdir, "stresses_horiz_profile.txt"))
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
-                          os.path.join(params.outdir, 'horizontal_profile_stresses.png'))
+                          os.path.join(params.outdir, 'horizontal_profile_stresses'+params.save_file_type))
     return
 
 
@@ -131,7 +132,7 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     if not out_object.receiver_object:
         return
 
-    outfile = os.path.join(params.outdir, 'Stresses_' + stress_type + '.png')
+    outfile = os.path.join(params.outdir, 'Stresses_' + stress_type + params.save_file_type)
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile))
 
     if stress_type == 'Shear':
@@ -205,7 +206,7 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 
     if not out_object.receiver_object:
         return
-    outfile = os.path.join(params.outdir, 'Stresses_cross_section_' + stress_type + '.png')
+    outfile = os.path.join(params.outdir, 'Stresses_cross_section_' + stress_type + params.save_file_type)
 
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile))
 

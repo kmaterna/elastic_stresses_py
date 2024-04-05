@@ -52,8 +52,8 @@ def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1):
 
     # Annotate with aftershock locations
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c')
-    print("Mapping stress in %s " % os.path.join(params.outdir, stress_type + '_map.png'))
-    fig.savefig(os.path.join(params.outdir, stress_type + '_map.png'))
+    print("Mapping stress in %s " % os.path.join(params.outdir, stress_type + '_map'+params.save_file_type))
+    fig.savefig(os.path.join(params.outdir, stress_type + '_map'+params.save_file_type))
     return
 
 

@@ -171,6 +171,7 @@ plot_grd_disp = 1
 gps_disp_points = CA_GPS_ll.txt
 aftershocks = CA_aftershocks_2014.txt
 strain_file = 
+save_file_type = .png
 
 [compute-config]
 strike_num_receivers = 10
