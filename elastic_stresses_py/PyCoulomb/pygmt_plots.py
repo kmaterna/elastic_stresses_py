@@ -69,10 +69,10 @@ def map_vertical_def(params, inputs, outfile, max_down=-0.045, max_up=0.045):
 
     # Build a PyGMT plot
     fig = pygmt.Figure()
-    pygmt.makecpt(cmap="roma", series=str(max_down) + "/"+str(max_up)+"/0.001", background="o", output="mycpt.cpt")
+    pygmt.makecpt(cmap="roma", series=str(max_down) + "/"+str(max_up)+"/0.0001", background="o", output="mycpt.cpt")
     fig.basemap(region=region, projection=proj, frame="+t\"Modeled Vertical Displacement\"")
     fig.grdimage(os.path.join(params.outdir, 'vert.grd'), region=region, cmap="mycpt.cpt")
-    fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
+    fig.coast(region=region, projection=proj, borders=['1', '2'], shorelines='1.0p,black', water='lightblue',
               map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0")
 
     fig = annotate_figure_with_sources(fig, inputs, params.mu, dotstyle='s0.01c')
@@ -113,8 +113,8 @@ def map_displacement_vectors(params, inputs, obs_disp_points, model_disp_points,
 
     # Build a PyGMT plot
     fig = pygmt.Figure()
-    fig.basemap(region=region, projection=proj, frame="+t\"Coseismic Displacements\"")
-    fig.coast(region=region, projection=proj, borders='1', shorelines='1.0p,black', water='lightblue',
+    fig.basemap(region=region, projection=proj, frame="+t\"Modeled Coseismic Displacements\"")
+    fig.coast(region=region, projection=proj, borders=['1', '2'], shorelines='1.0p,black', water='lightblue',
               map_scale="n0.4/0.06+c" + str(region[2]) + "+w20", frame="1.0")
     fig.plot(x=model_lon, y=model_lat, style='c0.3c', fill=model_dU, cmap='mycpt.cpt', pen="thin,black")
 
