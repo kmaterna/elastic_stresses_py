@@ -1,5 +1,5 @@
 
-from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions
+from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions, utilities
 import numpy as np
 
 
@@ -114,3 +114,6 @@ class Displacement_points:
                                    starttime=self.starttime, endtime=self.endtime, refframe=self.refframe,
                                    meas_type=self.meas_type, depth=self.depth)
         return obj2
+
+    def get_magnitude(self):
+        return utilities.get_vector_magnitude((self.dE_obs, self.dN_obs, self.dU_obs))

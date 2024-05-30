@@ -155,7 +155,7 @@ def call_gmt_surface(xyzfile, outfile, region, inc):
     """
     call(['gmt', 'surface', xyzfile, '-G' + outfile,
           '-R' + str(region[0]) + '/' + str(region[1]) + '/' + str(region[2]) + '/' + str(region[3]), '-I'+str(inc),
-          '-rg'], shell=False)
+          '-rp'], shell=False)
     return
 
 
