@@ -1,7 +1,7 @@
 from .okada_pt_src import DC3D0
 import numpy as np
 from ..disp_points_object.disp_points_object import Displacement_points
-from .. import conversion_math
+from .. import conversion_math, coulomb_collections
 
 
 def compute_cartesian_def_point(inputs, params, disp_points):
@@ -19,10 +19,11 @@ def compute_cartesian_def_point(inputs, params, disp_points):
     for point in disp_points:
         disp_u = np.zeros((3, 1))
         for source in inputs.source_object:
-            if source.is_point_source:
-                _, new_disp = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
-                                                                  params.alpha)
-                disp_u = np.add(disp_u, new_disp)
+            if isinstance(source, coulomb_collections.Faults_object):
+                if source.is_point_source:
+                    _, new_disp = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
+                                                                      params.alpha)
+                    disp_u = np.add(disp_u, new_disp)
         model_point = Displacement_points(lon=point.lon, lat=point.lat,
                                           dE_obs=point.dE_obs+disp_u[0][0],
                                           dN_obs=point.dN_obs+disp_u[1][0],
@@ -46,12 +47,13 @@ def compute_cartesian_strain_point(inputs, params, strain_points):
     for point in strain_points:
         point_strain_tensor = np.zeros((3, 3))
         for source in inputs.source_object:
-            if source.is_point_source:
-                grad_u, _ = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
-                                                                params.alpha)
-                # Strain tensor math -- displacement gradients into formal strain tensors
-                new_strain = conversion_math.get_strain_tensor(grad_u)
-                point_strain_tensor = np.add(point_strain_tensor, new_strain)
+            if isinstance(source, coulomb_collections.Faults_object):
+                if source.is_point_source:
+                    grad_u, _ = compute_displacements_strains_point(source, point.lon, point.lat, point.depth,
+                                                                    params.alpha)
+                    # Strain tensor math -- displacement gradients into formal strain tensors
+                    new_strain = conversion_math.get_strain_tensor(grad_u)
+                    point_strain_tensor = np.add(point_strain_tensor, new_strain)
         strain_tensors.append(point_strain_tensor)
     return strain_tensors
 
