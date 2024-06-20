@@ -6,7 +6,7 @@ import os
 import shutil
 import matplotlib.cm as cm
 from matplotlib.patches import Polygon
-from . import conversion_math, pygmt_plots, io_additionals, utilities
+from . import conversion_math, pygmt_plots, io_additionals, utilities, coulomb_collections
 from .inputs_object import io_intxt, io_inp
 from . import fault_slip_object as fso
 from Tectonic_Utils.geodesy import fault_vector_functions
@@ -171,17 +171,19 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
 
     # Adding source and receiver faults
     for source in out_object.source_object:
-        [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners()
-        plt.plot(x_total, y_total, 'k', linewidth=1)
-        plt.plot(x_updip, y_updip, 'g', linewidth=3)
-        center = source.get_fault_center()
-        plt.plot(center[0], center[1], '.g', markersize=8)
+        if isinstance(source, coulomb_collections.Faults_object):
+            [x_total, y_total, x_updip, y_updip] = source.get_fault_four_corners()
+            plt.plot(x_total, y_total, 'k', linewidth=1)
+            plt.plot(x_updip, y_updip, 'g', linewidth=3)
+            center = source.get_fault_center()
+            plt.plot(center[0], center[1], '.g', markersize=8)
     for rec in out_object.receiver_object:
-        [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners()
-        plt.plot(x_total, y_total, 'b', linewidth=1)
-        plt.plot(x_updip, y_updip, 'b', linewidth=3)
-        center = rec.get_fault_center()
-        plt.plot(center[0], center[1], '.b', markersize=8)
+        if isinstance(rec, coulomb_collections.Faults_object):
+            [x_total, y_total, x_updip, y_updip] = rec.get_fault_four_corners()
+            plt.plot(x_total, y_total, 'b', linewidth=1)
+            plt.plot(x_updip, y_updip, 'b', linewidth=3)
+            center = rec.get_fault_center()
+            plt.plot(center[0], center[1], '.b', markersize=8)
 
     plt.grid()
     plt.axis('equal')
