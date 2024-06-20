@@ -57,3 +57,4 @@ class Mogi_Source:
         self.zerolat = zerolat  # degrees
         self.depth = depth  # km
         self.dV = dV  # cubic meters
+        self.is_point_source = False  # for backwards compatibility working with point sources
