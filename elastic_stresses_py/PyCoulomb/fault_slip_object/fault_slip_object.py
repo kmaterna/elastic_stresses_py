@@ -58,6 +58,10 @@ class FaultSlipObject:
             raise ValueError("Error! Length less than 0 km.")
         if self.width < 0:
             raise ValueError("Error! Width less than 0 km.")
+        if abs(self.lat) > 90:
+            raise ValueError("Error! Latitude > 90 degrees.")
+        if self.lon > 360:
+            raise ValueError("Error! Longitude > 360 degrees.")
 
     def __iter__(self):
         for attr, value in self.__dict__.items():
@@ -201,7 +205,7 @@ class FaultSlipObject:
         else:
             return False
 
-    def is_on_positive_side_of_fault(self, target_pt):
+    def is_on_positive_side_of_fault(self, target_pt) -> bool:
         """
         Determine whether a target point falls on the positive or negative lobe of a profile drawn normal to the fault.
         The viewer is facing the along-strike direction.
@@ -219,7 +223,7 @@ class FaultSlipObject:
             return False
 
     # ------------ REGULAR FUNCTIONS -------------- #
-    def construct_intxt_source_patch(self):
+    def construct_intxt_source_patch(self) -> str:
         """
         Turn a fault_slip_object into a string corresponding to a slip_patch in .intxt file.
         """
