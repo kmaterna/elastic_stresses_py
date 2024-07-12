@@ -3,6 +3,7 @@
 import os
 import configparser
 from . import conversion_math
+from collections import namedtuple
 
 
 class Params:
@@ -15,7 +16,7 @@ class Params:
     def __init__(self, config_file=None, input_file=None, outdir=os.path.join('output', ''),
                  aftershocks=None, disp_points_file=None, strain_file=None,
                  strike_num_receivers=1, dip_num_receivers=1, fixed_rake=None, mu=30e9, lame1=30e9, B=0.0,
-                 plot_stress=1, plot_grd_disp=1, save_file_type='.png'):
+                 plot_stress=True, plot_grd_disp=True, save_file_type='.png'):
         self.config_file = config_file  # string, filename
         self.input_file = input_file  # string, filename
         self.outdir = os.path.join(outdir, '')  # string, directory name
@@ -106,7 +107,19 @@ class Params:
         return MyParams
 
 
-def configure_stress_calculation(config_file):
+def get_empty_cli_opts():
+    """Reproduce a default object, following the command line options of elastic_stresses_driver."""
+    Empties = namedtuple('Empties', field_names=['input_file', 'exp_name', 'output_dir',
+                                                 'plot_stress', 'plot_grd_disp', 'gps_disp_points',
+                                                 'strain_file', 'save_file_type'])
+    empties = Empties(input_file=None, exp_name=None, output_dir=None, plot_stress=None, plot_grd_disp=None,
+                      gps_disp_points=None, strain_file=None, save_file_type=None)
+    return empties
+
+
+def configure_stress_calculation(config_file, cli_opts=None):
+    if cli_opts is None:
+        cli_opts = get_empty_cli_opts()
     assert (os.path.isfile(config_file)), FileNotFoundError("config file " + config_file + " not found.")
     configobj = configparser.ConfigParser()
     configobj.optionxform = str  # make the config file case-sensitive
@@ -122,15 +135,14 @@ def configure_stress_calculation(config_file):
         if configobj.has_option('io-config', 'gps_disp_points') else None
     strain_file = configobj.get('io-config', 'strain_file') \
         if configobj.has_option('io-config', 'strain_file') else None
-    output_dir = os.path.join(output_dir, exp_name, '')
     if configobj.has_option('io-config', 'plot_stress'):
         plot_stress = configobj.getint('io-config', 'plot_stress')
     else:
-        plot_stress = 1
+        plot_stress = True
     if configobj.has_option('io-config', 'plot_grd_disp'):
         plot_grd_disp = configobj.getint('io-config', 'plot_grd_disp')
     else:
-        plot_grd_disp = 1
+        plot_grd_disp = True
     if configobj.has_option('io-config', 'save_file_type'):
         save_file_type = configobj.get('io-config', 'save_file_type')
     else:
@@ -146,6 +158,18 @@ def configure_stress_calculation(config_file):
         if configobj.has_option('compute-config', 'fixed_rake') else None
     if '.inp' in input_file:
         assert fixed_rake, ValueError("Must provide fixed_rake for receiver faults in .inp file. ex: 90 (reverse).")
+
+    # Optionally override config_file with options provided over the command line:
+    input_file = cli_opts.input_file if cli_opts.input_file is not None else input_file
+    exp_name = cli_opts.exp_name if cli_opts.exp_name is not None else exp_name
+    output_dir = cli_opts.output_dir if cli_opts.output_dir is not None else output_dir
+    plot_stress = cli_opts.plot_stress if cli_opts.plot_stress is not None else plot_stress
+    plot_grd_disp = cli_opts.plot_grd_disp if cli_opts.plot_grd_disp is not None else plot_grd_disp
+    gps_file = cli_opts.gps_disp_points if cli_opts.gps_disp_points is not None else gps_file
+    strain_file = cli_opts.strain_file if cli_opts.strain_file is not None else strain_file
+    save_file_type = cli_opts.save_file_type if cli_opts.save_file_type is not None else save_file_type
+
+    output_dir = os.path.join(output_dir, exp_name, '')
 
     MyParams = Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                       disp_points_file=gps_file, strain_file=strain_file,
