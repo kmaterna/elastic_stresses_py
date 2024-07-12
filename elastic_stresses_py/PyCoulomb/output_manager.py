@@ -22,6 +22,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     # if params.config_file:
     params.write_params_into_config(os.path.join(params.outdir, "used_config.txt"))  # for record-keeping
     io_intxt.write_intxt(inputs, os.path.join(params.outdir, "used_inputs.txt"), mu=params.mu, lame1=params.lame1)
+    io_additionals.write_results_metrics(inputs, os.path.join(params.outdir, "metrics.txt"), mu=params.mu)
     if params.input_file:
         shutil.copy(params.input_file, params.outdir)  # for record-keeping
 

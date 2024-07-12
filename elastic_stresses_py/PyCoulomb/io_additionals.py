@@ -5,6 +5,8 @@ Reading aftershock tables and GPS lon/lat pairs
 from .disp_points_object.disp_points_object import Displacement_points
 from . import utilities, conversion_math
 import numpy as np
+from Tectonic_Utils.seismo import moment_calculations
+from . import pyc_fault_object as pycfaults
 
 
 def read_aftershock_table(infile):
@@ -171,4 +173,26 @@ def write_stress_results(obs_strain_points, strains, lame1, mu, outfile):
             ofile.write("%f %f %f " % (stress_tensor[0][0], stress_tensor[0][1], stress_tensor[0][2]))
             ofile.write("%f %f %f\n" % (stress_tensor[1][1], stress_tensor[1][2], stress_tensor[2][2]))
         ofile.close()
+    return
+
+
+def write_results_metrics(inputs, metrics_file, mu):
+    """
+    :param inputs: inputs object
+    :param metrics_file: string, filename
+    :param mu: shear modulus, in Pa
+    """
+    with open(metrics_file, 'w') as f:
+        f.write("Number of sources: %d \n" % len(inputs.source_object))
+        rect_sources, pt_sources, mogi_sources = utilities.separate_source_types(inputs.source_object)
+        if len(rect_sources) > 0:
+            mw = moment_calculations.mw_from_moment(pycfaults.get_faults_slip_moment(rect_sources, mu))
+            f.write(" ->  Number of rectangular sources: %d\n" % len(rect_sources))
+        if len(pt_sources) > 0:
+            f.write(" ->  Number of point sources: %d\n" % len(pt_sources))
+        if len(mogi_sources) > 0:
+            f.write(" ->  Number of Mogi sources: %d\n" % len(mogi_sources))
+        f.write("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f\n\n" % (mu / 1e9, mw))
+        f.write("Number of receivers: %d \n" % len(inputs.receiver_object))
+        f.write("Coefficient of friction: %f\n" % inputs.FRIC)
     return
