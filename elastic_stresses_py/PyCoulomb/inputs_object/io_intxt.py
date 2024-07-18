@@ -14,7 +14,13 @@ from Tectonic_Utils.seismo import wells_and_coppersmith
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def read_intxt(input_file, mu, _lame1):
+def read_intxt(input_file, mu=30e9, _lame1=30e9):
+    """
+    :param input_file: string, filename
+    :param mu: optional, mu for focal mechanism sources
+    :param _lame1: optional, lame1 never used
+    :return: an input object
+    """
     print("Reading source and receiver fault information from file %s " % input_file)
     sources, receivers = [], []
     receiver_horiz_profile = None

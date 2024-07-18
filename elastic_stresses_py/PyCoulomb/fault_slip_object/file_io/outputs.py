@@ -13,6 +13,14 @@ def get_total_slip(x):
     return x.get_total_slip()
 
 
+def get_right_lateral_slip(x):
+    return x.get_rtlat_slip()
+
+
+def get_left_lateral_slip(x):
+    return -x.get_rtlat_slip()
+
+
 def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function, verbose=True):
     """
     Write the 4 corners of a fault and its slip values into a multi-segment file for plotting in GMT.
@@ -68,6 +76,10 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
     and associated slip values into a multi-segment file for plotting in GMT.
     Good for vertical faults.  Plots with depth as a negative number.
     Works for only one planar fault segment.
+
+    :param fault_object_list: list of fault_slip_objects
+    :param outfile: string, filename
+    :param color_mappable: function, such as the example functions on the top of this file
     """
     print("Writing file %s " % outfile)
 
@@ -96,7 +108,7 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
         [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+fault.strike)
         start_x, finish_x = xprime[0], xprime[1]
         slip_amount = color_mappable(fault)
-        ofile.write("> -Z"+str(-slip_amount)+"\n")  # currently writing left-lateral slip as positive
+        ofile.write("> -Z"+str(slip_amount)+"\n")
         ofile.write("%f %f\n" % (start_x, -fault.depth))
         ofile.write("%f %f\n" % (finish_x, -fault.depth))
         ofile.write("%f %f\n" % (finish_x, -fault.depth-deeper_offset))
