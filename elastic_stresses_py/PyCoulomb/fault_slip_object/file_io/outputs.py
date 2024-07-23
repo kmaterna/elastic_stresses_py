@@ -70,7 +70,8 @@ def write_gmt_surface_trace(fault_object_list, outfile, verbose=True):
     return
 
 
-def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function):
+def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function,
+                                  desired_rotation_strike=None):
     """
     Write the vertical coordinates of planar fault patches (length and depth, in local coords instead of lon/lat).
     and associated slip values into a multi-segment file for plotting in GMT.
@@ -80,6 +81,7 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
     :param fault_object_list: list of fault_slip_objects
     :param outfile: string, filename
     :param color_mappable: function, such as the example functions on the top of this file
+    :param desired_rotation_strike: optional, provide a given strike for the coordinate transformation
     """
     print("Writing file %s " % outfile)
 
@@ -102,10 +104,14 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
 
     ofile = open(outfile, 'w')
     for fault in fault_object_list:
+        if desired_rotation_strike is None:
+            rot_theta = fault.strike
+        else:
+            rot_theta = desired_rotation_strike
         [source] = fault_object_to_coulomb_fault([fault], zerolon_system=origin_ll[0], zerolat_system=origin_ll[1])
         [_, _, x_updip, y_updip] = source.get_fault_four_corners()
         deeper_offset = fault.width*np.sin(np.deg2rad(fault.dip))
-        [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+fault.strike)
+        [xprime, _] = conversion_math.rotate_list_of_points(x_updip, y_updip, 90+rot_theta)
         start_x, finish_x = xprime[0], xprime[1]
         slip_amount = color_mappable(fault)
         ofile.write("> -Z"+str(slip_amount)+"\n")
