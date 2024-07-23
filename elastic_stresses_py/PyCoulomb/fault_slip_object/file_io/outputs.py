@@ -71,7 +71,7 @@ def write_gmt_surface_trace(fault_object_list, outfile, verbose=True):
 
 
 def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get_blank_fault_function,
-                                  desired_rotation_strike=None):
+                                  desired_rotation_strike=None, flip_x=False):
     """
     Write the vertical coordinates of planar fault patches (length and depth, in local coords instead of lon/lat).
     and associated slip values into a multi-segment file for plotting in GMT.
@@ -108,6 +108,10 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
             rot_theta = fault.strike
         else:
             rot_theta = desired_rotation_strike
+        if flip_x:
+            mult = -1
+        else:
+            mult = 1
         [source] = fault_object_to_coulomb_fault([fault], zerolon_system=origin_ll[0], zerolat_system=origin_ll[1])
         [_, _, x_updip, y_updip] = source.get_fault_four_corners()
         deeper_offset = fault.width*np.sin(np.deg2rad(fault.dip))
@@ -115,11 +119,11 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
         start_x, finish_x = xprime[0], xprime[1]
         slip_amount = color_mappable(fault)
         ofile.write("> -Z"+str(slip_amount)+"\n")
-        ofile.write("%f %f\n" % (start_x, -fault.depth))
-        ofile.write("%f %f\n" % (finish_x, -fault.depth))
-        ofile.write("%f %f\n" % (finish_x, -fault.depth-deeper_offset))
-        ofile.write("%f %f\n" % (start_x, -fault.depth-deeper_offset))
-        ofile.write("%f %f\n" % (start_x, -fault.depth))
+        ofile.write("%f %f\n" % (mult * start_x, -fault.depth))
+        ofile.write("%f %f\n" % (mult * finish_x, -fault.depth))
+        ofile.write("%f %f\n" % (mult * finish_x, -fault.depth-deeper_offset))
+        ofile.write("%f %f\n" % (mult * start_x, -fault.depth-deeper_offset))
+        ofile.write("%f %f\n" % (mult * start_x, -fault.depth))
 
     ofile.close()
     return
