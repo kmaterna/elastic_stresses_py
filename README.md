@@ -92,6 +92,29 @@ For lon/lat pairs in gps_disp_points (which is a file), displacements will be ca
 * If ```plot_grd_disp```: Will produce grid of 100x100 synthetic points and their surface displacements, in txt/grd/plots [default: True]
 * If ```plot_stress```: Will compute and plot shear stress, normal stress, and Coulomb stress on receiver faults [default: True]
 
+### Input GPS and Strain/Stress points
+The easiest way to input GPS points is with a file in the following format (lon, lat, name): 
+```commandline
+# GPS points: lon lat [name]
+-121.469899 40.815918 HCRO 
+-123.074728 38.995185 HOPB 
+-121.500291 39.554627 ORVB 
+-124.075370 40.876307 P058 
+-123.726198 38.928347 P059 
+```
+
+To specify points where strain and stress tensors will be computed is the following, use the following format. The third column is depth in km. 
+```commandline
+# Strain points: lon lat depth_km [name]
+-123.360050 41.807083 0 P154
+-123.188786 41.272435 0 P155 
+-123.906118 40.024443 0 P156 
+-124.308074 40.247548 0 P157 
+-124.107208 40.422491 0 P158 
+-124.282782 40.504788 0 P159 
+```
+
+
 ### ```Intxt``` and ```Inzero``` Input Formats: 
 Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. In ```.inzero``` and ```.intxt``` text files, each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
 * **General Format:** Describes coordinate system and domain setup. Required.  

@@ -30,7 +30,7 @@ def read_inputs(params):
     if params.disp_points_file:
         disp_points = io_additionals.read_disp_points(params.disp_points_file)
     if params.strain_file:
-        strain_points = io_additionals.read_disp_points(params.strain_file)
+        strain_points = io_additionals.read_strain_points(params.strain_file)
     if isinstance(strain_points, Displacement_points):
         strain_points = [strain_points]
     if isinstance(disp_points, Displacement_points):

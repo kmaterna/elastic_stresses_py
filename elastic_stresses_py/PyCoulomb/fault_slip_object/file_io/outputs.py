@@ -82,6 +82,7 @@ def write_gmt_vertical_fault_file(fault_object_list, outfile, color_mappable=get
     :param outfile: string, filename
     :param color_mappable: function, such as the example functions on the top of this file
     :param desired_rotation_strike: optional, provide a given strike for the coordinate transformation
+    :param flip_x: boolean, in case the strike is rotated 180° off the desired strike
     """
     print("Writing file %s " % outfile)
 

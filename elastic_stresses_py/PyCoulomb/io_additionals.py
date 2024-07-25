@@ -31,6 +31,32 @@ def read_aftershock_table(infile):
     return [lon, lat, depth, magnitude, time]
 
 
+def read_strain_points(infile):
+    """
+    A file with lon/lat points for which we are computing displacements.
+    Format: "lon lat [depth]"
+
+    :param infile: string, filename
+    """
+    print("Reading displacement points from file %s " % infile)
+    disp_points_list = []
+    ifile = open(infile, 'r')
+    for line in ifile:
+        temp = line.split()
+        if temp[0][0] == '#':
+            continue
+        else:
+            lon, lat = float(temp[0]), float(temp[1])
+            depth = 0
+            if len(temp) == 3:
+                depth = float(temp[2])
+            new_disp_point = Displacement_points(lon=lon, lat=lat, depth=depth, name="")
+            disp_points_list.append(new_disp_point)
+    ifile.close()
+    print("--> Read %d strain points " % len(disp_points_list))
+    return disp_points_list
+
+
 def read_disp_points(infile, default_Se_obs=np.nan, default_Sn_obs=np.nan, default_Su_obs=np.nan):
     """
     A file with lon/lat points that we are computing displacements.
