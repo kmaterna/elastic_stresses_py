@@ -214,11 +214,11 @@ def write_results_metrics(inputs, metrics_file, mu):
         if len(rect_sources) > 0:
             mw = moment_calculations.mw_from_moment(pycfaults.get_faults_slip_moment(rect_sources, mu))
             f.write(" ->  Number of rectangular sources: %d\n" % len(rect_sources))
+            f.write("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f\n\n" % (mu / 1e9, mw))
         if len(pt_sources) > 0:
             f.write(" ->  Number of point sources: %d\n" % len(pt_sources))
         if len(mogi_sources) > 0:
             f.write(" ->  Number of Mogi sources: %d\n" % len(mogi_sources))
-        f.write("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f\n\n" % (mu / 1e9, mw))
         f.write("Number of receivers: %d \n" % len(inputs.receiver_object))
         f.write("Coefficient of friction: %f\n" % inputs.FRIC)
     return

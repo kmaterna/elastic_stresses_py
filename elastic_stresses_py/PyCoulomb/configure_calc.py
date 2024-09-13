@@ -182,6 +182,11 @@ def configure_stress_calculation(config_file, cli_opts=None):
 
 
 def write_valid_config_file(directory):
+    """
+    Write a valid config file in the specified location.
+
+    :param directory: directory where file will be printed
+    """
     config_filename = "my_config.txt"
     configobj = configparser.ConfigParser()
     configobj.optionxform = str  # case-sensitive config options

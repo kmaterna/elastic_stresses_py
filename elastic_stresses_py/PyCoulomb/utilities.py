@@ -81,9 +81,9 @@ def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
     """
     if not plotting_array:
         return -1, 1
-    auto_vmin = np.min(plotting_array)  # one number
-    auto_vmax = np.max(plotting_array)  # one number
-    auto_extreme = np.max(np.abs([auto_vmin, auto_vmax]))
+    auto_vmin = np.nanmin(plotting_array)  # one number
+    auto_vmax = np.nanmax(plotting_array)  # one number
+    auto_extreme = np.nanmax(np.abs([auto_vmin, auto_vmax]))
     auto_bounds = [-auto_extreme, auto_extreme]
     if not vmin:
         vmin = auto_bounds[0]
