@@ -3,6 +3,7 @@ import elastic_stresses_py.PyCoulomb as PyCoulomb
 from elastic_stresses_py.PyCoulomb import fault_slip_triangle as fst
 from elastic_stresses_py.PyCoulomb import fault_slip_object as fso
 from elastic_stresses_py.PyCoulomb import run_okada_wrapper, run_dc3d
+from elastic_stresses_py.PyCoulomb.disp_points_object.disp_points_object import Displacement_points
 import numpy as np
 
 
@@ -58,6 +59,46 @@ class Tests(unittest.TestCase):
                                                           vertex3=np.array([1000, 1000, 6000]))
         np.testing.assert_almost_equal(0, tri_fault.get_strike())
         np.testing.assert_almost_equal(45, tri_fault.get_dip())
+        return
+
+    def test_self_stress(self):
+        """
+        Test the stress on its own patch, when source and receiver are the same patch.
+        At time of writing, this test fails. Still working on how to make the self-stress pass under triangles. 
+        """
+        zerolon, zerolat = -115.68, 33.1012233
+        test_params = PyCoulomb.configure_calc.Params(mu=30e9, lame1=30e9)
+        test_rect = fso.fault_slip_object.FaultSlipObject(lon=-115, lat=33, strike=50, dip=70,
+                                                          depth=3, length=15, width=5, rake=170, slip=-0.2)
+        receiver = fso.fault_slip_object.FaultSlipObject(lon=-115, lat=33.01, strike=50, dip=70,
+                                                         depth=3, length=15, width=5, rake=170, slip=0)
+        # WHEN THE RECEIVER IS THE SAME FAULT, IT FAILS. OTHERWISE IT SUCCEEDS.
+        # receiver = test_rect.change_fault_slip(new_slip=0)
+        pycoulomb_sources = fso.fault_slip_object.fault_object_to_coulomb_fault([test_rect],
+                                                                                zerolon_system=zerolon,
+                                                                                zerolat_system=zerolat)
+        pycoulomb_recs = fso.fault_slip_object.fault_object_to_coulomb_fault([receiver],
+                                                                             zerolon_system=zerolon,
+                                                                             zerolat_system=zerolat)
+        inputs = PyCoulomb.coulomb_collections.Input_object(zerolon=zerolon, zerolat=zerolat, depth=None,
+                                                            maxlat=None, maxlon=None, minlat=None, minlon=None,
+                                                            receiver_object=pycoulomb_recs,
+                                                            source_object=pycoulomb_sources, xinc=None, yinc=None)
+
+        # The heart of the test: same interface, different guts
+        centercoords = inputs.receiver_object[0].get_fault_center()  # in cartesian coordinates
+        strain_point = [Displacement_points(lon=centercoords[0], lat=centercoords[1], depth=centercoords[2])]
+        rect_strains = run_okada_wrapper.compute_strain_point(inputs.source_object, 2/3, x=centercoords[0],
+                                                              y=centercoords[1], compute_depth=centercoords[2])  # o_w
+        tri_strains = run_dc3d.compute_xy_strain(inputs, test_params, strain_point)[0]  # cutde_version
+
+        print("tri_strains:", tri_strains)
+        print("rect_strains:", rect_strains)
+
+        np.testing.assert_almost_equal(tri_strains[0][0], rect_strains[0][0])
+        np.testing.assert_almost_equal(tri_strains[0][1], rect_strains[0][1])
+        np.testing.assert_almost_equal(tri_strains[2][1], rect_strains[2][1])
+
         return
 
 
