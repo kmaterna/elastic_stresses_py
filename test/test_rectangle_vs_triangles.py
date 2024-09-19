@@ -88,8 +88,9 @@ class Tests(unittest.TestCase):
         # The heart of the test: same interface, different guts
         centercoords = inputs.receiver_object[0].get_fault_center()  # in cartesian coordinates
         strain_point = [Displacement_points(lon=centercoords[0], lat=centercoords[1], depth=centercoords[2])]
-        rect_strains = run_okada_wrapper.compute_strain_point(inputs.source_object, 2/3, x=centercoords[0],
-                                                              y=centercoords[1], compute_depth=centercoords[2])  # o_w
+        rect_strains = run_okada_wrapper.compute_strain_point(inputs.source_object, alpha=test_params.alpha,
+                                                              x=centercoords[0], y=centercoords[1],
+                                                              compute_depth=centercoords[2])  # okada_wrapper
         tri_strains = run_dc3d.compute_xy_strain(inputs, test_params, strain_point)[0]  # cutde_version
 
         print("tri_strains:", tri_strains)
