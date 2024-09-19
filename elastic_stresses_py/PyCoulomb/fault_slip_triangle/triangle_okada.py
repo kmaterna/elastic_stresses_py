@@ -19,10 +19,10 @@ def convert_rect_sources_into_tris(rect_sources):
         if isinstance(source, pyc_fault_object.Faults_object):
             if source.is_point_source:
                 continue
-            two_tris = fault_slip_triangle.convert_pycoulomb_rectangle_into_two_triangles(source, source.zerolon,
-                                                                                          source.zerolat)
-            tri_faults.append(two_tris[0])
-            tri_faults.append(two_tris[1])
+            sub_tris = fault_slip_triangle.convert_pycoulomb_rectangle_into_three_triangles(source, source.zerolon,
+                                                                                            source.zerolat)
+            for item in sub_tris:
+                tri_faults.append(item)
         if isinstance(source, fault_slip_triangle.TriangleFault):
             tri_faults.append(source)
     return tri_faults

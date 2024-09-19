@@ -64,16 +64,16 @@ class Tests(unittest.TestCase):
     def test_self_stress(self):
         """
         Test the stress on its own patch, when source and receiver are the same patch.
-        At time of writing, this test fails. Still working on how to make the self-stress pass under triangles. 
+        Makes the self-stress pass under triangles.
         """
         zerolon, zerolat = -115.68, 33.1012233
         test_params = PyCoulomb.configure_calc.Params(mu=30e9, lame1=30e9)
         test_rect = fso.fault_slip_object.FaultSlipObject(lon=-115, lat=33, strike=50, dip=70,
                                                           depth=3, length=15, width=5, rake=170, slip=-0.2)
-        receiver = fso.fault_slip_object.FaultSlipObject(lon=-115, lat=33.01, strike=50, dip=70,
-                                                         depth=3, length=15, width=5, rake=170, slip=0)
-        # WHEN THE RECEIVER IS THE SAME FAULT, IT FAILS. OTHERWISE IT SUCCEEDS.
-        # receiver = test_rect.change_fault_slip(new_slip=0)
+        # receiver = fso.fault_slip_object.FaultSlipObject(lon=-115, lat=33.01, strike=50, dip=70,
+        #                                                  depth=3, length=15, width=5, rake=170, slip=0)
+        # WHEN THE RECEIVER IS THE SAME FAULT, DOES IT SUCCEED?
+        receiver = test_rect.change_fault_slip(new_slip=0)
         pycoulomb_sources = fso.fault_slip_object.fault_object_to_coulomb_fault([test_rect],
                                                                                 zerolon_system=zerolon,
                                                                                 zerolat_system=zerolat)
@@ -98,7 +98,6 @@ class Tests(unittest.TestCase):
         np.testing.assert_almost_equal(tri_strains[0][0], rect_strains[0][0])
         np.testing.assert_almost_equal(tri_strains[0][1], rect_strains[0][1])
         np.testing.assert_almost_equal(tri_strains[2][1], rect_strains[2][1])
-
         return
 
 

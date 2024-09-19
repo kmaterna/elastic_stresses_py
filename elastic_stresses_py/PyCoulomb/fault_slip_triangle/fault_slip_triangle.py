@@ -274,6 +274,32 @@ def convert_pycoulomb_rectangle_into_two_triangles(source, startlon, startlat):
     return list_of_two_triangles
 
 
+def convert_pycoulomb_rectangle_into_three_triangles(source, startlon, startlat):
+    """
+    Convert one rectangular pycoulomb_fault into three triangular faults. The fault normals are expected to point up.
+    """
+    [x_all, y_all, _, _] = source.get_fault_four_corners()  # This is cartesian
+    top_depth, bottom_depth = source.top, source.bottom
+    vertex1 = np.array([x_all[0]*1000, y_all[0]*1000, top_depth*1000])  # in meters
+    vertex2 = np.array([x_all[1]*1000, y_all[1]*1000, top_depth*1000])
+    vertex3 = np.array([x_all[2]*1000, y_all[2]*1000, bottom_depth*1000])
+    vertex4 = np.array([x_all[3]*1000, y_all[3]*1000, bottom_depth*1000])
+    far_midpoint = np.array([1000 * np.mean([x_all[1], x_all[2]]),
+                             1000 * np.mean([y_all[1], y_all[2]]),
+                             1000 * np.mean([top_depth, bottom_depth])])
+    first_triangle = TriangleFault(lon=startlon, lat=startlat, segment=source.segment, tensile=source.tensile,
+                                   vertex1=vertex1, vertex2=far_midpoint, vertex3=vertex2,
+                                   dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=float(vertex1[2])/1000)
+    second_triangle = TriangleFault(lon=startlon, lat=startlat, segment=source.segment, tensile=source.tensile,
+                                    vertex1=vertex1, vertex2=vertex4, vertex3=far_midpoint,
+                                    dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=float(vertex1[2])/1000)
+    third_triangle = TriangleFault(lon=startlon, lat=startlat, segment=source.segment, tensile=source.tensile,
+                                   vertex1=vertex4, vertex2=vertex3, vertex3=far_midpoint,
+                                   dip_slip=source.reverse, rtlat_slip=source.rtlat, depth=float(vertex1[2])/1000)
+    list_of_triangles = [first_triangle, second_triangle, third_triangle]
+    return list_of_triangles
+
+
 """
 Functions that work on lists of fault items
 """
