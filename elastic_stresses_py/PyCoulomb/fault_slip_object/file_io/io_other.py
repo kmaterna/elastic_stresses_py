@@ -142,3 +142,35 @@ def read_wang_ridgecrest(filename):
         fault_object_list.append(new_fault)
     print("--> Returning %d fault patches " % len(fault_object_list))
     return fault_object_list
+
+
+def read_fialko_dlc(filename):
+    """
+    :param filename: string, filename of a DLC slip distribution, used for the El Mayor Cucapah earthquake
+    :return: list of fault slip objects
+    """
+    fault_object_list = []
+    print("Reading file %s " % filename)
+    (fault_id, loncen, latcen, depcen, strike, dip,
+     length, width, strike_slip_m, dip_slip_m, _, _) = np.loadtxt(filename, unpack=True)
+    # loncen, latcen, and depcen refer to the top-center of the fault, I'm pretty sure. Some depths are 0.
+    for i in range(len(fault_id)):
+        slip = fault_vector_functions.get_total_slip(-strike_slip_m[i], dip_slip_m[i])
+        rake = fault_vector_functions.get_rake(-strike_slip_m[i], dip_slip_m[i])
+        clean_dip = np.min((dip[i], 89.99))
+
+        x_corner, y_corner = fault_vector_functions.add_vector_to_point(0, 0, length[i] / 2, strike[i] - 180)  # in km
+        corner_lon, corner_lat = fault_vector_functions.xy2lonlat(x_corner, y_corner, loncen[i], latcen[i])
+
+        new_fault = fault_slip_object.FaultSlipObject(strike=strike[i], dip=clean_dip,
+                                                      depth=depcen[i],
+                                                      lon=corner_lon,
+                                                      lat=corner_lat,
+                                                      slip=slip, rake=rake,
+                                                      length=length[i],
+                                                      width=width[i],
+                                                      segment=fault_id[i], tensile=0)
+        fault_object_list.append(new_fault)
+
+    print("--> Returning %d fault patches " % len(fault_object_list))
+    return fault_object_list
