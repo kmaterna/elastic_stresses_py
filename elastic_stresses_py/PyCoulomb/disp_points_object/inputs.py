@@ -21,12 +21,14 @@ def read_USGS_file(filename):
 
 
 def read_pycoulomb_displacements(filename):
-    lon, lat, disp_x_Okada, disp_y_Okada, disp_z_Okada = np.loadtxt(filename, skiprows=1,
-                                                                    usecols=(0, 1, 2, 3, 4), unpack=True)
+    """
+    :param filename: string, filename of input file
+    :return: list of Displacement_points
+    """
+    lon, lat, disp_x, disp_y, disp_z = np.loadtxt(filename, skiprows=1, usecols=(0, 1, 2, 3, 4), unpack=True)
     disp_points = []
     for i in range(len(lon)):
-        disp_point = Displacement_points(lon=lon[i], lat=lat[i], dE_obs=disp_x_Okada[i], dN_obs=disp_y_Okada[i],
-                                         dU_obs=disp_z_Okada[i], Se_obs=np.nan, Sn_obs=np.nan, Su_obs=np.nan)
+        disp_point = Displacement_points(lon=lon[i], lat=lat[i], dE_obs=disp_x[i], dN_obs=disp_y[i], dU_obs=disp_z[i])
         disp_points.append(disp_point)
     return disp_points
 

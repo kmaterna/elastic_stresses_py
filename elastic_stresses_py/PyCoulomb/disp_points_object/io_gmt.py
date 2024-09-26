@@ -12,20 +12,21 @@ def read_disp_points_gmt(filename):
     # lon lat dE dN dU Se Sn Su name\n
 
     :param filename: string
+    :returns: a list of Displacement_points objects
     """
     print("Reading file %s " % filename)
     disp_pts = []
-    ifile = open(filename, 'r')
-    for line in ifile:
-        if line.split()[0] == "#":
-            continue
-        else:
-            temp = line.split()
-            new_disp = Displacement_points(lon=float(temp[0]), lat=float(temp[1]), dE_obs=float(temp[2])/1000,
-                                           dN_obs=float(temp[3])/1000, dU_obs=float(temp[4])/1000,
-                                           Se_obs=float(temp[5])/1000,
-                                           Sn_obs=float(temp[6])/1000, Su_obs=float(temp[7])/1000, name=temp[8])
-            disp_pts.append(new_disp)
+    with open(filename, 'r') as ifile:
+        for line in ifile:
+            if line.split()[0] == "#":
+                continue
+            else:
+                temp = line.split()
+                new_disp = Displacement_points(lon=float(temp[0]), lat=float(temp[1]), dE_obs=float(temp[2])/1000,
+                                               dN_obs=float(temp[3])/1000, dU_obs=float(temp[4])/1000,
+                                               Se_obs=float(temp[5])/1000,
+                                               Sn_obs=float(temp[6])/1000, Su_obs=float(temp[7])/1000, name=temp[8])
+                disp_pts.append(new_disp)
     return disp_pts
 
 
@@ -39,17 +40,16 @@ def write_disp_points_gmt(disp_points, filename, write_meas_type=False, multiply
     :param multiply_by: a unit conversion for displacements and uncertainties. Default 1.
     """
     print("Writing %s " % filename)
-    ofile = open(filename, 'w')
-    ofile.write("# lon lat dE dN dU Se Sn Su name\n")
-    for item in disp_points:
-        ofile.write("%f %f %f %f %f " % (item.lon, item.lat, multiply_by*item.dE_obs, multiply_by*item.dN_obs,
-                                         multiply_by*item.dU_obs))
-        ofile.write("%f %f %f %s " % (multiply_by*item.Se_obs, multiply_by*item.Sn_obs, multiply_by*item.Su_obs,
-                                      item.name))
-        if write_meas_type:
-            ofile.write("%s " % item.meas_type)
-        ofile.write("\n")
-    ofile.close()
+    with open(filename, 'w') as ofile:
+        ofile.write("# lon lat dE dN dU Se Sn Su name\n")
+        for item in disp_points:
+            ofile.write("%f %f %f %f %f " % (item.lon, item.lat, multiply_by*item.dE_obs, multiply_by*item.dN_obs,
+                                             multiply_by*item.dU_obs))
+            ofile.write("%f %f %f %s " % (multiply_by*item.Se_obs, multiply_by*item.Sn_obs, multiply_by*item.Su_obs,
+                                          item.name))
+            if write_meas_type:
+                ofile.write("%s " % item.meas_type)
+            ofile.write("\n")
     return
 
 

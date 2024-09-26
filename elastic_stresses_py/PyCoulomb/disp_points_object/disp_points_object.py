@@ -39,12 +39,22 @@ class Displacement_points:
             return False
 
     def is_meas_type(self, target_meas_type) -> bool:
+        """
+
+        :param target_meas_type: string, 'GNSS', 'leveling', 'tide_gage', 'survey', 'continuous', 'insar', etc.
+        :returns: bool
+        """
         if self.meas_type == target_meas_type:
             return True
         else:
             return False
 
     def has_full_data(self) -> bool:
+        """
+        Return False if any of the measurements in east, north, or up are np.nan
+
+        :returns: bool
+        """
         if np.isnan(self.dE_obs) or np.isnan(self.dN_obs) or np.isnan(self.dU_obs):
             return False
         else:
@@ -56,6 +66,9 @@ class Displacement_points:
         """
         Return a new copy of the object after setting the value of dE_obs to a new value.
         Different from set_east_value(), which modifies the same object in-place.
+
+        :param east_value: float, new east value
+        :returns: a new Displacement_points object
         """
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=east_value, dN_obs=self.dN_obs,
                                    dU_obs=self.dU_obs, Se_obs=self.Se_obs, Sn_obs=self.Sn_obs, Su_obs=self.Su_obs,
@@ -69,6 +82,7 @@ class Displacement_points:
         Different from functions that modify the same object in-place.
 
         :param depth_value: float
+        :returns: a new Displacement_points object
         """
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=self.dE_obs, dN_obs=self.dN_obs,
                                    dU_obs=self.dU_obs, Se_obs=self.Se_obs, Sn_obs=self.Sn_obs, Su_obs=self.Su_obs,
@@ -86,6 +100,12 @@ class Displacement_points:
         self.dU_obs = vert_value
 
     def multiply_by_value(self, value):
+        """
+        Return a new copy of the object after multiplying the east, north, and up by a certain scalar value.
+
+        :param value: float
+        :returns: a new Displacement_points object
+        """
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=value * self.dE_obs, dN_obs=value * self.dN_obs,
                                    dU_obs=value * self.dU_obs, Se_obs=self.Se_obs, Sn_obs=self.Sn_obs,
                                    Su_obs=self.Su_obs, name=self.name, starttime=self.starttime, endtime=self.endtime,
@@ -104,8 +124,13 @@ class Displacement_points:
         return los_defo
 
     def translate_point_by_euler_pole(self, euler_pole_components):
-        """Rotate a point around a given euler pole.  Euler pole contains (ep_lon, ep_lat, omega).
-        Euler pole is in degrees and degrees/Ma."""
+        """
+        Rotate a point around a given euler pole.  Euler pole contains (ep_lon, ep_lat, omega).
+        Euler pole is in degrees and degrees/Ma.
+
+        :param euler_pole_components: contains (ep_lon, ep_lat, omega)
+        :returns: a new Displacement_points object
+        """
         [ep_lon, ep_lat, omega] = euler_pole_components
         [ep_ve, ep_vn, ep_vu] = euler_pole.point_rotation_by_Euler_Pole([self.lon, self.lat], [ep_lon, ep_lat, omega])
         obj2 = Displacement_points(lon=self.lon, lat=self.lat, dE_obs=self.dE_obs + ep_ve / 1000,
@@ -116,4 +141,5 @@ class Displacement_points:
         return obj2
 
     def get_magnitude(self):
+        """Calculate the 3D displacement amount of this displacement_points object."""
         return utilities.get_vector_magnitude((self.dE_obs, self.dN_obs, self.dU_obs))

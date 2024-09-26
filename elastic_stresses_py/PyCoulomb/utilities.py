@@ -226,8 +226,7 @@ def get_zeros_disp_points(disp_points):
     """
     zero_disp_points = []
     for item in disp_points:
-        new_pt = Displacement_points(lon=item.lon, lat=item.lat, depth=item.depth, dE_obs=0, dN_obs=0, dU_obs=0,
-                                     name=item.name)
+        new_pt = Displacement_points(lon=item.lon, lat=item.lat, depth=item.depth, name=item.name)
         zero_disp_points.append(new_pt)
     return zero_disp_points
 

@@ -8,6 +8,10 @@ from Tectonic_Utils.geodesy import fault_vector_functions
 def get_poissons_ratio_and_alpha(mu, lame1):
     """
     Return the poisson's ratio from a given mu (shear modulus) and lame1 (lame's first parameter)
+
+    :param mu: shear modulus, float
+    :param lame1: lame's first parameter, float
+    :returns: list of two floats, [poisson's ratio, alpha]
     """
     poissons_ratio = lame1 / (2 * (lame1 + mu))
     alpha = (lame1 + mu) / (lame1 + 2 * mu)
@@ -18,6 +22,9 @@ def get_strain_tensor(dUidUj):
     """
     Starts with displacement gradient tensor (3x3 2D array)
     Returns a strain tensor (3x3 2D array).
+
+    :param dUidUj: 2d array, size 3x3
+    :returns: strain tensor in the form of 2d array, size 3x3
     """
     rows, cols = np.shape(dUidUj)
     strain_tensor = np.zeros(np.shape(dUidUj))
@@ -29,9 +36,14 @@ def get_strain_tensor(dUidUj):
 
 def get_stress_tensor(eij, lamda, mu):
     """
-    Starts with strain tensor (3x3 2D array)
+    Hooke's law for linear elasticity.  Starts with strain tensor (3x3 2D array)
     Returns a stress tensor (3x3 2D array).
     lamda and mu are Lame parameters
+
+    :param eij: 2d strain tensor, size 3x3
+    :param lamda: lame's first parameter, float
+    :param mu: shear modulus, float
+    :returns: stress tensor, 2d array, size 3x3
     """
     rows, cols = np.shape(eij)
     stress_tensor = np.zeros(np.shape(eij))
