@@ -91,9 +91,9 @@ class TriangleFault:
         v1 = self.get_llz_point(self.vertex1)
         v2 = self.get_llz_point(self.vertex2)
         v3 = self.get_llz_point(self.vertex3)
-        vertex1 = [v1[0], v1[1]]
-        vertex2 = [v2[0], v2[1]]
-        vertex3 = [v3[0], v3[1]]
+        vertex1 = [float(v1[0]), float(v1[1])]
+        vertex2 = [float(v2[0]), float(v2[1])]
+        vertex3 = [float(v3[0]), float(v3[1])]
         return vertex1, vertex2, vertex3
 
     def compute_triangle_centroid(self):
@@ -388,3 +388,15 @@ def flip_depth_sign(mesh_points):
     for item in mesh_points:
         flipped_mesh.append([item[0], item[1], -item[2]])
     return np.array(flipped_mesh)
+
+
+def get_bounding_region(triangle_fault_list):
+    """
+    Return global bounding-box lon/lat for a list of triangular fault objects, as (W, E, S, N)
+    """
+    lons_all, lats_all = [], []
+    for item in triangle_fault_list:
+        v1, v2, v3 = item.get_ll_corners()
+        lons_all = lons_all + [v1[0], v2[0], v3[0]]
+        lats_all = lats_all + [v1[1], v2[1], v3[1]]
+    return np.min(lons_all), np.max(lons_all), np.min(lats_all), np.max(lats_all)

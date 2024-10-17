@@ -7,15 +7,17 @@ def return_total_slip(fault_object):
     return fault_object.get_total_slip()
 
 
-def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_total_slip):
+def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_total_slip, verbose=True):
     """
     Write triangle edges out to file for GMT plots, in X-Y cartesian space in m.
 
     :param triangle_list: list of triangle fault elements
     :param outfile: string
     :param color_mappable: a simple function of one fault object that returns the plotting value
+    :param verbose: print the status. default True
     """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile))
+    if verbose:
+        print("Writing %d triangles to file %s " % (len(triangle_list), outfile))
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
             total_slip = color_mappable(item)
@@ -27,15 +29,17 @@ def write_gmt_plots_cartesian(triangle_list, outfile, color_mappable=return_tota
     return
 
 
-def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=return_total_slip):
+def write_gmt_plots_geographic(triangle_list, outfile, color_mappable=return_total_slip, verbose=True):
     """
     Write triangle edges out to file for GMT plots, in lon/lat space assuming a cartesian-to-geographic transform
 
     :param triangle_list: list of triangle fault elements
     :param outfile: string
     :param color_mappable: a simple function of one fault object that returns the plotting value
+    :param verbose: print the status. default True
     """
-    print("Writing %d triangles to file %s " % (len(triangle_list), outfile))
+    if verbose:
+        print("Writing %d triangles to file %s " % (len(triangle_list), outfile))
     with open(outfile, 'w') as ofile:
         for item in triangle_list:
             slip_for_coloring = color_mappable(item)

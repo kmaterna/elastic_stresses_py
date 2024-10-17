@@ -6,6 +6,8 @@ import os
 from . import fault_slip_object as fso
 from . import file_io
 from .. import utilities
+from ..fault_slip_triangle import fault_slip_triangle as fst
+from ..fault_slip_triangle.file_io import tri_outputs
 from ..disp_points_object import utilities as dpo_utils
 
 
@@ -38,10 +40,27 @@ def write_patch_edges_for_plotting(fault_dict_list, plotting_function=lambda x: 
     """
     Plot the full patches and the surface traces of a collection of rectangular faults.  Colorcode by slip (default).
     plotting_function is a function that operates on a fault_dict object to return a float.
+
+    :param fault_dict_list: list of rectangular fault patches
+    :param plotting_function: a function that returns the plotting variable we want to visualize
+    :return: two filenames where the output will be written
     """
     file_io.outputs.write_gmt_fault_file(fault_dict_list, 'tmp.txt', color_mappable=plotting_function, verbose=False)
     file_io.outputs.write_gmt_surface_trace(fault_dict_list, 'tmp2.txt', verbose=False)
     return "tmp.txt", "tmp2.txt"
+
+
+def write_triangle_fault_list(fault_dict_list, plotting_function=lambda x: tri_outputs.return_total_slip(x)):
+    """
+    Produce the output multi-segment file for plotting triangular fault patches
+
+    :param fault_dict_list: list of triangular fault patches
+    :param plotting_function: a function that returns the plotting variable we want to visualize, returns a float
+    :return: filename, where the output will be written
+    """
+    tri_outputs.write_gmt_plots_geographic(fault_dict_list, "tmp.txt", color_mappable=plotting_function,
+                                           verbose=False)
+    return "tmp.txt"
 
 
 def automatically_determine_map_region(region_given=None, fault_dict_list=None, disp_points=None, buffer_deg=0.15):
@@ -51,7 +70,10 @@ def automatically_determine_map_region(region_given=None, fault_dict_list=None, 
     region = region_given
     if not region_given:  # automatically determine region
         if len(fault_dict_list) > 0:
-            minlon, maxlon, minlat, maxlat = fso.get_four_corners_lon_lat_multiple(fault_dict_list)
+            if isinstance(fault_dict_list[0], fst.TriangleFault):
+                minlon, maxlon, minlat, maxlat = fst.get_bounding_region(fault_dict_list)
+            else:
+                minlon, maxlon, minlat, maxlat = fso.get_four_corners_lon_lat_multiple(fault_dict_list)
         elif len(disp_points) > 0:
             minlon, maxlon, minlat, maxlat = dpo_utils.extract_region_from_disp_points(disp_points)
         else:
@@ -69,8 +91,9 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions of rectangular faults.
     In order to use this function with other fault formats, convert to the internal rectangular fault dict first.
+    Note: If we make this function work for triangular faults, the automatic region determination will break.
 
-    :param fault_dict_list: list of fault_dict objects
+    :param fault_dict_list: list of fault_dict objects, could be either triangles or rectangles
     :param outfile: string, name of file
     :param disp_points: list of disp_point objects
     :param region: tuple of 4 numbers, (W, E, S, N)
@@ -101,23 +124,39 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
 
     # Draw fault slip for a list of faults and draw a color scale.
     if len(fault_dict_list) > 0:
-        fault_colors = [_i.slip for _i in fault_dict_list]
-        if slip_cbar_opts:
-            cmap_opts, cbar_opts = slip_cbar_opts, slip_cbar_opts  # user-defined color bar
-        else:
-            [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors)  # auto-defined color bar
-        pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
-                      truncate="0/1", background="o", reverse=True, output="mycpt.cpt")
-        file1, file2 = write_patch_edges_for_plotting(fault_dict_list)  # write source patches, colored by slip
-        fig.plot(data=file1, pen="0.2p,black", fill="+z", cmap="mycpt.cpt")
-        fig.plot(data=file2, pen="0.6p,black")   # shallow edges
-        os.remove(file1)
-        os.remove(file2)
-        if plot_slip_colorbar:
-            fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
-                         truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
-                         frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""])
-        os.remove("mycpt.cpt")
+        if isinstance(fault_dict_list[0], fso.FaultSlipObject):
+            fault_colors = [_i.slip for _i in fault_dict_list]
+            if slip_cbar_opts:
+                cmap_opts, cbar_opts = slip_cbar_opts, slip_cbar_opts  # user-defined color bar
+            else:
+                [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors)  # auto-defined color bar
+            pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
+                          truncate="0/1", background="o", reverse=True, output="mycpt.cpt")
+            file1, file2 = write_patch_edges_for_plotting(fault_dict_list)  # write source patches, colored by slip
+            fig.plot(data=file1, pen="0.2p,black", fill="+z", cmap="mycpt.cpt")
+            fig.plot(data=file2, pen="0.6p,black")   # shallow edges
+            os.remove(file1)
+            os.remove(file2)
+            if plot_slip_colorbar:
+                fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+                             truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
+                             frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""])
+            os.remove("mycpt.cpt")
+        if isinstance(fault_dict_list[0], fst.TriangleFault):
+            fault_colors = [_i.get_total_slip() for _i in fault_dict_list]
+            if slip_cbar_opts:
+                cmap_opts, cbar_opts = slip_cbar_opts, slip_cbar_opts  # user-defined color bar
+            else:
+                [cmap_opts, cbar_opts] = utilities.define_colorbar_series(fault_colors)  # auto-defined color bar
+            pygmt.makecpt(cmap="devon", series=str(cmap_opts[0])+"/"+str(cmap_opts[1])+"/"+str(cmap_opts[2]),
+                          truncate="0/1", background="o", reverse=True, output="mycpt.cpt")
+            file1 = write_triangle_fault_list(fault_dict_list)
+            fig.plot(data=file1, pen="0.2p,black", fill="+z", cmap="mycpt.cpt")
+            if plot_slip_colorbar:
+                fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
+                             truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
+                             frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""])
+            os.remove("mycpt.cpt")
 
     # Draw pre-written fault edges from GMT format, with colorbar (useful for triangles or descriptive data)
     if fault_traces_from_file:
@@ -136,11 +175,12 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
         for item in fault_traces_from_memory:
             fig.plot(x=item[0], y=item[1], pen="thickest,darkred")
 
-    # Draw the updip trace of each fault segment
+    # Draw the updip trace of each fault segment.  Not relevant for triangles.
     if fault_traces_from_dict:
-        for item in fault_dict_list:
-            lons, lats = item.get_updip_corners_lon_lat()
-            fig.plot(x=lons, y=lats, pen="thickest,darkred")
+        if isinstance(fault_dict_list[0], fso.FaultSlipObject):
+            for item in fault_dict_list:
+                lons, lats = item.get_updip_corners_lon_lat()
+                fig.plot(x=lons, y=lats, pen="thickest,darkred")
 
     # Draw vector displacements
     if len(disp_points) > 0:

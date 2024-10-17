@@ -86,3 +86,32 @@ def read_csz_bartlow_2019(input_file):
         fault_patches.append(new_ft)
     print("--> Returning %d triangular fault patches" % len(fault_patches))
     return fault_patches, nodes
+
+
+def read_superstition_hills_mesh_2024(triangles, mesh, slip):
+    """
+    Reading the triangular mesh of the Superstition Hills model from Vavra et al., GRL, 2024
+
+    :param triangles: string, filename
+    :param mesh: string, filename
+    :param slip: string, filename
+    :return: list of fault patches
+    """
+    print("Reading file %s " % triangles)
+    reflon, reflat = -115.70124, 32.93049  # creepmeter location
+    iv1, iv2, iv3 = np.loadtxt(triangles, unpack=True, skiprows=1, usecols=(0, 1, 2))
+    slip_mm = np.loadtxt(slip, unpack=True, skiprows=1, usecols=(0, ))
+    vx, vy, vz = np.loadtxt(mesh, unpack=True, skiprows=2, usecols=(0, 1, 2))  # in km, with negative meaning down
+
+    # Open all the fault patches
+    fault_patches = []
+    for i in range(len(iv1)):
+        index1, index2, index3 = int(iv1[i]), int(iv2[i]), int(iv3[i])
+        new_ft = fault_slip_triangle.TriangleFault(vertex1=[vx[index1]*1000, vy[index1]*1000, vz[index1]*-1000],
+                                                   vertex2=[vx[index2]*1000, vy[index2]*1000, vz[index2]*-1000],
+                                                   vertex3=[vx[index3]*1000, vy[index3]*1000, vz[index3]*-1000],
+                                                   lon=reflon, lat=reflat, depth=0,
+                                                   rtlat_slip=float(slip_mm[i])*0.001, dip_slip=0)
+        fault_patches.append(new_ft)
+    print("--> Returning %d triangular fault patches" % len(fault_patches))
+    return fault_patches
