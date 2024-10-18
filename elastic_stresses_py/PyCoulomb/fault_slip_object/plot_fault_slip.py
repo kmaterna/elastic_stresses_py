@@ -152,6 +152,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                           truncate="0/1", background="o", reverse=True, output="mycpt.cpt")
             file1 = write_triangle_fault_list(fault_dict_list)
             fig.plot(data=file1, pen="0.2p,black", fill="+z", cmap="mycpt.cpt")
+            os.remove(file1)
             if plot_slip_colorbar:
                 fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
                              truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
