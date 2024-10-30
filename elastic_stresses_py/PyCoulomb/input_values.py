@@ -22,6 +22,8 @@ def read_inputs(params):
         input_object = io_intxt.read_intxt(params.input_file, params.mu, params.lame1)  # convenient input format
     elif '.inzero' in params.input_file:
         input_object = io_intxt.read_intxt(params.input_file, params.mu, params.lame1)  # point source
+    elif '.txt' in params.input_file:
+        input_object = io_intxt.read_intxt(params.input_file, params.mu, params.lame1)  # generalized input file
     else:
         raise Exception("Error! Unrecognized type of input file!")
 
