@@ -66,6 +66,7 @@ def read_disp_points(infile):
     If the observed displacements are given in the additional columns,
     then we add them to the object for later plotting against the model.
     A slightly flexible-format read for:
+    - "lon lat"
     - "lon lat name"
     - "lon lat de dn du name"
     - "lon lat de dn du se sn su name"
@@ -83,7 +84,10 @@ def read_disp_points(infile):
             else:
                 # Ultimately it might be better to have a different way of determining formats, but for now...
                 lon, lat = float(temp[0]), float(temp[1])
-                if len(temp) == 3:  # if file is: lon, lat, name
+                if len(temp) == 2:  # if file is: lon, lat
+                    new_disp_point = Displacement_points(lon=lon, lat=lat)
+                    disp_points_list.append(new_disp_point)
+                elif len(temp) == 3:  # if file is: lon, lat, name
                     new_disp_point = Displacement_points(lon=lon, lat=lat, name=temp[2])
                     disp_points_list.append(new_disp_point)
                 elif len(temp) == 5 or len(temp) == 6:  # if file is: lon, lat, de, dn, du [name] without uncertainties
@@ -101,17 +105,19 @@ def read_disp_points(infile):
     return disp_points_list
 
 
-def write_disp_points_locations(disp_points_list, filename):
+def write_disp_points_locations(disp_points_list, filename, precision=6):
     """
     Write the simplest format for lon/lat points
 
     :param disp_points_list: list of disp points
     :param filename: string
+    :param precision: number of significant digits to be printed for the point locations
     """
     print("Writing file %s " % filename)
     with open(filename, 'w') as ofile:
         for item in disp_points_list:
-            ofile.write("%f %f \n" % (item.lon, item.lat))
+            format_string = "%."+str(precision)+"f %."+str(precision)+"f \n"
+            ofile.write(format_string % (item.lon, item.lat))
     return
 
 
