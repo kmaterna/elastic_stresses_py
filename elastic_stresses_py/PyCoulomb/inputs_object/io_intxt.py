@@ -265,6 +265,7 @@ def read_source_line_WCconvention(line):
 
 def read_source_line_slip_convention(line):
     """Format: strike rake dip length_km width_km lon lat depth_km slip_m"""
+    line = line.split('#')[0]
     [strike, rake, dip, length, width] = [float(i) for i in line.split()[1:6]]
     [updip_corner_lon, updip_corner_lat, updip_corner_dep] = [float(i) for i in line.split()[6:9]]
     slip = float(line.split()[9])
