@@ -123,17 +123,17 @@ def get_grid_parameters(input_file):
             read_grid = 1
             continue
         if read_grid == 1:
-            if '  1  -' in line:
+            if '  1  -' in line or '1 -' in line:
                 start_gridx = float(temp[-1])
-            elif '  2  -' in line:
+            elif '  2  -' in line or '2 -' in line:
                 start_gridy = float(temp[-1])
-            elif '  3  -' in line:
+            elif '  3  -' in line or '3 -' in line:
                 finish_gridx = float(temp[-1])
-            elif '  4  -' in line:
+            elif '  4  -' in line or '4 -' in line:
                 finish_gridy = float(temp[-1])
-            elif '  5  -' in line:
+            elif '  5  -' in line or '5 -' in line:
                 xinc = float(temp[-1])
-            elif '  6  -' in line:
+            elif '  6  -' in line or '6 -' in line:
                 yinc = float(temp[-1])
             else:
                 read_grid = 0
@@ -154,17 +154,17 @@ def get_map_info(input_file):
             read_maps = 1
             continue
         if read_maps == 1:
-            if '  1  -' in line:
+            if '  1  -' in line or '1 -' in line:
                 minlon = float(temp[-1])
-            elif '  2  -' in line:
+            elif '  2  -' in line or '2 -' in line:
                 maxlon = float(temp[-1])
-            elif '  3  -' in line:
+            elif '  3  -' in line or '3 -' in line:
                 zerolon = float(temp[-1])
-            elif '  4  -' in line:
+            elif '  4  -' in line or '4 -' in line:
                 minlat = float(temp[-1])
-            elif '  5  -' in line:
+            elif '  5  -' in line or '5 -' in line:
                 maxlat = float(temp[-1])
-            elif '  6  -' in line:
+            elif '  6  -' in line or '6 -' in line:
                 zerolat = float(temp[-1])
             else:
                 read_maps = 0
