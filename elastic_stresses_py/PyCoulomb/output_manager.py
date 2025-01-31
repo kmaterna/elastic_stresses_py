@@ -65,7 +65,13 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
                             os.path.join(params.outdir, "stresses_horiz_profile.txt"))
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
-                          os.path.join(params.outdir, 'horizontal_profile_stresses'+params.save_file_type))
+                          os.path.join(params.outdir, 'horizontal_profile_stresses_coulomb'+params.save_file_type))
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
+                          os.path.join(params.outdir, 'horizontal_profile_stresses_normal'+params.save_file_type),
+                          type='Normal')
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
+                          os.path.join(params.outdir, 'horizontal_profile_stresses_shear'+params.save_file_type),
+                          type='Shear')
     return
 
 
@@ -288,14 +294,25 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     return
 
 
-def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=200, cap_colorbar=1):
+def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=200, cap_colorbar=1, type='Coulomb'):
     """Display a small map of a horizontal profile of stresses. Default colors for now."""
 
     x = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
     y = np.reshape(horiz_profile.lat1d, horiz_profile.shape)
-    _normal_stress = np.reshape(profile_results[0], horiz_profile.shape)
-    _shear_stress = np.reshape(profile_results[1], horiz_profile.shape)
+    normal_stress = np.reshape(profile_results[0], horiz_profile.shape)
+    shear_stress = np.reshape(profile_results[1], horiz_profile.shape)
     coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape)
+    if type == 'Normal':
+        plotting_stress = normal_stress
+    elif type == 'Shear':
+        plotting_stress = shear_stress
+    else:
+        plotting_stress = coulomb_stress
+
+    if not vmin:
+        vmin = np.nanmin(plotting_stress)
+    if not vmax:
+        vmax = np.nanmax(plotting_stress)
 
     # Figure of stresses.
     plt.rcParams['figure.dpi'] = 300
@@ -303,10 +320,10 @@ def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=2
     fig = plt.figure(figsize=(14, 8), dpi=300)
     levels = np.linspace(vmin, vmax, 20)
     if cap_colorbar:  # do we force the higher values to the top of the colorbar?
-        coulomb_stress[coulomb_stress > vmax] = vmax
-        coulomb_stress[coulomb_stress < vmin] = vmin
-    dislay_map = plt.contourf(x, y, coulomb_stress, levels=levels, cmap='RdYlBu_r', vmin=vmin, vmax=vmax)
-    plt.title('Coulomb stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
+        plotting_stress[plotting_stress > vmax] = vmax
+        plotting_stress[plotting_stress < vmin] = vmin
+    dislay_map = plt.contourf(x, y, plotting_stress, levels=levels, cmap='RdYlBu_r', vmin=vmin, vmax=vmax)
+    plt.title(type + ' stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
               str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km))
 
     cb = fig.colorbar(dislay_map, ax=plt.gca(), location='right')

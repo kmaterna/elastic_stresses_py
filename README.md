@@ -128,7 +128,8 @@ Source Faults (or faults that have slip on them) and Receiver Faults (or faults 
 * **FM Format:** For focal mechanisms 
     * "Source_FM: strike rake dip lon lat depth_km magnitude"
 * **Horizontal Profile Format:** Specify an orientation and compute stresses on that plane/orientation over an area. Like a horizontal cross-section.
-    * "Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km" 
+    * "Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km"
+    * If your increments are too small, the process might get killed by your shell.  System-dependent. 
 * **Mogi Source Format:** Specify a location, depth in km, and volume change in meters^3.  **Only implemented for displacement at the moment**, not stresses and strains. 
     * "Source_Mogi: lon lat depth_km dV_m3"  
 

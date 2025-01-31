@@ -211,6 +211,8 @@ def get_receiver_profile(line):
     """
     Create a horizontal profile based on the provided params.
     'Receiver_Horizontal_Profile: depth strike dip rake centerlon centerlat length_km width_km inc_km'
+
+    Note: too-small increments in the horizontal profile may cause the process to get killed.
     """
     [depth, strike, dip, rake, centerlon, centerlat, length, width, inc] = [float(i) for i in line.split()[1:10]]
     startlon = fault_vector_functions.xy2lonlat(-length, 0, centerlon, centerlat)[0]
