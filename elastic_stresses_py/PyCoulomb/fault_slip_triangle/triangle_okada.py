@@ -46,7 +46,7 @@ def compute_cartesian_def_tris(inputs, params, obs_disp_points):
 
 def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio):
     """
-    Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points). Only lon and lat of disp_points will be used.
+    Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points).
     Requires all fault_triangles to have the same reference lon/lat
 
     :param fault_triangles: list
