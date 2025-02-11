@@ -149,9 +149,10 @@ def annotate_figure_with_sources(fig, inputs, mu=30e9, fmscale="0.3c", dotstyle=
 
     :param fig: pygmt figure
     :param inputs: coulomb_collection.inputs_object, which has a list of sources in inputs.source_object
-    :param mu: shear modulus, float
-    :param fmscale: focal mechanism size
-    :param dotstyle: psxy style for source dots
+    :param mu: shear modulus, float, units Pa, default=30 GPa
+    :param fmscale: focal mechanism size, default="0.3c"
+    :param dotstyle: psxy style for source dots, default="s0.3c"
+    :returns: fig
     """
     if len(inputs.source_object) == 0:
         return fig
