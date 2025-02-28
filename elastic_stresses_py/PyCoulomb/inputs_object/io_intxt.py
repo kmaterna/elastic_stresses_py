@@ -86,21 +86,8 @@ def write_intxt(input_object, output_file, label=None, mu=30e9, lame1=30e9):
             src_lon, src_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart, src.zerolon, src.zerolat)
             ofile.write("Source_Mogi: %.3f %.3f %.3f %.3f\n" % (src_lon, src_lat, src.depth, src.dV))
         if isinstance(src, cc.Faults_object):
-            if not src.potency:  # write a finite source as a Source_Patch
-                L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish)  # in km
-                W = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle)  # in km
-                fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
-                                                                        src.zerolon, src.zerolat)
-                slip = fault_vector_functions.get_vector_magnitude([src.rtlat, src.reverse])  # in m
-                ofile.write("Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, src.dipangle,
-                                                                                    L, W, fault_lon, fault_lat,
-                                                                                    src.top, slip))
-            if src.potency:  # write a DC focal mechanism
-                fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
-                                                                        src.zerolon, src.zerolat)
-                mag = io_mt.get_mag_from_dc_potency(src.potency, mu, src.rake)
-                ofile.write("Source_FM: %.3f %.3f %.3f %f %f %.3f %.3f\n" % (src.strike, src.rake, src.dipangle,
-                                                                             fault_lon, fault_lat, src.top, mag))
+            line = get_source_patch_line(src, mu)
+            ofile.write(line)
     for rec in input_object.receiver_object:
         L = fault_vector_functions.get_strike_length(rec.xstart, rec.xfinish, rec.ystart, rec.yfinish)  # in km
         W = fault_vector_functions.get_downdip_width(rec.top, rec.bottom, rec.dipangle)  # in km
@@ -115,6 +102,45 @@ def write_intxt(input_object, output_file, label=None, mu=30e9, lame1=30e9):
         ofile.write("%f %f %f\n" % (rec.length, rec.width, rec.inc))
     ofile.close()
     print("Writing file %s " % output_file)
+    return
+
+
+def get_source_patch_line(src, mu=30e9):
+    """
+    :param src: a Coulomb_collections pyc fault object
+    :param mu: shear modulus, only used for writing point source potency, default 30 GPa
+    :return: string
+    """
+    string = ''
+    if not src.potency:  # write a finite source as a Source_Patch
+        L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish)  # in km
+        W = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle)  # in km
+        fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
+                                                                src.zerolon, src.zerolat)
+        slip = fault_vector_functions.get_vector_magnitude([src.rtlat, src.reverse])  # in m
+        string = "Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, src.dipangle,
+                                                                         L, W, fault_lon, fault_lat,
+                                                                         src.top, slip)
+    if src.potency:  # write a DC focal mechanism
+        fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
+                                                                src.zerolon, src.zerolat)
+        mag = io_mt.get_mag_from_dc_potency(src.potency, mu, src.rake)
+        string = "Source_FM: %.3f %.3f %.3f %f %f %.3f %.3f\n" % (src.strike, src.rake, src.dipangle,
+                                                                  fault_lon, fault_lat, src.top, mag)
+    return string
+
+
+def write_source_patches_output(list_of_faults, outfile, mu=30e9):
+    """
+    :param list_of_faults: list of faults in pycoulomb format
+    :param outfile: string
+    :param mu: shear modulus, only used for writing point source potency, default 30 GPa
+    """
+    print("Writing outfile %s " % outfile)
+    with open(outfile, 'w') as ofile:
+        for src in list_of_faults:
+            line = get_source_patch_line(src, mu)
+            ofile.write(line)
     return
 
 
