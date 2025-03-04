@@ -131,6 +131,60 @@ class Faults_object:
         y_updip = [updip_point0[1], updip_point1[1]]
         return [x_total, y_total, x_updip, y_updip]
 
+    def split_single_fault(self, strike_num_split, dip_num_split, zerolon=None, zerolat=None):
+        """
+        Split a PyCoulomb fault into subdivisions, in strike direction and dip direction.
+
+        :param strike_num_split: integer, number of subdivisions to make along-strike
+        :param dip_num_split: integer, number of subdivisions to make along-dip
+        :param zerolon: optional zerolon for the entire coordinate system
+        :param zerolat: optional zerolat for the entire coordinate system
+        :return: list of fault objects, in PyCoulomb format
+        """
+        onefault = self
+        if strike_num_split == 1 and dip_num_split == 1:
+            # If we're not splitting the subfaults...
+            return onefault
+        else:
+            subfaulted_receivers = []
+
+        if zerolon is None:
+            zerolon = onefault.zerolon
+        if zerolat is None:
+            zerolat = onefault.zerolat
+
+        # We find the depths corresponding to the tops and bottoms of our new sub-faults
+        zsplit_array = get_split_z_array(onefault.top, onefault.bottom, dip_num_split)
+
+        for j in range(dip_num_split):  # First we split it up by dip.
+            # Get the new coordinates of the top of the fault plane.
+            W = fvf.get_downdip_width(onefault.top, zsplit_array[j], onefault.dipangle)
+            vector_mag = W * np.cos(np.deg2rad(onefault.dipangle))  # bottom edge is displaced downdip from map-view
+
+            # Get the starting points for the next row of fault subpatches.
+            [start_x_top, start_y_top] = fvf.add_vector_to_point(onefault.xstart, onefault.ystart,
+                                                                 vector_mag, onefault.strike + 90)
+            [finish_x_top, finish_y_top] = fvf.add_vector_to_point(onefault.xfinish, onefault.yfinish,
+                                                                   vector_mag, onefault.strike + 90)
+
+            [xsplit_array, ysplit_array] = get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top,
+                                                                finish_y_top, strike_num_split)
+
+            for k in range(strike_num_split):
+                single_subfaulted_receiver = Faults_object(xstart=xsplit_array[k],
+                                                           xfinish=xsplit_array[k + 1],
+                                                           ystart=ysplit_array[k],
+                                                           yfinish=ysplit_array[k + 1],
+                                                           Kode=onefault.Kode, strike=onefault.strike,
+                                                           dipangle=onefault.dipangle,
+                                                           zerolon=zerolon,
+                                                           zerolat=zerolat,
+                                                           rake=onefault.rake, top=zsplit_array[j],
+                                                           bottom=zsplit_array[j + 1], comment=onefault.comment)
+                subfaulted_receivers.append(single_subfaulted_receiver)
+
+        return subfaulted_receivers
+
 
 # ----------------------------
 # FUNCTIONS ON LISTS OF OBJECTS
@@ -141,3 +195,37 @@ def get_faults_slip_moment(list_of_faults, mu):
     for patch in list_of_faults:
         total_moment += patch.get_fault_slip_moment(mu)[0]
     return total_moment
+
+
+# ----------------------------
+# UTILITY FUNCTIONS FOR FAULT MANIPULATIONS
+# ----------------------------
+
+def get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, strike_split):
+    """
+    Take the coordinates of the top of a receiver fault plane.
+    Generate the list of coordinates that will help split it up along-strike
+    strike_slip : int
+    """
+    if start_x_top == finish_x_top:
+        xsplit_array = [start_x_top for _j in range(strike_split + 1)]
+    else:
+        xincrement = (finish_x_top - start_x_top) / strike_split
+        xsplit_array = np.arange(start_x_top, finish_x_top + xincrement, xincrement)
+    # length : xsplit+1. contains all the xlocations that could be used as start-stop points in the top row.
+    if start_y_top == finish_y_top:
+        ysplit_array = [start_y_top for _j in range(strike_split + 1)]
+    else:
+        yincrement = (finish_y_top - start_y_top) / strike_split
+        ysplit_array = np.arange(start_y_top, finish_y_top + yincrement, yincrement)
+    # length : xsplit+1. contains all the ylocations that could be used as start-stop points in the top row.
+    return [xsplit_array, ysplit_array]
+
+
+def get_split_z_array(top, bottom, dip_split):
+    if top == bottom:
+        zsplit_array = [top for _j in range(dip_split + 1)]
+    else:
+        zincrement = abs(top - bottom) / dip_split
+        zsplit_array = np.arange(top, bottom + zincrement, zincrement)
+    return zsplit_array

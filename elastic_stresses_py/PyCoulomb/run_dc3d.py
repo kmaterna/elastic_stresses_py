@@ -2,7 +2,7 @@
 
 import numpy as np
 from . import coulomb_collections as cc
-from . import run_mogi, pyc_fault_object, conversion_math
+from . import run_mogi, conversion_math
 from .fault_slip_triangle import triangle_okada
 from .point_source_object import point_sources
 from .disp_points_object.disp_points_object import Displacement_points
@@ -21,7 +21,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     print("Number of sources: %d " % len(inputs.source_object))
     print("Number of receivers: %d " % len(inputs.receiver_object))
     print("Coefficient of friction: %f" % inputs.FRIC)
-    subfaulted_inputs = split_subfault_receivers(params, inputs)
+    subfaulted_inputs = split_subfault_receivers(inputs, params.strike_num_receivers, params.dip_num_receivers)
 
     # Computes here.
     [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params)
@@ -39,10 +39,7 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     return MyOutObject
 
 
-def split_subfault_receivers(params, inputs):
-    strike_split = params.strike_num_receivers
-    dip_split = params.dip_num_receivers
-
+def split_subfault_receivers(inputs, strike_split, dip_split):
     if strike_split == 1 and dip_split == 1:
         # If we're not splitting the subfaults...
         subfaulted_receivers = inputs.receiver_object
@@ -53,38 +50,8 @@ def split_subfault_receivers(params, inputs):
             len(inputs.receiver_object), strike_split * dip_split))
 
         for fault in inputs.receiver_object:  # for each receiver...
-            # We find the depths corresponding to the tops and bottoms of our new sub-faults
-            zsplit_array = get_split_z_array(fault.top, fault.bottom, dip_split)
-
-            for j in range(dip_split):  # First we split it up by dip.
-                # Get the new coordinates of the top of the fault plane.
-                W = fault_vector_functions.get_downdip_width(fault.top, zsplit_array[j], fault.dipangle)
-                vector_mag = W * np.cos(
-                    np.deg2rad(fault.dipangle))  # how far the bottom edge is displaced downdip from map-view
-
-                # Get the starting points for the next row of fault subpatches.
-                [start_x_top, start_y_top] = fault_vector_functions.add_vector_to_point(fault.xstart, fault.ystart,
-                                                                                        vector_mag, fault.strike + 90)
-                [finish_x_top, finish_y_top] = fault_vector_functions.add_vector_to_point(fault.xfinish, fault.yfinish,
-                                                                                          vector_mag, fault.strike +
-                                                                                          90)
-
-                [xsplit_array, ysplit_array] = get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top,
-                                                                    finish_y_top, strike_split)
-
-                for k in range(strike_split):
-                    single_subfaulted_receiver = pyc_fault_object.Faults_object(xstart=xsplit_array[k],
-                                                                                xfinish=xsplit_array[k + 1],
-                                                                                ystart=ysplit_array[k],
-                                                                                yfinish=ysplit_array[k + 1],
-                                                                                Kode=fault.Kode, strike=fault.strike,
-                                                                                dipangle=fault.dipangle,
-                                                                                zerolon=inputs.zerolon,
-                                                                                zerolat=inputs.zerolat,
-                                                                                rake=fault.rake, top=zsplit_array[j],
-                                                                                bottom=zsplit_array[j + 1],
-                                                                                comment=fault.comment)
-                    subfaulted_receivers.append(single_subfaulted_receiver)
+            subfaults = fault.split_single_fault(strike_split, dip_split, inputs.zerolon, inputs.zerolat)
+            subfaulted_receivers.extend(subfaults)  # unpack into new list, equivalent to L1 += L2
 
     subfaulted_objects = cc.Input_object(PR1=inputs.PR1, FRIC=inputs.FRIC, depth=inputs.depth,
                                          start_gridx=inputs.start_gridx, finish_gridx=inputs.finish_gridx,
@@ -94,38 +61,7 @@ def split_subfault_receivers(params, inputs):
                                          zerolat=inputs.zerolat, source_object=inputs.source_object,
                                          receiver_object=subfaulted_receivers,
                                          receiver_horiz_profile=inputs.receiver_horiz_profile)
-
     return subfaulted_objects
-
-
-def get_split_x_y_arrays(start_x_top, finish_x_top, start_y_top, finish_y_top, strike_split):
-    """
-    Take the coordinates of the top of a receiver fault plane.
-    Generate the list of coordinates that will help split it up along-strike
-    strike_slip : int
-    """
-    if start_x_top == finish_x_top:
-        xsplit_array = [start_x_top for _j in range(strike_split + 1)]
-    else:
-        xincrement = (finish_x_top - start_x_top) / strike_split
-        xsplit_array = np.arange(start_x_top, finish_x_top + xincrement, xincrement)
-    # length : xsplit+1. contains all the xlocations that could be used as start-stop points in the top row.
-    if start_y_top == finish_y_top:
-        ysplit_array = [start_y_top for _j in range(strike_split + 1)]
-    else:
-        yincrement = (finish_y_top - start_y_top) / strike_split
-        ysplit_array = np.arange(start_y_top, finish_y_top + yincrement, yincrement)
-    # length : xsplit+1. contains all the ylocations that could be used as start-stop points in the top row.
-    return [xsplit_array, ysplit_array]
-
-
-def get_split_z_array(top, bottom, dip_split):
-    if top == bottom:
-        zsplit_array = [top for _j in range(dip_split + 1)]
-    else:
-        zincrement = abs(top - bottom) / dip_split
-        zsplit_array = np.arange(top, bottom + zincrement, zincrement)
-    return zsplit_array
 
 
 def compute_ll_strain(inputs, params, strain_points):
