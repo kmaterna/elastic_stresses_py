@@ -144,7 +144,7 @@ class Faults_object:
         onefault = self
         if strike_num_split == 1 and dip_num_split == 1:
             # If we're not splitting the subfaults...
-            return onefault
+            return [onefault]
         else:
             subfaulted_receivers = []
 
