@@ -2,6 +2,7 @@ from . import conversion_math
 from Tectonic_Utils.geodesy import fault_vector_functions as fvf
 from Tectonic_Utils.seismo import moment_calculations
 import numpy as np
+from collections.abc import Iterable
 
 
 # PyCoulomb faults object.
@@ -34,6 +35,12 @@ class Faults_object:
             raise ValueError("Error! Provided bad dip of %s (should be between 0 and 90) " % dipangle)
         if strike > 360:
             raise ValueError("Error! Provided bad strike of %s (should be between 0 and 360) " % strike)
+        if is_list_value(self.rtlat):
+            raise ValueError("Error! fault.rtlat is a list instead of a value, ", self.rtlat)
+        if is_list_value(self.reverse):
+            raise ValueError("Error! fault.reverse is a list instead of a value, ", self.reverse)
+        if is_list_value(self.tensile):
+            raise ValueError("Error! fault.tensile is a list instead of a value, ", self.tensile)
         self.R, self.R2 = conversion_math.get_R_from_strike(strike)
         self.L = fvf.get_strike_length(xstart, xfinish, ystart, yfinish)  # in km
         self.W = fvf.get_downdip_width(top, bottom, dipangle)  # in km
@@ -229,3 +236,12 @@ def get_split_z_array(top, bottom, dip_split):
         zincrement = abs(top - bottom) / dip_split
         zsplit_array = np.arange(top, bottom + zincrement, zincrement)
     return zsplit_array
+
+
+def is_list_value(value):
+    """Check to see if a provided value is a list (used for sanity checking)."""
+    is_list = isinstance(value, Iterable) and not isinstance(value, (str, bytes))
+    if is_list:
+        return 1
+    else:
+        return 0
