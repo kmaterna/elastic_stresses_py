@@ -14,6 +14,8 @@ from .disp_points_object.disp_points_object import Displacement_points
 
 def read_inputs(params):
     """Driver to read any format of source and receiver faults for calculation."""
+    if params.input_file is None:
+        raise Exception("Error! You must provide an input file.")
     if '.inp' in params.input_file:
         input_object = io_inp.read_inp(params.input_file, params.fixed_rake)  # fixed rake format
     elif '.inr' in params.input_file:

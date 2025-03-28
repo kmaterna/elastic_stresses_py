@@ -90,6 +90,13 @@ class Faults_object:
         center = [center_point[0], center_point[1], center_z]
         return center
 
+    def get_fault_slip(self):
+        """
+        Given rtlat and reverse fields, compute the total shear slip on the fault surface.
+        :return: float, slip in m
+        """
+        return fvf.get_vector_magnitude([self.rtlat, self.reverse])
+
     def get_fault_slip_moment(self, mu):
         """
         From a source fault object, calculate seismic moment.
