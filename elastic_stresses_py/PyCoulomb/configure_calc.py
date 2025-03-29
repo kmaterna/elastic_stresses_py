@@ -181,6 +181,20 @@ def configure_stress_calculation(config_file, cli_opts=None):
     return MyParams
 
 
+def get_lightweight_config_params(mu=30e9, lame1=30e9, B=0):
+    """
+    In situations where we don't want the whole configure-input-compute-output pipeline.
+    This params object can be used for configuring a calculation without naming its File-IO configuration
+
+    :param mu: shear modulus, Pa
+    :param lame1: first lame parameter, Pa
+    :param B: Skempton's coefficient
+    :return: Params object
+    """
+    MyParams = Params(mu=mu, lame1=lame1, B=B)
+    return MyParams
+
+
 def write_valid_config_file(directory):
     """
     Write a valid config file in the specified location.
