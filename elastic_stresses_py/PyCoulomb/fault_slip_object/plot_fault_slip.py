@@ -21,18 +21,18 @@ def unpack_disp_points(disp_points):
     disp_x = np.array([x.dE_obs for x in disp_points])
     disp_y = np.array([x.dN_obs for x in disp_points])
     disp_z = np.array([x.dU_obs for x in disp_points])
-    lon_vert = np.array([x.lon for x in disp_points if not np.isnan(x.dU_obs)])
-    lat_vert = np.array([x.lat for x in disp_points if not np.isnan(x.dU_obs)])
-    disp_z_vert = np.array([x.dU_obs for x in disp_points if not np.isnan(x.dU_obs)])
+    lon_vert = np.array([x.lon for x in disp_points if ~np.isnan(x.dU_obs)])
+    lat_vert = np.array([x.lat for x in disp_points if ~np.isnan(x.dU_obs)])
+    disp_z_vert = np.array([x.dU_obs for x in disp_points if ~np.isnan(x.dU_obs)])
     return [lon, lat, disp_x, disp_y, disp_z, lon_vert, lat_vert, disp_z_vert]
 
 
 def unpack_horiz_disp_points_for_vectors(disp_points):
     """Unpack any displacement points that have horizontal data will be plotted as vectors"""
-    lon_horiz = np.array([x.lon for x in disp_points if not np.isnan(x.dE_obs)])
-    lat_horiz = np.array([x.lat for x in disp_points if not np.isnan(x.dE_obs)])
-    disp_x_horiz = np.array([x.dE_obs for x in disp_points if not np.isnan(x.dE_obs)])
-    disp_y_horiz = np.array([x.dN_obs for x in disp_points if not np.isnan(x.dE_obs)])
+    lon_horiz = np.array([x.lon for x in disp_points if ~np.isnan(x.dE_obs)])
+    lat_horiz = np.array([x.lat for x in disp_points if ~np.isnan(x.dE_obs)])
+    disp_x_horiz = np.array([x.dE_obs for x in disp_points if ~np.isnan(x.dE_obs)])
+    disp_y_horiz = np.array([x.dN_obs for x in disp_points if ~np.isnan(x.dE_obs)])
     return [lon_horiz, lat_horiz, disp_x_horiz, disp_y_horiz]
 
 
