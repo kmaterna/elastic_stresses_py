@@ -4,6 +4,7 @@ Read other fault formats of rectangular patches into fault slip objects
 """
 import numpy as np
 import scipy.io
+from scipy.io import loadmat
 from Tectonic_Utils.geodesy import fault_vector_functions
 from .. import fault_slip_object
 from . import io_four_corners
@@ -142,6 +143,41 @@ def read_wang_ridgecrest(filename):
         fault_object_list.append(new_fault)
     print("--> Returning %d fault patches " % len(fault_object_list))
     return fault_object_list
+
+
+def read_antoine_ridgecrest(fault_filename, slip_filename):
+    """
+    Read the slip model from Solene Antoine's 2024 GRL paper supplement
+    https://figshare.com/articles/dataset/Antoine_GRL2024_Ridgecrest_data_zip/26093920?file=47219707
+
+    :param fault_filename: string, filename of Solene Antoine's Ridgecrest fault model
+    :param slip_filename: string, filename of Solene Antoine's Ridgecrest slip distribution
+    :return: list of fault slip objects
+    """
+    print("Reading files %s and %s " % (slip_filename, fault_filename))
+
+    slip = loadmat(slip_filename)  # There are 2432 x 13 elements in the slip model
+    slip_model = slip['slip_model']
+    lon0_sys = slip['lon0'][0][0]
+    lat0_sys = slip['lat0'][0][0]
+    rows, cols = np.shape(slip_model)  # 2432 x 13
+
+    fault_list = []
+    for i in range(rows):
+        row = slip_model[i]
+        lon, lat = fault_vector_functions.xy2lonlat(float(row[3]) / 1000, float(row[4]) / 1000, lon0_sys, lat0_sys)
+        rake = fault_vector_functions.get_rake(-float(row[11]), float(row[12]))
+        slip = fault_vector_functions.get_total_slip(float(row[11]) / 100, float(row[12]) / 100)  # in cm
+        one_fault = fault_slip_object.FaultSlipObject(strike=float(row[8]), dip=float(row[9]),
+                                                      length=float(row[6]) / 1000, width=float(row[7]) / 1000,
+                                                      depth=-float(row[5]) / 1000,
+                                                      rake=rake, slip=slip, tensile=0,
+                                                      segment=int(row[0]),
+                                                      lon=lon, lat=lat)
+        fault_list.append(one_fault)
+
+    print("--> Returning %d fault patches " % len(fault_list))
+    return fault_list
 
 
 def read_fialko_dlc(filename):
