@@ -149,6 +149,19 @@ def read_antoine_ridgecrest(fault_filename, slip_filename):
     """
     Read the slip model from Solene Antoine's 2024 GRL paper supplement
     https://figshare.com/articles/dataset/Antoine_GRL2024_Ridgecrest_data_zip/26093920?file=47219707
+    [indx_fault_this_layer(k), [fault segment number]
+    indx_patch, [not needed]
+    indx_depth_this_layer(k), [not needed]
+    xp_this_layer(k) [m, back top corner of fault]
+    yp_this_layer(k) [m, back top corner of fault]
+    zp_this_layer(k) [m, negative downwards]
+    lpatch_this_layer(k), [m]
+    wpatch_this_layer(k), [m]
+    strkp_this_layer(k), [deg]
+    dip0_this_layer(k), [deg]
+    tp_this_layer(k), [idk, not needed]
+    slip1_this_layer(k), [ll-strike-slip, cm]
+    slip2_this_layer(k)];  [reverse slip, cm]
 
     :param fault_filename: string, filename of Solene Antoine's Ridgecrest fault model
     :param slip_filename: string, filename of Solene Antoine's Ridgecrest slip distribution
