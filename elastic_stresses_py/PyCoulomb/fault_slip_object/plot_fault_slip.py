@@ -9,6 +9,11 @@ from .. import utilities
 from ..fault_slip_triangle import fault_slip_triangle as fst
 from ..fault_slip_triangle.file_io import tri_outputs
 from ..disp_points_object import utilities as dpo_utils
+import matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.cm as cm
+from matplotlib.patches import Polygon
+from .. import conversion_math
 
 
 def unpack_disp_points(disp_points):
@@ -110,6 +115,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param vert_mult: can turn verticals into mm by providing 1000 if you want (default is meters)
     :param map_scale: int, in km
     :param slip_cbar_opts: tuple with (cbar_min, cbar_max, cbar_int) for fault slip cbar
+    :returns: handle to the pygmt figure, for the option of later additions
     """
     print("Plotting outfile %s " % outfile)
     proj = "M7i"
@@ -214,7 +220,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w" +
                                                                                               str(map_scale))
     fig.savefig(outfile)
-    return
+    return fig
 
 
 def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp_points, region,
@@ -309,4 +315,91 @@ def plot_data_model_residual(outfile, disp_points, model_disp_points, resid_disp
                          text='rms='+str(np.round(rms, 2)) + ' mm')  # label
 
     fig.savefig(outfile)
+    return
+
+
+def slip_cross_section_cartesian(fault_dict_list, outfile, vmin=-1, vmax=1, writefile=None):
+    """
+    Rotate faults into a depth cross-section and plot their slip values.
+    vmin,vmax are in meters
+    Vertical plots of fault patches in cartesian space, colored by the magnitude of the slip.
+    This really only makes sense for a single-strike planar fault section.
+
+    :param fault_dict_list: list of internal Fault Slip Objects
+    :param outfile: string, name of file where plot will be stored
+    :param vmin: float, lower bound of color scale
+    :param vmax: float, upper bound of color scale
+    :param writefile: string, name of GMT multi-segment file where the cartesian vertical is written, default None
+    """
+
+    print("Making vertical cross-section plot of fault patches in %s. " % outfile)
+
+    zerolon_system, zerolat_system = fault_dict_list[0].lon, fault_dict_list[0].lat
+    pycoulomb_faults = fso.fault_object_to_coulomb_fault(fault_dict_list, zerolon_system, zerolat_system)
+    max_depth_array = [x.bottom for x in pycoulomb_faults]
+    min_depth_array = [x.top for x in pycoulomb_faults]
+    slip_array = [x.slip for x in fault_dict_list]
+
+    # Select boundaries of color map, usually forcing even distribution around 0
+    vmin, vmax = utilities.produce_vmin_vmax_symmetric(slip_array, vmin, vmax)
+    color_boundary_object = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
+    custom_cmap = cm.ScalarMappable(norm=color_boundary_object, cmap='RdYlBu_r')
+
+    # Figure of slip.
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    fig = plt.figure(figsize=(17, 8), dpi=300)
+    if writefile:
+        print("Writing file %s" % writefile)
+        ofile = open(writefile, 'w')
+        ofile.close()
+
+    total_y_array = []
+    for i in range(len(slip_array)):
+        xcoords = [pycoulomb_faults[i].xstart, pycoulomb_faults[i].xstart,
+                   pycoulomb_faults[i].xfinish, pycoulomb_faults[i].xfinish]
+        ycoords = [pycoulomb_faults[i].ystart, pycoulomb_faults[i].ystart,
+                   pycoulomb_faults[i].yfinish, pycoulomb_faults[i].yfinish]
+        zcoords = [pycoulomb_faults[i].top, pycoulomb_faults[i].bottom,
+                   pycoulomb_faults[i].bottom, pycoulomb_faults[i].top]
+        fault_strike = pycoulomb_faults[i].strike
+        x1, y1 = conversion_math.rotate_points(xcoords[0], ycoords[0], fault_strike)
+        x2, y2 = conversion_math.rotate_points(xcoords[1], ycoords[1], fault_strike)
+        x3, y3 = conversion_math.rotate_points(xcoords[2], ycoords[2], fault_strike)
+        x4, y4 = conversion_math.rotate_points(xcoords[3], ycoords[3], fault_strike)
+        ycoords = [y1, y2, y3, y4]
+        total_y_array = total_y_array + ycoords
+        fault_vertices = np.column_stack((ycoords, zcoords))
+        patch_color = custom_cmap.to_rgba(slip_array[i])
+
+        mypolygon = Polygon(fault_vertices, color=patch_color, alpha=1.0)
+        plt.gca().add_patch(mypolygon)
+
+        if writefile:   # the x-axis here is an arbitrary position along the orientation of the receiver fault
+            ofile = open(writefile, 'a')
+            ofile.write("> -Z%f\n" % slip_array[i])
+            ofile.write("%f %f \n" % (-y1, zcoords[0]))
+            ofile.write("%f %f \n" % (-y2, zcoords[1]))
+            ofile.write("%f %f \n" % (-y3, zcoords[2]))
+            ofile.write("%f %f \n" % (-y4, zcoords[3]))
+            ofile.write("%f %f \n" % (-y1, zcoords[0]))
+            ofile.close()
+
+    custom_cmap.set_array(np.arange(vmin, vmax, 100))
+    cb = fig.colorbar(custom_cmap, ax=plt.gca(), location='right')
+    cb.set_label('Slip (m)', fontsize=22)
+    for label in cb.ax.yaxis.get_ticklabels():
+        label.set_size(18)
+
+    plt.grid()
+    plt.gca().tick_params(axis='both', which='major', labelsize=18)
+    plt.title('Slip from source faults', fontsize=22)
+    plt.xlim([np.min(total_y_array)-1, np.max(total_y_array)+1])
+    plt.xlabel('Distance along fault profile (km)', fontsize=18)
+    plt.ylabel('Depth (km)', fontsize=18)
+    plt.ylim([min(min_depth_array), max(max_depth_array)])
+    plt.gca().invert_yaxis()
+    plt.gca().invert_xaxis()
+    plt.savefig(outfile, facecolor="w")
+    plt.close()
     return
