@@ -29,6 +29,14 @@ class Input_object:
         if len(self.source_object) == 0:
             raise ValueError("Error! Valid Input_objects must have nonzero source_object.")
 
+    def __str__(self):
+        print("PyCoulomb Input object: ")
+        print("Coordinate system X: %f %f %f" % (self.start_gridx, self.finish_gridx, self.xinc))
+        print("Coordinate system Y: %f %f %f" % (self.start_gridy, self.finish_gridy, self.yinc))
+        print("Number of sources: %d" % len(self.source_object))
+        print("Number of receivers: %d" % len(self.receiver_object))
+        return ""
+
     def define_map_region(self):
         """
         Define bounding box for map [W, E, S, N] based on sources and receivers, if bigger than coord system

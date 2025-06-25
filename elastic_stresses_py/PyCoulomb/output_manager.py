@@ -63,7 +63,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         pygmt_plots.map_vertical_def(params, inputs, os.path.join(params.outdir, "vertical_map"+params.save_file_type))
     if out_object.receiver_profile:
         write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
-                            os.path.join(params.outdir, "stresses_horiz_profile.txt"))
+                            os.path.join(params.outdir, "horizontal_profile_stresses.txt"))
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
                           os.path.join(params.outdir, 'horizontal_profile_stresses_coulomb'+params.save_file_type))
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,

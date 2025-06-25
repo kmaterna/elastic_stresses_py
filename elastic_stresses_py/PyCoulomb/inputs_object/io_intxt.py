@@ -14,11 +14,14 @@ from Tectonic_Utils.seismo import wells_and_coppersmith
 from Tectonic_Utils.geodesy import fault_vector_functions
 
 
-def read_intxt(input_file, mu=30e9, _lame1=30e9):
+def read_intxt(input_file, mu=30e9, _lame1=30e9, verbose=False, num_xpts=100, num_ypts=100):
     """
     :param input_file: string, filename
     :param mu: optional, mu for focal mechanism sources
     :param _lame1: optional, lame1 never used
+    :param verbose: default False. If True, it will print metrics of the input faults.
+    :param num_xpts: integer, number of x-points used for synthetic displacements
+    :param num_ypts: integer, number of y-points used for synthetic displacements
     :return: an input object
     """
     print("Reading source and receiver fault information from file %s " % input_file)
@@ -26,7 +29,7 @@ def read_intxt(input_file, mu=30e9, _lame1=30e9):
     receiver_horiz_profile = None
     [PR1, FRIC, minlon, maxlon, zerolon, minlat, maxlat, zerolat] = get_general_compute_params(input_file)
     [start_x, end_x, start_y, end_y, xinc, yinc] = compute_grid_params_general(minlon, maxlon, minlat, maxlat,
-                                                                               zerolon, zerolat)
+                                                                               zerolon, zerolat, num_xpts, num_ypts)
     ifile = open(input_file, 'r')
     for line in ifile:
         temp = line.split()
@@ -49,6 +52,9 @@ def read_intxt(input_file, mu=30e9, _lame1=30e9):
                 one_mogi_source = get_mogi_source(line, zerolon, zerolat)
                 sources.append(one_mogi_source)
     ifile.close()
+    if verbose:
+        for onefault in sources:
+            print("RtLat slip: %f m, Reverse slip: %f m" % (onefault.rtlat, onefault.reverse))
 
     # Wrapping up the inputs.
     input_obj = Input_object(PR1=PR1, FRIC=FRIC, depth=0, start_gridx=start_x, finish_gridx=end_x,
@@ -112,13 +118,16 @@ def get_source_patch_line(src, mu=30e9):
     :return: string
     """
     string = ''
+    dip = src.dipangle
+    if dip == 90:
+        dip = 89.99
     if not src.potency:  # write a finite source as a Source_Patch
         L = fault_vector_functions.get_strike_length(src.xstart, src.xfinish, src.ystart, src.yfinish)  # in km
         W = fault_vector_functions.get_downdip_width(src.top, src.bottom, src.dipangle)  # in km
         fault_lon, fault_lat = fault_vector_functions.xy2lonlat(src.xstart, src.ystart,
                                                                 src.zerolon, src.zerolat)
         slip = fault_vector_functions.get_vector_magnitude([src.rtlat, src.reverse])  # in m
-        string = "Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, src.dipangle,
+        string = "Source_Patch: %.3f %.3f %.3f %f %f %f %f %.3f %f\n" % (src.strike, src.rake, dip,
                                                                          L, W, fault_lon, fault_lat,
                                                                          src.top, slip)
     if src.potency:  # write a DC focal mechanism
@@ -265,17 +274,15 @@ def defensive_programming_faults(onefault):
     Assert sanity on faults to make sure they've been read properly
     """
     critical_distance = 1000  # in km
-    assert (-360 < onefault.strike < 360), RuntimeError("Invalid strike parameter for fault object")
-    assert (-360 < onefault.rake < 360), RuntimeError("Invalid rake parameter for fault object")
-    assert (0 < onefault.dipangle < 90), RuntimeError("Invalid dip parameter for fault object")
+    assert (-360 < onefault.strike < 360), RuntimeError("Invalid strike for fault object: %f" % onefault.strike)
+    assert (-360 < onefault.rake < 360), RuntimeError("Invalid rake parameter for fault object: %f" % onefault.rake)
+    assert (0 < onefault.dipangle < 90), RuntimeError("Invalid dip parameter for fault object: %f" % onefault.dipangle)
     assert (abs(onefault.xstart) < critical_distance), RuntimeError("Too distant fault for fault object")
     assert (abs(onefault.xfinish) < critical_distance), RuntimeError("Too distant fault for fault object")
     assert (abs(onefault.ystart) < critical_distance), RuntimeError("Too distant fault for fault object")
     assert (abs(onefault.yfinish) < critical_distance), RuntimeError("Too distant fault for fault object")
     assert (onefault.top >= 0), RuntimeError("Invalid depth parameter for fault object")
     assert (onefault.bottom >= onefault.top), RuntimeError("Bottom of fault above top of fault. ")
-    if onefault.rtlat > 0 or onefault.reverse > 0:
-        print("RtLat slip: %f m, Reverse slip: %f m" % (onefault.rtlat, onefault.reverse))
     return
 
 
@@ -334,10 +341,19 @@ def read_mogi_source_line(line):
 # Compute functions to generate fault object's quantities
 # ------------------------------------
 
-def compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolon, zerolat):
+def compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolon, zerolat, num_xpts=100, num_ypts=100):
     """
     Compute the Cargesian grid parameters (in km) that we'll be using, based on the size of the map.
     For synthetic displacements, assuming 100 increments in both directions.
+
+    :param minlon: float, minimum longitude
+    :param maxlon: float, maximum longitude
+    :param minlat: float, minimum latitude
+    :param maxlat: float, maximum latitude
+    :param zerolon: float, longitude of the origin of the coordinate system
+    :param zerolat: float, latitude of the origin of the coordinate system
+    :param num_xpts: int, number of points in x-dim that are used for synthetic displacements, default 100
+    :param num_ypts: int, number of points in y-dim that are used for synthetic displacements, default 100
     """
     deltalon = (maxlon - minlon) * 111.00 * np.cos(np.deg2rad(zerolat))  # in km.
     deltalat = (maxlat - minlat) * 111.00  # in km.
@@ -345,8 +361,8 @@ def compute_grid_params_general(minlon, maxlon, minlat, maxlat, zerolon, zerolat
     finish_gridx = (maxlon - zerolon) * 111.00 * np.cos(np.deg2rad(zerolat))  # in km.
     start_gridy = (minlat - zerolat) * 111.00  # in km.
     finish_gridy = (maxlat - zerolat) * 111.00  # in km.
-    xinc = deltalon / 100.0
-    yinc = deltalat / 100.0
+    xinc = deltalon / num_xpts  # number of x-points
+    yinc = deltalat / num_ypts  # number of y-points
     return [start_gridx, finish_gridx, start_gridy, finish_gridy, xinc, yinc]
 
 
