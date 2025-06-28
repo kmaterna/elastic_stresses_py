@@ -3,7 +3,7 @@ Functions to read and write STATIC1D input files for fault slip and displacement
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from .. import fault_slip_object
 from ...disp_points_object.disp_points_object import Displacement_points
 

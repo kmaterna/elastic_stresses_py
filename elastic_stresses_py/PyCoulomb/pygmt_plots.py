@@ -4,7 +4,7 @@ import numpy as np
 import pygmt
 import os
 from . import io_additionals, utilities
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 
 
 def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1):

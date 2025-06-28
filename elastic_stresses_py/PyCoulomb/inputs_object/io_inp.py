@@ -11,7 +11,7 @@ Read Coulomb input files in the .inp format. Important parameters are:
 from .. import utilities
 from .input_obj import Input_object
 from ..pyc_fault_object import Faults_object
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 import subprocess
 
 

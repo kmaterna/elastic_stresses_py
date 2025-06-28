@@ -4,7 +4,7 @@ Format json: basis1, basis2, length(m), width(m), nlength, nwidth, strike, dip, 
 """
 
 import json
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from .. import fault_slip_object
 
 

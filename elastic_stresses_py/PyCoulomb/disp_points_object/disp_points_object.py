@@ -1,5 +1,5 @@
 
-from Tectonic_Utils.geodesy import euler_pole, insar_vector_functions, utilities
+from tectonic_utils.geodesy import euler_pole, insar_vector_functions, utilities
 import numpy as np
 
 

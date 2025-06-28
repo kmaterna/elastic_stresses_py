@@ -2,7 +2,7 @@
 
 
 import numpy as np
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 
 
 def get_poissons_ratio_and_alpha(mu, lame1):

@@ -5,7 +5,7 @@ Read other fault formats of rectangular patches into fault slip objects
 import numpy as np
 import scipy.io
 from scipy.io import loadmat
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from .. import fault_slip_object
 from . import io_four_corners
 import json

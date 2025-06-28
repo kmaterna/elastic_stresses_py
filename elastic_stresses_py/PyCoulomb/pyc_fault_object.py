@@ -1,6 +1,6 @@
 from . import conversion_math
-from Tectonic_Utils.geodesy import fault_vector_functions as fvf
-from Tectonic_Utils.seismo import moment_calculations
+from tectonic_utils.geodesy import fault_vector_functions as fvf
+from tectonic_utils.seismo import moment_calculations
 import numpy as np
 from collections.abc import Iterable
 

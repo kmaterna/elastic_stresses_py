@@ -2,7 +2,7 @@ import scipy.io
 import numpy as np
 from osgeo import osr  # gdal library, works inside pygmt environment
 from .. import fault_slip_triangle
-from Tectonic_Utils.geodesy import fault_vector_functions as fvf
+from tectonic_utils.geodesy import fault_vector_functions as fvf
 
 
 def convert_points_to_wgs84(x, y):

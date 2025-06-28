@@ -4,7 +4,7 @@ from four corners into list of fault_slip_object dictionaries
 """
 
 import numpy as np
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from .. import fault_slip_object
 
 

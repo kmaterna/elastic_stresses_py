@@ -9,7 +9,7 @@ from matplotlib.patches import Polygon
 from . import conversion_math, pygmt_plots, io_additionals, utilities, coulomb_collections
 from .inputs_object import io_intxt, io_inp
 from . import fault_slip_object as fso
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 
 
 def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object):

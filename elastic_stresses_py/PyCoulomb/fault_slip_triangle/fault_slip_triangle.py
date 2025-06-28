@@ -1,7 +1,7 @@
 
 import numpy as np
-from Tectonic_Utils.geodesy import fault_vector_functions, haversine
-from Tectonic_Utils.seismo import moment_calculations
+from tectonic_utils.geodesy import fault_vector_functions, haversine
+from tectonic_utils.seismo import moment_calculations
 from ..pyc_fault_object import Faults_object
 from ..fault_slip_object.fault_slip_object import fault_object_to_coulomb_fault
 

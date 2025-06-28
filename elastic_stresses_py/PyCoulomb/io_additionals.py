@@ -5,7 +5,7 @@ Reading aftershock tables and GPS lon/lat pairs
 from .disp_points_object.disp_points_object import Displacement_points
 from . import utilities, conversion_math
 import numpy as np
-from Tectonic_Utils.seismo import moment_calculations
+from tectonic_utils.seismo import moment_calculations
 from . import pyc_fault_object as pycfaults
 
 

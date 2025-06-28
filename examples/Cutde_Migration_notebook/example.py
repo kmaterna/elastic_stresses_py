@@ -10,7 +10,7 @@ import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
 import cutde.halfspace as hs
 # My own library imports (working to remove for purposes of this example script)
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from elastic_stresses_py.PyCoulomb import fault_slip_object as fso
 from elastic_stresses_py.PyCoulomb.fault_slip_triangle import fault_slip_triangle as fst
 

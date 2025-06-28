@@ -10,8 +10,8 @@ from .. import coulomb_collections as cc
 from .. import conversion_math
 from .input_obj import Input_object
 from ..pyc_fault_object import Faults_object
-from Tectonic_Utils.seismo import wells_and_coppersmith
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.seismo import wells_and_coppersmith
+from tectonic_utils.geodesy import fault_vector_functions
 
 
 def read_intxt(input_file, mu=30e9, _lame1=30e9, verbose=False, num_xpts=100, num_ypts=100):

@@ -2,7 +2,7 @@
 # Run this in your elastic_py environment
 
 import elastic_stresses_py.PyCoulomb.fault_slip_object as fso
-import Tectonic_Utils.seismo.moment_calculations as seismo_mo
+import tectonic_utils.seismo.moment_calculations as seismo_mo
 
 filedict = {"slip_file": "./fialko_emc_dlc_format.txt"}
 

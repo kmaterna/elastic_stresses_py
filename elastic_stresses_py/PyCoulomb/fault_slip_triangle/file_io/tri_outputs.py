@@ -1,5 +1,5 @@
 from ... import conversion_math
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 
 
 def return_total_slip(fault_object):

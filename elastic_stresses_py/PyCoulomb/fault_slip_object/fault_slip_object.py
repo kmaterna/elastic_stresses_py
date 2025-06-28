@@ -4,8 +4,8 @@ For all other formats, make sure you build read/write conversion AND TEST functi
 """
 
 from ..pyc_fault_object import Faults_object
-from Tectonic_Utils.geodesy import fault_vector_functions, haversine, insar_vector_functions
-from Tectonic_Utils.seismo import moment_calculations
+from tectonic_utils.geodesy import fault_vector_functions, haversine, insar_vector_functions
+from tectonic_utils.seismo import moment_calculations
 import numpy as np
 
 

@@ -1,12 +1,12 @@
 import numpy as np
 from subprocess import call
 import os
-from Tectonic_Utils.seismo import moment_calculations
+from tectonic_utils.seismo import moment_calculations
 from . import fault_slip_object as fso
 from . import pyc_fault_object as pycfaults
 from . import coulomb_collections as cc
 from .disp_points_object.disp_points_object import Displacement_points
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 
 
 def define_colorbar_series(plotting_array, vmin=None, vmax=None, tol=0.0005, v_labeling_interval=None):

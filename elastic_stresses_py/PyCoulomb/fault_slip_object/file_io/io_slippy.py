@@ -4,7 +4,7 @@ Slippy format: lon lat depth[m] strike[deg] dip[deg] length[m] width[m] left-lat
 """
 
 import numpy as np
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from .. import fault_slip_object
 
 

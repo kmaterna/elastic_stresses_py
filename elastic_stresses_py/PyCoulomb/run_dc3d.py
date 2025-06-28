@@ -6,7 +6,7 @@ from . import run_mogi, conversion_math
 from .fault_slip_triangle import triangle_okada
 from .point_source_object import point_sources
 from .disp_points_object.disp_points_object import Displacement_points
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from . import utilities
 
 

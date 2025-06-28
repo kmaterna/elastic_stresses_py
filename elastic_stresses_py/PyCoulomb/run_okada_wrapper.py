@@ -1,6 +1,6 @@
 import numpy as np
 from okada_wrapper import dc3dwrapper, dc3d0wrapper
-from Tectonic_Utils.geodesy import fault_vector_functions
+from tectonic_utils.geodesy import fault_vector_functions
 from .disp_points_object.disp_points_object import Displacement_points
 from . import conversion_math, utilities
 

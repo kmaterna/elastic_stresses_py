@@ -3,8 +3,8 @@ Functions for SRCMOD IO of faults and slip distributions into list of fault_slip
 
 """
 import numpy as np
-from Tectonic_Utils.geodesy import fault_vector_functions
-import Tectonic_Utils.seismo.moment_calculations as moment_calcs
+from tectonic_utils.geodesy import fault_vector_functions
+import tectonic_utils.seismo.moment_calculations as moment_calcs
 from .. import fault_slip_object
 
 

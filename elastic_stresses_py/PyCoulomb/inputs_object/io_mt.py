@@ -1,8 +1,8 @@
 # Input a moment tensor (math not done)
 import numpy as np
 from ..pyc_fault_object import Faults_object
-from Tectonic_Utils.geodesy import fault_vector_functions
-from Tectonic_Utils.seismo import moment_calculations, MT_calculations
+from tectonic_utils.geodesy import fault_vector_functions
+from tectonic_utils.seismo import moment_calculations, MT_calculations
 
 
 def get_DC_potency(rake, momentmagnitude, mu):
