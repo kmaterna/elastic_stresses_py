@@ -68,10 +68,10 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
                           os.path.join(params.outdir, 'horizontal_profile_stresses_coulomb'+params.save_file_type))
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
                           os.path.join(params.outdir, 'horizontal_profile_stresses_normal'+params.save_file_type),
-                          type='Normal')
+                          stress_type='Normal')
         map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
                           os.path.join(params.outdir, 'horizontal_profile_stresses_shear'+params.save_file_type),
-                          type='Shear')
+                          stress_type='Shear')
     return
 
 
@@ -294,7 +294,8 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     return
 
 
-def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=200, cap_colorbar=1, type='Coulomb'):
+def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=200, cap_colorbar=1,
+                      stress_type='Coulomb'):
     """Display a small map of a horizontal profile of stresses. Default colors for now."""
 
     x = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
@@ -302,9 +303,9 @@ def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=2
     normal_stress = np.reshape(profile_results[0], horiz_profile.shape)
     shear_stress = np.reshape(profile_results[1], horiz_profile.shape)
     coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape)
-    if type == 'Normal':
+    if stress_type == 'Normal':
         plotting_stress = normal_stress
-    elif type == 'Shear':
+    elif stress_type == 'Shear':
         plotting_stress = shear_stress
     else:
         plotting_stress = coulomb_stress
@@ -323,8 +324,8 @@ def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=2
         plotting_stress[plotting_stress > vmax] = vmax
         plotting_stress[plotting_stress < vmin] = vmin
     dislay_map = plt.contourf(x, y, plotting_stress, levels=levels, cmap='RdYlBu_r', vmin=vmin, vmax=vmax)
-    plt.title(type + ' stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)+', ' +
-              str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km))
+    plt.title(stress_type + ' stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)
+              + ', ' + str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km))
 
     cb = fig.colorbar(dislay_map, ax=plt.gca(), location='right')
     cb.set_label('Stress (kPa)', fontsize=22)
