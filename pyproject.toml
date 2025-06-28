@@ -25,7 +25,7 @@ scipy = ">=1.10"
 matplotlib = ">=3.4"
 pygmt = ">0.8"
 pandas = "*"
-Tectonic-Utils = "^0.1.0"
+tectonic-utils = "^0.2.0"
 
 
 [build-system]

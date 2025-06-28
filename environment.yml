@@ -22,5 +22,5 @@ dependencies:
  - jupyter
  - cutde~=22.3.17
  - pip:
-    - Tectonic-Utils 
+    - tectonic-utils
     - okada_wrapper
