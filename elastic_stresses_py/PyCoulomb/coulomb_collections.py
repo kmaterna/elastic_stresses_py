@@ -30,7 +30,7 @@ class Out_object:
         self.receiver_normal = receiver_normal
         self.receiver_shear = receiver_shear
         self.receiver_coulomb = receiver_coulomb
-        self.receiver_profile = receiver_profile
+        self.receiver_profile = receiver_profile  # list of several other fields
 
 
 class Receiver_Horiz_Profile:

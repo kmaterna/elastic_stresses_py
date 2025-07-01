@@ -136,8 +136,8 @@ def compute_stresses_horiz_profile(params, inputs):
     Pseudocode: Create a grid of points, and compute all stresses on them, given specified strike/dip/rake.
     horiz_profile = [depth_km, strike, dip, rake, centerlon, centerlat, length_km, width_km, inc_km]
 
-    :param params: named tuple
-    :param inputs: named tuple
+    :param params: object of type configure_calc.Params
+    :param inputs: object of type Inputs_object
     :returns: list of 3 lists, representing receiver normal, shear, and coulomb stress results
     """
     if not inputs.receiver_horiz_profile:
@@ -158,8 +158,8 @@ def compute_stresses_horiz_profile(params, inputs):
     for (x, y) in zip(xi, yi):
         strain_points.append(Displacement_points(lon=x, lat=y, depth=profile.depth_km))
 
-    strain_tensors = compute_xy_strain(inputs, params, strain_points)
-    stress_tensors = conversion_math.stress_tensor_batch(np.array(strain_tensors), params.lame1, params.mu)
+    strain_tensors = np.array(compute_xy_strain(inputs, params, strain_points))
+    stress_tensors = conversion_math.stress_tensor_batch(strain_tensors, params.lame1, params.mu)
 
     for i, stress_tensor in enumerate(stress_tensors):
         # Then compute shear, normal, and coulomb stresses.
@@ -195,11 +195,10 @@ def compute_strains_stresses(params, inputs):
         strain_point = Displacement_points(lon=centercoords[0], lat=centercoords[1], depth=centercoords[2])
         target_points.append(strain_point)
 
-    strain_tensors = compute_xy_strain(inputs, params, target_points)
+    strain_tensors = np.array(compute_xy_strain(inputs, params, target_points))
+    stress_tensors = conversion_math.stress_tensor_batch(strain_tensors, params.lame1, params.mu)
 
-    for rec, strain_tensor in zip(inputs.receiver_object, strain_tensors):
-        stress_tensor = conversion_math.get_stress_tensor(strain_tensor, params.lame1, params.mu)
-
+    for rec, stress_tensor in zip(inputs.receiver_object, stress_tensors):
         # Then compute shear, normal, and coulomb stresses.
         [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec.strike_unit_vector,
                                                                                  rec.rake, rec.dip_unit_vector,
