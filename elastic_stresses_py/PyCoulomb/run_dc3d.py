@@ -144,31 +144,33 @@ def compute_stresses_horiz_profile(params, inputs):
         return None
 
     # Build a regular grid and iterate through.
-    print("Resolving stresses on a horizontal profile.")
+    print("Resolving stresses on a horizontal profile with points of shape ", inputs.receiver_horiz_profile.shape)
     profile = inputs.receiver_horiz_profile
-    receiver_normal, receiver_shear, receiver_coulomb, strain_points = [], [], [], []
+    receiver_normal = np.empty(np.shape(profile.lon1d))
+    receiver_shear = np.empty(np.shape(profile.lon1d))
+    receiver_coulomb = np.empty(np.shape(profile.lon1d))
+    sigmaij, strain_points = [], []
 
     # perf improvement: Compute receiver geometry just once, since it's a profile of fixed geometry
     rec_strike_v, rec_dip_v, rec_plane_normal = conversion_math.get_geom_attributes_from_receiver_profile(profile)
 
-    for i in range(len(inputs.receiver_horiz_profile.lon1d)):
-        [xi, yi] = fault_vector_functions.latlon2xy(profile.lon1d[i], profile.lat1d[i], inputs.zerolon, inputs.zerolat)
-        strain_points.append(Displacement_points(lon=xi, lat=yi, depth=profile.depth_km))
+    [xi, yi] = fault_vector_functions.latlon2xy(profile.lon1d, profile.lat1d, inputs.zerolon, inputs.zerolat)
+    for (x, y) in zip(xi, yi):
+        strain_points.append(Displacement_points(lon=x, lat=y, depth=profile.depth_km))
 
     strain_tensors = compute_xy_strain(inputs, params, strain_points)
+    stress_tensors = conversion_math.stress_tensor_batch(np.array(strain_tensors), params.lame1, params.mu)
 
-    for i in range(len(strain_tensors)):
-        stress_tensor = conversion_math.get_stress_tensor(strain_tensors[i], params.lame1, params.mu)
-
+    for i, stress_tensor in enumerate(stress_tensors):
         # Then compute shear, normal, and coulomb stresses.
         [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec_strike_v,
                                                                                  profile.rake, rec_dip_v,
                                                                                  rec_plane_normal, inputs.FRIC,
                                                                                  params.B)
-
-        receiver_normal.append(normal)
-        receiver_shear.append(shear)
-        receiver_coulomb.append(coulomb)
+        receiver_normal[i] = normal
+        receiver_shear[i] = shear
+        receiver_coulomb[i] = coulomb
+        sigmaij.append(stress_tensor)  # will optionally send this out to GRD files when the switch is built
 
     return receiver_normal, receiver_shear, receiver_coulomb
 

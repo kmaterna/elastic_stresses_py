@@ -35,18 +35,27 @@ class Out_object:
 
 class Receiver_Horiz_Profile:
     def __init__(self, depth_km, strike, dip, rake, centerlon, centerlat, lon1d, lat1d, width, length, inc, shape):
-        self.depth_km = depth_km  # km
-        self.strike = strike  # degrees
-        self.dip = dip  # degrees
-        self.rake = rake  # degrees
-        self.centerlon = centerlon  # degrees
-        self.centerlat = centerlat  # degrees
-        self.lon1d = lon1d
-        self.lat1d = lat1d
-        self.width = width  # km
-        self.length = length  # km
-        self.inc = inc  # km
-        self.shape = shape
+        self.depth_km = depth_km  # km, float
+        self.strike = strike  # degrees, float
+        self.dip = dip  # degrees, float
+        self.rake = rake  # degrees, float
+        self.centerlon = centerlon  # degrees, float
+        self.centerlat = centerlat  # degrees, float
+        self.lon1d = lon1d   # reshaped version of grid of target points, into 1D array
+        self.lat1d = lat1d   # reshaped version of grid of target points, into 1D array
+        self.width = width  # km, float, the north-south half-dimension of the profile
+        self.length = length  # km, float, the east-west half-dimension of the profile
+        self.inc = inc  # km, float
+        self.shape = shape  # tuple, (ny, nx)
+
+        if dip > 90 or dip < 0:
+            raise ValueError("Error! Provided bad dip of %s (should be between 0 and 90) " % dip)
+        if strike > 360:
+            raise ValueError("Error! Provided bad strike of %s (should be between 0 and 360) " % strike)
+        if len(self.lon1d) != self.shape[0] * self.shape[1]:
+            raise ValueError("Error! Provided lon1d array of ", len(self.lon1d), " doesn't match shape ", self.shape)
+        if len(self.lat1d) != self.shape[0] * self.shape[1]:
+            raise ValueError("Error! Provided lat1d array of ", len(self.lat1d), " doesn't match shape ", self.shape)
 
 
 class Mogi_Source:

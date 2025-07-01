@@ -26,11 +26,7 @@ def get_strain_tensor(dUidUj):
     :param dUidUj: 2d array, size 3x3
     :returns: strain tensor in the form of 2d array, size 3x3
     """
-    rows, cols = np.shape(dUidUj)
-    strain_tensor = np.zeros(np.shape(dUidUj))
-    for i in range(rows):
-        for j in range(cols):
-            strain_tensor[i][j] = 0.5 * (dUidUj[i][j] + dUidUj[j][i])
+    strain_tensor = 0.5 * (dUidUj + dUidUj.T)
     return strain_tensor
 
 
@@ -45,15 +41,39 @@ def get_stress_tensor(eij, lamda, mu):
     :param mu: shear modulus, float
     :returns: stress tensor, 2d array, size 3x3
     """
-    rows, cols = np.shape(eij)
-    stress_tensor = np.zeros(np.shape(eij))
-    for i in range(rows):
-        for j in range(cols):
-            if i == j:
-                stress_tensor[i][j] = lamda*(eij[0][0]+eij[1][1]+eij[2][2]) + 2*mu*eij[i][j]
-            else:
-                stress_tensor[i][j] = 2*mu*eij[i][j]
+    trace_ij = np.trace(eij)
+    identity = np.eye(3)
+    stress_tensor = 2 * mu * eij + lamda * trace_ij * identity
     return stress_tensor
+
+
+def stress_tensor_batch(strains: np.ndarray, lamda: float, mu: float) -> np.ndarray:
+    """
+    Vectorized stress-tensor computation for an array of 3×3 strain tensors.
+
+    Parameters
+    ----------
+    strains : ndarray
+        Strain tensors with shape (..., 3, 3).  The leading dimensions
+        (if any) index different tensors or grid points.
+    lamda : float
+        First Lamé parameter (λ).
+    mu : float
+        Shear modulus (μ).
+
+    Returns
+    -------
+    ndarray
+        Stress tensors of the same shape as `strains`.
+    """
+    # Trace of each strain tensor, shape (...,)
+    trace = np.trace(strains, axis1=-2, axis2=-1)[..., None, None]  # reshape to broadcast
+
+    # Identity matrix broadcast over leading dimensions
+    identity = np.eye(3)                                            # shape (3, 3)
+
+    # σ = λ tr(ε) I + 2 μ ε     (broadcasting handles all leading dims)
+    return 2 * mu * strains + lamda * trace * identity
 
 
 def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
