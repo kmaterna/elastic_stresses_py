@@ -28,7 +28,7 @@ def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fa
 
     :param fault_object_list: list of fault elements
     :param outfile: string
-    :param color_mappable: 1d array of scalars, or a function that takes an object of the fault's type.
+    :param color_mappable: 1d list of scalars, or a function that takes an object of the fault's type.
     :param verbose: bool
     """
     if verbose:
@@ -50,20 +50,28 @@ def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fa
     return
 
 
-def write_gmt_surface_trace(fault_object_list, outfile, verbose=True):
+def write_gmt_surface_trace(fault_object_list, outfile, color_mappable=None, verbose=True):
     """
     Write the 2 updip corners of a rectangular fault into a multi-segment file for plotting in GMT.
 
     :param fault_object_list: list of fault elements
     :param outfile: string
+    :param color_mappable: 1d list of scalars, or a function that takes an object of the fault's type.
     :param verbose: bool
     """
     if verbose:
         print("Writing file %s " % outfile)
     ofile = open(outfile, 'w')
-    for fault in fault_object_list:
+    for i, fault in enumerate(fault_object_list):
         lons, lats = fault.get_four_corners_lon_lat()
-        ofile.write("> -Z\n")
+        if color_mappable:
+            if isinstance(color_mappable, collections.abc.Sequence):
+                color_string = "-Z"+str(color_mappable[i])  # if separately providing the color array
+            else:
+                color_string = "-Z"+str(color_mappable(fault))  # call the function that you've provided
+        else:
+            color_string = "-Z"
+        ofile.write("> "+color_string+"\n")
         ofile.write("%f %f\n" % (lons[0], lats[0]))
         ofile.write("%f %f\n" % (lons[1], lats[1]))
     ofile.close()
