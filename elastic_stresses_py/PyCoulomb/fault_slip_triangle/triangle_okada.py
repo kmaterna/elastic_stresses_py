@@ -34,13 +34,13 @@ def compute_cartesian_strain_tris(inputs, params, strain_points):
     Returns list of strain tensors
     """
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    _, strain_tensors = compute_disp_points_from_triangles(tri_faults, strain_points, params.nu)
+    strain_tensors = compute_strain_points_from_triangles(tri_faults, strain_points, params.nu)
     return strain_tensors
 
 
 def compute_cartesian_def_tris(inputs, params, obs_disp_points):
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    modeled_tri_points, _ = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
+    modeled_tri_points = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
     return modeled_tri_points
 
 
@@ -52,12 +52,12 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     :param fault_triangles: list
     :param disp_points: list
     :param poisson_ratio: float
-    :returns: list of disp_points objects, list of strain tensors in 3x3 matrix
+    :returns: list of disp_points objects
     """
     if not disp_points:
-        return [], []
+        return []
     if len(fault_triangles) == 0:
-        return utilities.get_zeros_disp_points(disp_points), utilities.get_zeros_strain_points(disp_points)
+        return utilities.get_zeros_disp_points(disp_points)
     proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
     if not proceed_code:
         raise ValueError("Error! Triangular faults do not have same reference")
@@ -75,12 +75,6 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     disp = disp_mat.reshape((-1, np.size(slip_array))).dot(slip_array.flatten())   # reshape by len of total slip vector
     disp_grid = disp.reshape((*np.array(obsx).shape, 3))  # disp_grid shape: Npts, 3
 
-    # Get strain
-    strain_mat = hs.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # strain_mat shape: (Npts, 6, Ntris, 3)
-    strain = strain_mat.reshape((-1, np.size(slip_array))).dot(slip_array.flatten())  # reshape by len total slip vector
-    strain_tensors = strain.reshape((*np.array(obsx).shape, 6))  # strain_tensors shape: Npts, 6
-    # strain[:,0] is the xx component of strain, 1 is yy, 2 is zz, 3 is xy, 4 is xz, and 5 is yz.
-
     # Package the results into usable formats
     modeled_disp_points = []
     for i, item in enumerate(disp_points):
@@ -90,6 +84,43 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
                                           meas_type=item.meas_type, refframe=item.refframe, name=item.name)
         modeled_disp_points.append(new_disp_pt)
 
+    return modeled_disp_points
+
+
+def compute_strain_points_from_triangles(fault_triangles, strain_points, poisson_ratio):
+    """
+    Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points).
+    Requires all fault_triangles to have the same reference lon/lat
+
+    :param fault_triangles: list
+    :param strain_points: list
+    :param poisson_ratio: float
+    :returns: list of disp_points objects, list of strain tensors in 3x3 matrix
+    """
+    if not strain_points:
+        return []
+    if len(fault_triangles) == 0:
+        return utilities.get_zeros_strain_points(strain_points)
+    proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
+    if not proceed_code:
+        raise ValueError("Error! Triangular faults do not have same reference")
+
+    obsx = [point.lon*1000 for point in strain_points]
+    obsy = [point.lat*1000 for point in strain_points]   # calculation works in meters
+    obsz = [point.depth * -1000 for point in strain_points]  # in meters, negative is down
+    pts = np.vstack([obsx, obsy, obsz]).T   # shape: (Npts, 3)
+
+    slip_array = np.array([[-src.rtlat_slip, src.dip_slip, src.tensile] for src in fault_triangles])  # shape:(Ntris, 3)
+    fault_pts, fault_tris = fault_slip_triangle.extract_mesh_vertices(fault_triangles)
+    fault_pts = fault_slip_triangle.flip_depth_sign(fault_pts)  # fault_pts shape: N_vertices, 3
+    src_tris = fault_pts[fault_tris]  # src_tris shape: (Ntris, 3, 3)
+
+    # Get strain
+    strain_mat = hs.strain_matrix(obs_pts=pts, tris=src_tris, nu=poisson_ratio)  # strain_mat shape: (Npts, 6, Ntris, 3)
+    strain = strain_mat.reshape((-1, np.size(slip_array))).dot(slip_array.flatten())  # reshape by len total slip vector
+    strain_tensors = strain.reshape((*np.array(obsx).shape, 6))  # strain_tensors shape: Npts, 6
+    # strain[:,0] is the xx component of strain, 1 is yy, 2 is zz, 3 is xy, 4 is xz, and 5 is yz.
+
     modeled_strain_tensors = []
     for i, item in enumerate(strain_tensors):
         comps = strain_tensors[i]
@@ -97,4 +128,4 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
                                       [comps[3], comps[1], comps[5]],
                                       [comps[4], comps[5], comps[2]]])
         modeled_strain_tensors.append(new_strain_tensor)
-    return modeled_disp_points, modeled_strain_tensors
+    return modeled_strain_tensors
