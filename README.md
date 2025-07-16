@@ -115,23 +115,23 @@ To specify points where strain and stress tensors will be computed is the follow
 ```
 
 
-### ```Intxt``` and ```Inzero``` Input Formats: 
-Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. In ```.inzero``` and ```.intxt``` text files, each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
+### ```Intxt```, ```txt```, and ```inzero``` Input Formats: 
+Source Faults (or faults that have slip on them) and Receiver Faults (or faults that receive stress from slip on source faults) can be specified in several human-readable formats beyond the .inp file that Coulomb uses. In ```.inzero```, ```.intxt```, and ```.txt``` text files, each fault is specified by a row in an input text file of extention .intxt or .inzero. Valid rows of the input file include: 
 * **General Format:** Describes coordinate system and domain setup. Required.  
-    * "General: poissons_ratio* friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero" 
+    * ```General: poissons_ratio* friction_coef lon_min lon_max lon_zero lat_min lat_max lat_zero``` 
 * **Receiver Format:** Describes receiver faults 
-    * "Receiver: strike rake dip length_km width_km lon lat depth_km"
+    * ```Receiver: strike rake dip length_km width_km lon lat depth_km```
 * **Slip Format:** For slip distributions and fault patches. 
-    * "Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m (opt: tensile_m)"
+    * ```Source_Patch: strike rake dip length_km width_km lon lat depth_km slip_m (opt: tensile_m)```
 * **WC Format:** For catalogs using Wells and Coppersmith (1994) 
-    * "Source_WC: strike rake dip magnitude faulting_type lon lat depth_km" 
+    * ```Source_WC: strike rake dip magnitude faulting_type lon lat depth_km``` 
 * **FM Format:** For focal mechanisms 
-    * "Source_FM: strike rake dip lon lat depth_km magnitude"
+    * ```Source_FM: strike rake dip lon lat depth_km magnitude```
 * **Horizontal Profile Format:** Specify an orientation and compute stresses on that plane/orientation over an area. Like a horizontal cross-section.
-    * "Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km"
-    * If your increments are too small, the process might get killed by your shell.  System-dependent. 
+    * ```Receiver_Horizontal_Profile: depth_km strike dip rake centerlon centerlat length_km width_km inc_km```
+    * If your increments are too small, the process might get killed by your shell.  This occurs when ```num_src*num_obs*3*6``` > 2^31, or the size of the signed 32-bit integer. 
 * **Mogi Source Format:** Specify a location, depth in km, and volume change in meters^3.  **Only implemented for displacement at the moment**, not stresses and strains. 
-    * "Source_Mogi: lon lat depth_km dV_m3"  
+    * ```Source_Mogi: lon lat depth_km dV_m3```  
 
 *PR1 in the intxt/inzero format is never actually used; it's just a placeholder from the old Coulomb format. 
 Specifying Poisson's ratio should be done at the computation level through lame1 and mu in the config file, thus altering alpha in the Okada formulation.
