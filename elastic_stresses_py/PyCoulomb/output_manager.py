@@ -10,6 +10,7 @@ from . import conversion_math, pygmt_plots, io_additionals, utilities, coulomb_c
 from .inputs_object import io_intxt, io_inp
 from . import fault_slip_object as fso
 from tectonic_utils.geodesy import fault_vector_functions
+from tectonic_utils.read_write import netcdf_read_write
 
 
 def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_object):
@@ -63,15 +64,21 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
         pygmt_plots.map_vertical_def(params, inputs, os.path.join(params.outdir, "vertical_map"+params.save_file_type))
     if out_object.receiver_profile:
         write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
-                            os.path.join(params.outdir, "horizontal_profile_stresses.txt"))
-        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
-                          os.path.join(params.outdir, 'horizontal_profile_stresses_coulomb'+params.save_file_type))
-        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
+                            os.path.join(params.outdir, "horizontal_profile_stresses.txt"))  # text format
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile[0],  # the normal part
                           os.path.join(params.outdir, 'horizontal_profile_stresses_normal'+params.save_file_type),
                           stress_type='Normal')
-        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile[1],  # the shear part
                           os.path.join(params.outdir, 'horizontal_profile_stresses_shear'+params.save_file_type),
                           stress_type='Shear')
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile[2],  # the coulomb part
+                          os.path.join(params.outdir, 'horizontal_profile_stresses_coulomb'+params.save_file_type),
+                          stress_type='Coulomb')
+        if params.rec_full_stress_tensor:
+            print("Writing full stress tensors from Receiver Horizontal profile.")
+            # Write sxx, sxy, sxz, syy, syz, szz, normal, shear, and coulomb into GRD files
+            write_full_stress_tensors(inputs.receiver_horiz_profile, out_object.receiver_profile, params.outdir)
+
     return
 
 
@@ -294,21 +301,17 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
     return
 
 
-def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=200, cap_colorbar=1,
+def reshape_profile_arrays(lon1d, lat1d, shape):
+    x = np.reshape(lon1d, shape)
+    y = np.reshape(lat1d, shape)
+    return x, y
+
+
+def map_horiz_profile(horiz_profile, profile_results_1d, outfile, vmin=-200, vmax=200, cap_colorbar=1,
                       stress_type='Coulomb'):
     """Display a small map of a horizontal profile of stresses. Default colors for now."""
-
-    x = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
-    y = np.reshape(horiz_profile.lat1d, horiz_profile.shape)
-    normal_stress = np.reshape(profile_results[0], horiz_profile.shape)
-    shear_stress = np.reshape(profile_results[1], horiz_profile.shape)
-    coulomb_stress = np.reshape(profile_results[2], horiz_profile.shape)
-    if stress_type == 'Normal':
-        plotting_stress = normal_stress
-    elif stress_type == 'Shear':
-        plotting_stress = shear_stress
-    else:
-        plotting_stress = coulomb_stress
+    x, y = reshape_profile_arrays(horiz_profile.lon1d, horiz_profile.lat1d, horiz_profile.shape)
+    plotting_stress = np.reshape(profile_results_1d, horiz_profile.shape)
 
     if not vmin:
         vmin = np.nanmin(plotting_stress)
@@ -336,6 +339,25 @@ def map_horiz_profile(horiz_profile, profile_results, outfile, vmin=-200, vmax=2
     plt.gca().tick_params(labelsize=16)
     print("Saving figure %s " % outfile)
     plt.savefig(outfile, facecolor="w")
+    return
+
+
+def write_full_stress_tensors(horiz_profile, rec_profile_results, outdir):
+    """
+    :param horiz_profile: contains geometry information
+    :param rec_profile_results: contains 1d arrays of normal, shear, coulomb, and full 6-component stress tensors
+    :param outdir: string
+    :return:
+    """
+    x, y = reshape_profile_arrays(horiz_profile.lon1d, horiz_profile.lat1d, horiz_profile.shape)
+    x1d = x[0, :]
+    y1d = y[:, 0]
+    normal_stress_2d = np.reshape(rec_profile_results[0], horiz_profile.shape)
+    shear_stress_2d = np.reshape(rec_profile_results[1], horiz_profile.shape)
+    coulomb_stress_2d = np.reshape(rec_profile_results[2], horiz_profile.shape)
+    netcdf_read_write.write_netcdf4(x1d, y1d, normal_stress_2d, os.path.join(outdir, "stress_normal.grd"))
+    netcdf_read_write.write_netcdf4(x1d, y1d, shear_stress_2d, os.path.join(outdir, "stress_shear.grd"))
+    netcdf_read_write.write_netcdf4(x1d, y1d, coulomb_stress_2d, os.path.join(outdir, "stress_coulomb.grd"))
     return
 
 

@@ -16,7 +16,8 @@ class Params:
     def __init__(self, config_file=None, input_file=None, outdir=os.path.join('output', ''),
                  aftershocks=None, disp_points_file=None, strain_file=None,
                  strike_num_receivers=1, dip_num_receivers=1, fixed_rake=None, mu=30e9, lame1=30e9, B=0.0,
-                 plot_stress=True, plot_grd_disp=True, save_file_type='.png'):
+                 plot_stress=True, plot_grd_disp=True, save_file_type='.png',
+                 rec_full_stress_tensor=False):
         self.config_file = config_file  # string, filename
         self.input_file = input_file  # string, filename
         self.outdir = os.path.join(outdir, '')  # string, directory name
@@ -32,7 +33,8 @@ class Params:
         self.nu, self.alpha = conversion_math.get_poissons_ratio_and_alpha(mu, lame1)  # derived from mu and lame1
         self.plot_stress = plot_stress  # boolean
         self.plot_grd_disp = plot_grd_disp  # boolean
-        self.save_file_type = save_file_type
+        self.save_file_type = save_file_type  # '.png' or '.pdf'
+        self.rec_full_stress_tensor = rec_full_stress_tensor  # write all six components of a stress tensor in grds
         if self.B > 1:
             raise ValueError("Error! Provided Skepmton's coefficient is invalid because 0 <= B <= 1.")
 
@@ -59,6 +61,7 @@ class Params:
         ioconfig["output_dir"] = os.path.split(self.outdir)[0]
         ioconfig["plot_stress"] = str(self.plot_stress)
         ioconfig["plot_grd_disp"] = str(self.plot_grd_disp)
+        ioconfig["rec_full_stress_tensor"] = str(self.rec_full_stress_tensor)
         ioconfig["gps_disp_points"] = "" if self.disp_points_file is None else self.disp_points_file
         ioconfig["aftershocks"] = "" if self.aftershocks is None else self.aftershocks
         ioconfig["strain_file"] = "" if self.strain_file is None else self.strain_file
@@ -79,7 +82,7 @@ class Params:
     def modify_params_object(self, config_file=None, input_file=None, aftershocks=None, disp_points_file=None,
                              strain_file=None, strike_num_receivers=None, dip_num_receivers=None, fixed_rake=None,
                              mu=None, lame1=None, B=None, plot_stress=None, plot_grd_disp=None, outdir=None,
-                             save_file_type=None):
+                             save_file_type=None, rec_full_stress=None):
         """
         Set the fields in a Pycoulomb.Params object. By default, none of the properties will be altered.
         """
@@ -97,12 +100,14 @@ class Params:
         plot_stress = self.plot_stress if plot_stress is None else plot_stress
         plot_grd_disp = self.plot_grd_disp if plot_grd_disp is None else plot_grd_disp
         save_file_type = self.save_file_type if save_file_type is None else save_file_type
+        rec_full_stress_tensor = self.rec_full_stress_tensor if rec_full_stress is None else rec_full_stress
         outdir = self.outdir if outdir is None else os.path.join(outdir, '')
         MyParams = Params(config_file=config_file, input_file=input_file, aftershocks=aftershocks,
                           disp_points_file=disp_points_file, strain_file=strain_file,
                           strike_num_receivers=str_num_receivers, fixed_rake=fixed_rake,
                           dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
                           plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, save_file_type=save_file_type,
+                          rec_full_stress_tensor=rec_full_stress_tensor,
                           outdir=outdir)
         return MyParams
 
@@ -111,9 +116,9 @@ def get_empty_cli_opts():
     """Reproduce a default object, following the command line options of elastic_stresses_driver."""
     Empties = namedtuple('Empties', field_names=['input_file', 'exp_name', 'output_dir',
                                                  'plot_stress', 'plot_grd_disp', 'gps_disp_points',
-                                                 'strain_file', 'save_file_type'])
+                                                 'strain_file', 'save_file_type', 'rec_full_stress_tensor'])
     empties = Empties(input_file=None, exp_name=None, output_dir=None, plot_stress=None, plot_grd_disp=None,
-                      gps_disp_points=None, strain_file=None, save_file_type=None)
+                      gps_disp_points=None, strain_file=None, save_file_type=None, rec_full_stress_tensor=None)
     return empties
 
 
@@ -147,6 +152,10 @@ def configure_stress_calculation(config_file, cli_opts=None):
         save_file_type = configobj.get('io-config', 'save_file_type')
     else:
         save_file_type = '.png'
+    if configobj.has_option('io-config', 'rec_full_stress_tensor'):
+        rec_full_stress_tensor = configobj.getint('io-config', 'rec_full_stress_tensor')
+    else:
+        rec_full_stress_tensor = False
 
     # Computation parameters
     strike_num_receivers = configobj.getint('compute-config', 'strike_num_receivers')
@@ -167,6 +176,8 @@ def configure_stress_calculation(config_file, cli_opts=None):
     plot_grd_disp = cli_opts.plot_grd_disp if cli_opts.plot_grd_disp is not None else plot_grd_disp
     gps_file = cli_opts.gps_disp_points if cli_opts.gps_disp_points is not None else gps_file
     strain_file = cli_opts.strain_file if cli_opts.strain_file is not None else strain_file
+    rec_full_stress_tensor = cli_opts.rec_full_stress_tensor if cli_opts.rec_full_stress_tensor is not None \
+        else rec_full_stress_tensor
     save_file_type = cli_opts.save_file_type if cli_opts.save_file_type is not None else save_file_type
 
     output_dir = os.path.join(output_dir, exp_name, '')
@@ -176,6 +187,7 @@ def configure_stress_calculation(config_file, cli_opts=None):
                       strike_num_receivers=strike_num_receivers, fixed_rake=fixed_rake,
                       dip_num_receivers=dip_num_receivers, mu=mu, lame1=lame1, B=B,
                       plot_stress=plot_stress, plot_grd_disp=plot_grd_disp, save_file_type=save_file_type,
+                      rec_full_stress_tensor=rec_full_stress_tensor,
                       outdir=output_dir)
     MyParams.print_summary()
     return MyParams
@@ -211,6 +223,7 @@ def write_valid_config_file(directory):
     ioconfig["output_dir"] = os.path.join('Outputs', '')
     ioconfig["plot_stress"] = '1'
     ioconfig["plot_grd_disp"] = '1'
+    ioconfig["rec_full_stress_tensor"] = '0'
     ioconfig["gps_disp_points"] = 'CA_GPS_ll.txt'
     ioconfig["aftershocks"] = 'CA_aftershocks_2014.txt'
     ioconfig["strain_file"] = ''

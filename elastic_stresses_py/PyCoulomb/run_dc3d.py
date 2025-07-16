@@ -138,7 +138,7 @@ def compute_stresses_horiz_profile(params, inputs):
 
     :param params: object of type configure_calc.Params
     :param inputs: object of type Inputs_object
-    :returns: list of 3 lists, representing receiver normal, shear, and coulomb stress results
+    :returns: list of 4 lists, representing receiver normal, shear, and coulomb stress results and full stress tensor
     """
     if not inputs.receiver_horiz_profile:
         return None
@@ -170,9 +170,9 @@ def compute_stresses_horiz_profile(params, inputs):
         receiver_normal[i] = normal
         receiver_shear[i] = shear
         receiver_coulomb[i] = coulomb
-        sigmaij.append(stress_tensor)  # will optionally send this out to GRD files when the switch is built
+        sigmaij.append(stress_tensor)  # optionally send this out to GRD files when rec_full_stress_tensor is set
 
-    return receiver_normal, receiver_shear, receiver_coulomb
+    return receiver_normal, receiver_shear, receiver_coulomb, sigmaij
 
 
 def compute_strains_stresses(params, inputs):

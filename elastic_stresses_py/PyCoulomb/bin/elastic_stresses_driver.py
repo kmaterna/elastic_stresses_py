@@ -30,6 +30,8 @@ def welcome_and_parse_runstring():
                         help='override plot_stress from the config file. Optional.', required=False)
     parser.add_argument('--plot_grd_disp', type=bool,
                         help='override plot_grd_disp from the config file. Optional.', required=False)
+    parser.add_argument('--rec_full_stress_tensor', type=str,
+                        help='override rec_full_stress_tensor from the config file. Optional.', required=False)
     parser.add_argument('--gps_disp_points', type=str,
                         help='override gps_disp_points from the config file. Optional.', required=False)
     parser.add_argument('--strain_file', type=str,
