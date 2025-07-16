@@ -170,7 +170,7 @@ def compute_stresses_horiz_profile(params, inputs):
         receiver_normal[i] = normal
         receiver_shear[i] = shear
         receiver_coulomb[i] = coulomb
-        sigmaij.append(stress_tensor)  # optionally send this out to GRD files when rec_full_stress_tensor is set
+        sigmaij.append(stress_tensor)  # optionally, send out to GRD files if rec_full_stress_tensor is set. In Pa.
 
     return receiver_normal, receiver_shear, receiver_coulomb, sigmaij
 

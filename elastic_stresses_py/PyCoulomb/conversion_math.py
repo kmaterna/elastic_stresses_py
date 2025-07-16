@@ -105,7 +105,7 @@ def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, 
     The math behind Coulomb stresses: given a stress tensor, receiver strike, receiver rake, and receiver dip.
     Resolve the stress changes on the fault plane.
 
-    :param tau: full 3x3 stress tensor
+    :param tau: full 3x3 stress tensor, in Pa
     :param rec_strike_vector: 1d array
     :param rake: float
     :param rec_dip_vector: 1d array
