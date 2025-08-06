@@ -166,8 +166,8 @@ Set domain elastic parameters at the computation level through lame1 and mu in t
 
 ### List of Code Capabilities:
 * Reads source and receiver faults from .inp formatted Coulomb input files.
-* Reads source and receiver faults from .intxt files, a more convenient input format where slip is specified by length/width or by Wells and Coppersmith (1994) scaling rules
-* Reads point sources and receiver faults from .inzero, a focal mechanism / moment tensor input format
+* Reads source and receiver faults from .intxt/.txt files, a more convenient input format where slip is specified by length/width or by Wells and Coppersmith (1994) scaling rules
+* Reads point sources and receiver faults from .intxt/.txt files, from a focal mechanism / moment tensor input format
 * Takes a single receiver fault and splits it into subfaults in the dip- and strike- directions.
 * Computes elastic displacements and stresses due to slip on source faults.
 * Writes .inp formatted Coulomb files with split subfaults.
@@ -175,7 +175,6 @@ Set domain elastic parameters at the computation level through lame1 and mu in t
 * Produces output tables of stresses and displacements.
 
 ### Future work: 
-* Output computations at depths other than the surface
 * Read .inr files (like Coulomb)
 
 
@@ -220,8 +219,8 @@ This notebook explores modifying the inputs and configuration parameters through
 
 
 ## Example 3: Real Application
-The code can also be used for larger numbers of source faults and receiver faults. 
-The largest we have tried is 10,000 sources and 10,000 receivers. That application took about half an hour and the results were compiled into something like this:
+The code can also be used for larger numbers of source faults and receiver faults. As of 2025, the number of faults times the number of observation points should be less than 2^31 / (3*6).  This is 
+a limitation that we have run into. However, it is still possible to perform large computations, such as the one below:
  
 ![NZ](https://github.com/kmaterna/elastic_stresses_py/blob/master/examples/pngs/nz_example.png)
 
