@@ -7,9 +7,17 @@ from . import io_additionals, utilities
 from tectonic_utils.geodesy import fault_vector_functions
 
 
-def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1):
+def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1, cbar_label_inc=0.2):
     """
     Fill in mapped fault patches with colors corresponding to their stress changes.
+
+    :param params: pycoulomb.params object
+    :param inputs: pycoulomb.inputs object
+    :param out_object: pycoulomb.out_object object
+    :param stress_type: string, either 'Shear', 'Normal', or 'Coulomb'
+    :param vmin: float, minimum of the color bar scale. If None, it is determined automatically. Default -1.
+    :param vmax: float, maximum of the color bar scale. If None, it is determined automatically. Default 1.
+    :param cbar_label_inc: float, labeling increment for the color bar. Default 0.2.
     """
     if not out_object.receiver_object:
         return
@@ -48,7 +56,8 @@ def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1):
     # Colorbar annotation
     fig.coast(shorelines="1.0p,black", region=region, projection=proj)  # the boundary.
     fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt", shading="0.8",
-                 truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]), frame=["x" + str(0.2), "y+L\"Stress (kPa)\""])
+                 truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
+                 frame=["x" + str(cbar_label_inc), "y+L\"Stress (kPa)\""])
 
     # Annotate with aftershock locations
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c')
