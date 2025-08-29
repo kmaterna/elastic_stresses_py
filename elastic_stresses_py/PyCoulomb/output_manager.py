@@ -75,7 +75,7 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
                           os.path.join(params.outdir, 'horizontal_profile_stresses_coulomb'+params.save_file_type),
                           stress_type='Coulomb')
         if params.rec_full_stress_tensor:
-            print("Writing full stress tensors from Receiver Horizontal profile.")
+            print("Writing full stress and strain tensors from Receiver Horizontal profile.")
             # Write sxx, sxy, sxz, syy, syz, szz, normal, shear, and coulomb into GRD files
             write_full_stress_tensors(inputs.receiver_horiz_profile, out_object.receiver_profile, params.outdir)
     return
@@ -351,31 +351,41 @@ def write_full_stress_tensors(horiz_profile, rec_profile_results, outdir):
     x, y = reshape_profile_arrays(horiz_profile.lon1d, horiz_profile.lat1d, horiz_profile.shape)
     x1d = x[0, :]
     y1d = y[:, 0]
+
+    # Write the coulomb, shear, and normal grids
     normal_stress_2d = np.reshape(rec_profile_results[0], horiz_profile.shape)
     shear_stress_2d = np.reshape(rec_profile_results[1], horiz_profile.shape)
     coulomb_stress_2d = np.reshape(rec_profile_results[2], horiz_profile.shape)
     netcdf_read_write.write_netcdf4(x1d, y1d, normal_stress_2d, os.path.join(outdir, "stress_normal.grd"))
     netcdf_read_write.write_netcdf4(x1d, y1d, shear_stress_2d, os.path.join(outdir, "stress_shear.grd"))
     netcdf_read_write.write_netcdf4(x1d, y1d, coulomb_stress_2d, os.path.join(outdir, "stress_coulomb.grd"))
+
+    # Write the full stress and strain tensor
     sigma_list = rec_profile_results[3]  # shape n_obs x 3 x 3
-    s11 = [item[0][0] for item in sigma_list]
-    s12 = [item[0][1] for item in sigma_list]
-    s13 = [item[0][2] for item in sigma_list]
-    s22 = [item[1][1] for item in sigma_list]
-    s23 = [item[1][2] for item in sigma_list]
-    s33 = [item[2][2] for item in sigma_list]
-    s11 = np.reshape(np.multiply(s11, 0.001), horiz_profile.shape)  # reshape, convert to kPa
-    s12 = np.reshape(np.multiply(s12, 0.001), horiz_profile.shape)  # reshape, convert to kPa
-    s13 = np.reshape(np.multiply(s13, 0.001), horiz_profile.shape)  # reshape, convert to kPa
-    s22 = np.reshape(np.multiply(s22, 0.001), horiz_profile.shape)  # reshape, convert to kPa
-    s23 = np.reshape(np.multiply(s23, 0.001), horiz_profile.shape)  # reshape, convert to kPa
-    s33 = np.reshape(np.multiply(s33, 0.001), horiz_profile.shape)  # reshape, convert to kPa
-    netcdf_read_write.write_netcdf4(x1d, y1d, s11, os.path.join(outdir, "stress_s11.grd"))
-    netcdf_read_write.write_netcdf4(x1d, y1d, s12, os.path.join(outdir, "stress_s12.grd"))
-    netcdf_read_write.write_netcdf4(x1d, y1d, s13, os.path.join(outdir, "stress_s13.grd"))
-    netcdf_read_write.write_netcdf4(x1d, y1d, s22, os.path.join(outdir, "stress_s22.grd"))
-    netcdf_read_write.write_netcdf4(x1d, y1d, s23, os.path.join(outdir, "stress_s23.grd"))
-    netcdf_read_write.write_netcdf4(x1d, y1d, s33, os.path.join(outdir, "stress_s33.grd"))
+    strain_list = rec_profile_results[4]  # shape n_obs x 3 x 3
+    # Define the components to extract: (row, col, strain_name, stress_name)
+    components = [
+        (0, 0, "e11", "s11"),
+        (0, 1, "e12", "s12"),
+        (0, 2, "e13", "s13"),
+        (1, 1, "e22", "s22"),
+        (1, 2, "e23", "s23"),
+        (2, 2, "e33", "s33")]
+
+    for i, j, strain_name, stress_name in components:
+        # extract this component from each tensor in the list
+        stress_values = [item[i][j] for item in sigma_list]
+        strain_values = [item[i][j] for item in strain_list]
+
+        # reshape into the same shape as horiz_profile
+        strain_vals = np.reshape(strain_values, horiz_profile.shape)
+        stress_vals = np.reshape(np.multiply(stress_values, 0.001), horiz_profile.shape)  # reshape, convert to kPa
+
+        # write out to NetCDF
+        strain_outpath = os.path.join(outdir, f"strain_{strain_name}.grd")
+        stress_outpath = os.path.join(outdir, f"stress_{stress_name}.grd")
+        netcdf_read_write.write_netcdf4(x1d, y1d, strain_vals, strain_outpath)
+        netcdf_read_write.write_netcdf4(x1d, y1d, stress_vals, stress_outpath)
     return
 
 

@@ -138,7 +138,8 @@ def compute_stresses_horiz_profile(params, inputs):
 
     :param params: object of type configure_calc.Params
     :param inputs: object of type Inputs_object
-    :returns: list of 4 lists, representing receiver normal, shear, and coulomb stress results and full stress tensor
+    :returns: list of 5 lists, representing receiver normal, shear, and coulomb stress results,
+     and a list of the full stress tensors and full strain tensors
     """
     if not inputs.receiver_horiz_profile:
         return None
@@ -158,7 +159,7 @@ def compute_stresses_horiz_profile(params, inputs):
     for (x, y) in zip(xi, yi):
         strain_points.append(Displacement_points(lon=x, lat=y, depth=profile.depth_km))
 
-    strain_tensors = np.array(compute_xy_strain(inputs, params, strain_points))
+    strain_tensors = np.array(compute_xy_strain(inputs, params, strain_points))  # list of strain tensors
     stress_tensors = conversion_math.stress_tensor_batch(strain_tensors, params.lame1, params.mu)
 
     for i, stress_tensor in enumerate(stress_tensors):
@@ -172,7 +173,7 @@ def compute_stresses_horiz_profile(params, inputs):
         receiver_coulomb[i] = coulomb
         sigmaij.append(stress_tensor)  # optionally, send out to GRD files if rec_full_stress_tensor is set. In Pa.
 
-    return receiver_normal, receiver_shear, receiver_coulomb, sigmaij
+    return receiver_normal, receiver_shear, receiver_coulomb, sigmaij, strain_tensors
 
 
 def compute_strains_stresses(params, inputs):
