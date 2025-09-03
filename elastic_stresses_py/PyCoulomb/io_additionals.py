@@ -101,6 +101,9 @@ def read_disp_points(infile):
                     new_disp_point = Displacement_points(lon=lon, lat=lat, dE_obs=dE_obs, dN_obs=dN_obs, dU_obs=dU_obs,
                                                          Se_obs=Se_obs, Sn_obs=Sn_obs, Su_obs=Su_obs, name=name)
                     disp_points_list.append(new_disp_point)
+                else:
+                    new_disp_point = Displacement_points(lon=lon, lat=lat)
+                    disp_points_list.append(new_disp_point)
     print("--> Read %d displacement points " % len(disp_points_list))
     return disp_points_list
 
