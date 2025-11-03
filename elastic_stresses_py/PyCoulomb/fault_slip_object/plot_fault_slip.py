@@ -92,7 +92,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                                  fault_traces_from_memory=None, fault_traces_from_dict=None,
                                  fault_traces_from_file=None, title="", vmin=None, vmax=None, v_labeling_interval=None,
                                  plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1, map_scale=25,
-                                 slip_cbar_opts=(-1, 1, 0.001)):
+                                 slip_cbar_opts=(-1, 1, 0.001), slip_cbar_label="Slip(m)"):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions of rectangular faults.
     In order to use this function with other fault formats, convert to the internal rectangular fault dict first.
@@ -115,6 +115,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param vert_mult: can turn verticals into mm by providing 1000 if you want (default is meters)
     :param map_scale: int, in km
     :param slip_cbar_opts: tuple with (cbar_min, cbar_max, cbar_int) for fault slip cbar
+    :param slip_cbar_label: string, default 'Slip(m)'
     :returns: handle to the pygmt figure, for the option of later additions
     """
     print("Plotting outfile %s " % outfile)
@@ -146,7 +147,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
             if plot_slip_colorbar:
                 fig.colorbar(position="jBr+w3.5i/0.2i+o2.5c/1.5c+h", cmap="mycpt.cpt",
                              truncate=str(cbar_opts[0]) + "/" + str(cbar_opts[1]),
-                             frame=["x" + str(cbar_opts[2]), "y+L\"Slip(m)\""])
+                             frame=["x" + str(cbar_opts[2]), "y+L\""+slip_cbar_label+"\""])
             os.remove("mycpt.cpt")
         if isinstance(fault_dict_list[0], fst.TriangleFault):
             fault_colors = [_i.get_total_slip() for _i in fault_dict_list]
