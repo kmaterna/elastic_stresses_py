@@ -223,3 +223,44 @@ def read_fialko_dlc(filename):
 
     print("--> Returning %d fault patches " % len(fault_object_list))
     return fault_object_list
+
+
+def read_pollitz_2025(filename):
+    """
+    Used for reading a list of fault patches from Pollitz 2025 coupling distribution
+
+    Patch center   lower edge depth  upper edge depth  length  strike    dip       rake        area  Slip deficit rate
+    lat lon          (km)              (km)             (km)   deg. CW   deg.      deg.        km^2        cm/yr
+                                                          from due N
+    :return: list of fault slip objects
+    """
+    fault_object_list = []
+    print("Reading file %s " % filename)
+    lat, lon, lower, upper, length, strike, dip, rake, _, slip = np.loadtxt(filename, skiprows=4, unpack=True)
+    # lon, lat are associated with the center of the fault, i.e., the center-center, NOT the top-center
+    for i in range(len(lon)):
+        width = fault_vector_functions.get_downdip_width(upper[i], lower[i], dip[i])
+        clean_dip = np.min((dip[i], 89.99))
+        vector_mag = 0.5 * width * np.cos(np.deg2rad(dip[i]))  # how far the bottom edge is displaced
+        upper_center_along_strike = fault_vector_functions.add_vector_to_point(0, 0, vector_mag, strike[i] - 90)
+        upper_center_back = fault_vector_functions.add_vector_to_point(upper_center_along_strike[0],
+                                                                       upper_center_along_strike[1],
+                                                                       length[i]/2, strike[i] + 180)
+        fault_lon, fault_lat = fault_vector_functions.xy2lonlat_single(upper_center_back[0],
+                                                                       upper_center_back[1],
+                                                                       lon[i],
+                                                                       lat[i])
+
+        new_fault = fault_slip_object.FaultSlipObject(strike=strike[i],
+                                                      dip=clean_dip,
+                                                      depth=upper[i],
+                                                      lon=fault_lon,
+                                                      lat=fault_lat,
+                                                      slip=slip[i]/100,
+                                                      rake=rake[i],
+                                                      length=length[i],
+                                                      width=width,
+                                                      segment=0, tensile=0)
+        fault_object_list.append(new_fault)
+    print("--> Returning %d fault patches " % len(fault_object_list))
+    return fault_object_list
