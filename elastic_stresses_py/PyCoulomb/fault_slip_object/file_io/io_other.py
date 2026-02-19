@@ -227,7 +227,8 @@ def read_fialko_dlc(filename):
 
 def read_pollitz_2025(filename):
     """
-    Used for reading a list of fault patches from Pollitz 2025 coupling distribution
+    Used for reading a list of fault patches from Pollitz 2025 coupling distribution.
+    doi:10.1029/2024JB029847
 
     Patch center   lower edge depth  upper edge depth  length  strike    dip       rake        area  Slip deficit rate
     lat lon          (km)              (km)             (km)   deg. CW   deg.      deg.        km^2        cm/yr
