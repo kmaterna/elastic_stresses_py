@@ -265,3 +265,47 @@ def read_pollitz_2025(filename):
         fault_object_list.append(new_fault)
     print("--> Returning %d fault patches " % len(fault_object_list))
     return fault_object_list
+
+
+def read_pollitz_GRL_Mendocino_2025(filename):
+    """
+    Used for reading a list of fault patches from Pollitz 2025 Mendocino M7 slip distribution.
+    doi:10.1029/2025GL115613
+    I'm not exactly sure the convention for the fault patch (corner, center, depth convention, length instead of area),
+    but I'm using this slip model for very-far-field stress changes, so the details don't matter.
+    I'm treating the depth as the top.
+
+    #Lat       Lon         Depth            Slip (m)        Area (km^2)	#Strike	#Dip
+
+    :return: list of fault slip objects
+    """
+    fault_object_list = []
+    print("Reading file %s " % filename)
+    lat, lon, depth, slip, area, strike, dip = np.loadtxt(filename, skiprows=1, unpack=True)
+    for i in range(len(lon)):
+        # Making the assumption that the patch is a square
+        length = np.sqrt(area[i])
+        width = np.sqrt(area[i])
+        clean_dip = np.min((dip[i], 89.99))
+        vector_mag = 0.5 * width * np.cos(np.deg2rad(dip[i]))  # how far the bottom edge is displaced
+        upper_center_along_strike = fault_vector_functions.add_vector_to_point(0, 0, vector_mag, strike[i] - 90)
+        upper_center_back = fault_vector_functions.add_vector_to_point(upper_center_along_strike[0],
+                                                                       upper_center_along_strike[1],
+                                                                       length/2, strike[i] + 180)
+        fault_lon, fault_lat = fault_vector_functions.xy2lonlat_single(upper_center_back[0],
+                                                                       upper_center_back[1],
+                                                                       lon[i],
+                                                                       lat[i])
+        new_fault = fault_slip_object.FaultSlipObject(strike=strike[i],
+                                                      dip=clean_dip,
+                                                      depth=depth[i],
+                                                      lon=fault_lon,
+                                                      lat=fault_lat,
+                                                      slip=slip[i],
+                                                      rake=180,
+                                                      length=length,
+                                                      width=width,
+                                                      segment=0, tensile=0)
+        fault_object_list.append(new_fault)
+    print("--> Returning %d fault patches " % len(fault_object_list))
+    return fault_object_list
