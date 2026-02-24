@@ -8,11 +8,11 @@ This code uses Okada's (1992) formulation to compute elastic displacements, stra
 
 The equation being solved, following the sign conventions used in Coulomb, is:
 
-$$ \Delta CFS = \Delta\tau + \mu (\Delta\sigma_n - \Delta P) $$ 
+$$ \Delta CFS = \Delta\tau + \mu (\Delta\sigma_n + \Delta P) $$ 
 
 where the instantaneous pore pressure change P is determined by the mean stress and the Skempton's coefficient (B):
 
-$$ \Delta P = {B} * {\sigma_{kk} \over 3} $$
+$$ \Delta P = - {B} * {\sigma_{kk} \over 3} $$
 
 e.g., Beeler et al., 2000.
 
@@ -156,12 +156,15 @@ Receiver: 355.0 90.0 12.0 140.00 120.00 -124.560 40.300 10.80
 ## Notes
 
 ### Sign Conventions and Units: 
-By convention, right lateral strike slip is positive, and reverse dip slip is positive. Strike is defined from 0 to 360 degrees, clockwise from north; dip is defined from 0 to 90 degrees by the right hand rule. As in Coulomb, positive shear stress is towards failure, and positive normal stress is unclamping. The original Okada documentation can be found at http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html. 
+By convention, right lateral strike slip is positive, and reverse dip slip is positive. Strike is defined from 0 to 360 degrees, clockwise from north; dip is defined from 0 to 90 degrees by the right hand rule. 
+As in Coulomb, positive shear stress is towards failure, and positive normal stress is unclamping. Stresses are positive in tension and strains are positive for extension, as in Coulomb. 
+The original Okada documentation can be found at http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html. 
 
 For input files, strike/rake/dip have units of degrees. Length/width/depth have units of km. Slip has units of meters.   
 
 Set domain elastic parameters at the computation level through lame1 and mu in the config file.
 
+The displayed outputs for normal stress are the "effective normal stress", which includes the pore pressure component. 
 
 
 ### List of Code Capabilities:

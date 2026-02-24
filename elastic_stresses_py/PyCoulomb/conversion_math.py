@@ -118,7 +118,9 @@ def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, 
 
     # The stress that's normal to the receiver fault plane:
     dry_normal_stress = np.dot(rec_plane_normal, traction_vector)  # positive = unclamping (same as Coulomb software)
-    effective_normal_stress = dry_normal_stress - (np.trace(tau) / 3.0) * B
+    pore_pressure_change = -B * (np.trace(tau) / 3.0)  # sign convention: positive = tension/dilatation
+    effective_normal_stress = dry_normal_stress + pore_pressure_change  # sign convention: positive = tension/dilatation
+    # pore pressure term is negative trace of stresses (because positive in tension)
 
     # The shear stress causing strike slip (in the receiver fault plane).
     shear_rtlat = np.dot(rec_strike_vector, traction_vector)
