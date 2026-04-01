@@ -164,10 +164,9 @@ def compute_stresses_horiz_profile(params, inputs):
 
     for i, stress_tensor in enumerate(stress_tensors):
         # Then compute shear, normal, and coulomb stresses.
-        [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec_strike_v,
-                                                                                 profile.rake, rec_dip_v,
-                                                                                 rec_plane_normal, inputs.FRIC,
-                                                                                 params.B)
+        [shear, _dry_normal, _pore_pressure, normal, coulomb] = \
+            conversion_math.get_coulomb_stresses_internal(stress_tensor, rec_strike_v, profile.rake, rec_dip_v,
+                                                          rec_plane_normal, inputs.FRIC, params.B)
         receiver_normal[i] = normal
         receiver_shear[i] = shear
         receiver_coulomb[i] = coulomb
@@ -180,7 +179,7 @@ def compute_strains_stresses(params, inputs):
     """
     Pseudocode:
     For each receiver, at the center point, sum up the strain and stress for each source.
-    Return : source object, receiver object, shear stress, normal stress, and coulomb stress on each receiver.
+    Return : lists of shear stress, normal stress, and coulomb stress on each receiver.
     """
 
     # The values we're actually going to output.
@@ -201,10 +200,10 @@ def compute_strains_stresses(params, inputs):
 
     for rec, stress_tensor in zip(inputs.receiver_object, stress_tensors):
         # Then compute shear, normal, and coulomb stresses.
-        [normal, shear, coulomb] = conversion_math.get_coulomb_stresses_internal(stress_tensor, rec.strike_unit_vector,
-                                                                                 rec.rake, rec.dip_unit_vector,
-                                                                                 rec.plane_normal, inputs.FRIC,
-                                                                                 params.B)
+        [shear, _dry_normal, _pore_pressure, normal, coulomb] = \
+            conversion_math.get_coulomb_stresses_internal(stress_tensor, rec.strike_unit_vector, rec.rake,
+                                                          rec.dip_unit_vector, rec.plane_normal, inputs.FRIC,
+                                                          params.B)
         receiver_normal.append(normal)
         receiver_shear.append(shear)
         receiver_coulomb.append(coulomb)

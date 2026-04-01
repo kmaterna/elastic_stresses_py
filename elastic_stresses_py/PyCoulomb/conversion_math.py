@@ -87,17 +87,17 @@ def get_coulomb_stresses(tau, strike, rake, dip, friction, B):
     :param dip: float, in degrees
     :param friction: float, coefficient of friction
     :param B: Skepmton's coefficient
-    :returns: list of 3 floats, in KPa
+    :returns: list of 5 floats, in KPa
     """
     # First compute the geometric vectors associated with the receiver
     strike_unit_vector = fault_vector_functions.get_strike_vector(strike)  # a 3d vector in the horizontal plane.
     dip_unit_vector = fault_vector_functions.get_dip_vector(strike, dip)  # a 3d vector.
     plane_normal = fault_vector_functions.get_plane_normal(strike, dip)  # a 3d vector.
 
-    effective_normal_stress, shear_stress, coulomb_stress = \
+    shear_stress, dry_normal_stress, pore_pressure_change, effective_normal_stress, coulomb_stress = \
         get_coulomb_stresses_internal(tau, strike_unit_vector, rake, dip_unit_vector, plane_normal, friction, B)
 
-    return effective_normal_stress, shear_stress, coulomb_stress
+    return shear_stress, dry_normal_stress, pore_pressure_change, effective_normal_stress, coulomb_stress
 
 
 def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, rec_plane_normal, friction, B):
@@ -112,7 +112,8 @@ def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, 
     :param rec_plane_normal: 1d array
     :param friction: float, coefficient of friction
     :param B: float, Skepmton's coefficient
-    :returns: list of 3 floats, Return in KPa
+    :returns: list of 5 floats, Return in KPa in this order:
+        shear stress, dry normal stress, pore pressure change, effective normal stress, Coulomb stress
     """
     traction_vector = np.dot(tau, rec_plane_normal)
 
@@ -136,13 +137,15 @@ def get_coulomb_stresses_internal(tau, rec_strike_vector, rake, rec_dip_vector, 
     shear_in_rake_dir = rotated_shear[0]
 
     # Finally, do unit conversion
+    dry_normal_stress = dry_normal_stress/1000.0
+    pore_pressure_change = pore_pressure_change/1000.0
     effective_normal_stress = effective_normal_stress/1000.0  # convert to KPa
     shear_stress = shear_in_rake_dir/1000.0
 
     # The Coulomb Failure Hypothesis
     coulomb_stress = shear_stress + (friction*effective_normal_stress)   # the sign here is important.
 
-    return effective_normal_stress, shear_stress, coulomb_stress
+    return shear_stress, dry_normal_stress, pore_pressure_change, effective_normal_stress, coulomb_stress
 
 
 # ----------------------------
