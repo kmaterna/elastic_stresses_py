@@ -43,6 +43,8 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     if params.plot_stress:  # write the outputs of stress calculation, if doing a stress calculation
         fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(out_object.receiver_object)
         fso.file_io.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_results.shear,
+                                                                 out_object.receiver_results.dry_normal,
+                                                                 out_object.receiver_results.pore_pressure,
                                                                  out_object.receiver_results.effective_normal,
                                                                  out_object.receiver_results.coulomb,
                                                                  os.path.join(params.outdir, 'stresses_full.txt'))

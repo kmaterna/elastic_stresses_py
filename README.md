@@ -157,7 +157,14 @@ Receiver: 355.0 90.0 12.0 140.00 120.00 -124.560 40.300 10.80
 
 ### Sign Conventions and Units: 
 By convention, right lateral strike slip is positive, and reverse dip slip is positive. Strike is defined from 0 to 360 degrees, clockwise from north; dip is defined from 0 to 90 degrees by the right hand rule. 
-As in Coulomb, positive shear stress is towards failure, and positive normal stress is unclamping. Stresses are positive in tension and strains are positive for extension, as in Coulomb. 
+
+Sign conventions on stress and strain are the same as in Coulomb: 
+* Strain: positive dilation, negative shortening
+* Stress: positive tension, negative compression
+* Shear: positive encouraging, negative discouraging
+* Normal: positive unclamping, negative clamping
+* Pore pressure: positive means pressure increase, negative means pressure decrease (PP = -B * mean stress)
+
 The original Okada documentation can be found at http://www.bosai.go.jp/study/application/dc3d/DC3Dhtml_E.html. 
 
 For input files, strike/rake/dip have units of degrees. Length/width/depth have units of km. Slip has units of meters.   
