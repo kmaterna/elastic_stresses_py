@@ -65,13 +65,13 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
     if out_object.receiver_profile:
         write_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile,
                             os.path.join(params.outdir, "horizontal_profile_stresses.txt"))  # text format
-        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile[0],  # the normal part
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile.effective_normal,  # normal part
                           os.path.join(params.outdir, 'horizontal_profile_stresses_normal'+params.save_file_type),
                           stress_type='Normal')
-        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile[1],  # the shear part
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile.shear,  # shear part
                           os.path.join(params.outdir, 'horizontal_profile_stresses_shear'+params.save_file_type),
                           stress_type='Shear')
-        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile[2],  # the coulomb part
+        map_horiz_profile(inputs.receiver_horiz_profile, out_object.receiver_profile.coulomb,  # coulomb part
                           os.path.join(params.outdir, 'horizontal_profile_stresses_coulomb'+params.save_file_type),
                           stress_type='Coulomb')
         if params.rec_full_stress_tensor:
@@ -344,7 +344,7 @@ def map_horiz_profile(horiz_profile, profile_results_1d, outfile, vmin=-200, vma
 def write_full_stress_tensors(horiz_profile, rec_profile_results, outdir):
     """
     :param horiz_profile: contains geometry information
-    :param rec_profile_results: contains 1d arrays of normal, shear, coulomb, and full 6-component stress tensors
+    :param rec_profile_results: object with 1d arrays of normal, shear, coulomb, and full 6-component stress tensors
     :param outdir: string
     :return:
     """
@@ -353,16 +353,16 @@ def write_full_stress_tensors(horiz_profile, rec_profile_results, outdir):
     y1d = y[:, 0]
 
     # Write the coulomb, shear, and normal grids
-    normal_stress_2d = np.reshape(rec_profile_results[0], horiz_profile.shape)
-    shear_stress_2d = np.reshape(rec_profile_results[1], horiz_profile.shape)
-    coulomb_stress_2d = np.reshape(rec_profile_results[2], horiz_profile.shape)
+    normal_stress_2d = np.reshape(rec_profile_results.effective_normal, horiz_profile.shape)
+    shear_stress_2d = np.reshape(rec_profile_results.shear, horiz_profile.shape)
+    coulomb_stress_2d = np.reshape(rec_profile_results.coulomb, horiz_profile.shape)
     netcdf_read_write.write_netcdf4(x1d, y1d, normal_stress_2d, os.path.join(outdir, "stress_normal.grd"))
     netcdf_read_write.write_netcdf4(x1d, y1d, shear_stress_2d, os.path.join(outdir, "stress_shear.grd"))
     netcdf_read_write.write_netcdf4(x1d, y1d, coulomb_stress_2d, os.path.join(outdir, "stress_coulomb.grd"))
 
     # Write the full stress and strain tensor
-    sigma_list = rec_profile_results[3]  # shape n_obs x 3 x 3
-    strain_list = rec_profile_results[4]  # shape n_obs x 3 x 3
+    sigma_list = rec_profile_results.sigmaij  # shape n_obs x 3 x 3
+    strain_list = rec_profile_results.eij  # shape n_obs x 3 x 3
     # Define the components to extract: (row, col, strain_name, stress_name)
     components = [
         (0, 0, "e11", "s11"),
@@ -434,7 +434,8 @@ def write_horiz_profile(horiz_profile, profile_results, outfile):
     ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake))
     for i in range(len(horiz_profile.lon1d)):
         ofile.write("%f %f %f %f %f %f\n" % (horiz_profile.lon1d[i], horiz_profile.lat1d[i], horiz_profile.depth_km,
-                                             profile_results[0][i], profile_results[1][i], profile_results[2][i]))
+                                             profile_results.effective_normal[i], profile_results.shear[i],
+                                             profile_results.coulomb[i]))
     return
 
 

@@ -147,10 +147,12 @@ def compute_stresses_horiz_profile(params, inputs):
     # Build a regular grid and iterate through.
     print("Resolving stresses on a horizontal profile with points of shape ", inputs.receiver_horiz_profile.shape)
     profile = inputs.receiver_horiz_profile
-    receiver_normal = np.empty(np.shape(profile.lon1d))
+    receiver_dry_normal = np.empty(np.shape(profile.lon1d))
     receiver_shear = np.empty(np.shape(profile.lon1d))
     receiver_coulomb = np.empty(np.shape(profile.lon1d))
-    sigmaij, strain_points = [], []
+    receiver_pore_pressure = np.empty(np.shape(profile.lon1d))
+    receiver_effective_normal = np.empty(np.shape(profile.lon1d))
+    strain_points = []
 
     # perf improvement: Compute receiver geometry just once, since it's a profile of fixed geometry
     rec_strike_v, rec_dip_v, rec_plane_normal = conversion_math.get_geom_attributes_from_receiver_profile(profile)
@@ -159,20 +161,25 @@ def compute_stresses_horiz_profile(params, inputs):
     for (x, y) in zip(xi, yi):
         strain_points.append(Displacement_points(lon=x, lat=y, depth=profile.depth_km))
 
+    # Collect strain and stress tensors. In Pa.
     strain_tensors = np.array(compute_xy_strain(inputs, params, strain_points))  # list of strain tensors
     stress_tensors = conversion_math.stress_tensor_batch(strain_tensors, params.lame1, params.mu)
 
     for i, stress_tensor in enumerate(stress_tensors):
         # Then compute shear, normal, and coulomb stresses.
-        [shear, _dry_normal, _pore_pressure, normal, coulomb] = \
+        [shear, dry_normal, pore_pressure, normal, coulomb] = \
             conversion_math.get_coulomb_stresses_internal(stress_tensor, rec_strike_v, profile.rake, rec_dip_v,
                                                           rec_plane_normal, inputs.FRIC, params.B)
-        receiver_normal[i] = normal
+        receiver_dry_normal[i] = dry_normal
+        receiver_pore_pressure[i] = pore_pressure
+        receiver_effective_normal[i] = normal
         receiver_shear[i] = shear
         receiver_coulomb[i] = coulomb
-        sigmaij.append(stress_tensor)  # optionally, send out to GRD files if rec_full_stress_tensor is set. In Pa.
 
-    return receiver_normal, receiver_shear, receiver_coulomb, sigmaij, strain_tensors
+    stress_results = cc.Stress_Results(strain_tensors, stress_tensors, receiver_shear, receiver_dry_normal,
+                                       receiver_pore_pressure, receiver_effective_normal, receiver_coulomb)
+
+    return stress_results
 
 
 def compute_strains_stresses(params, inputs):

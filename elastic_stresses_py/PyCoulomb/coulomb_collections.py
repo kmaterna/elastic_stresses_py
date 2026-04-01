@@ -1,5 +1,6 @@
 # Definitions of objects used in this project
 
+import numpy as np
 from . import pyc_fault_object
 from .inputs_object import input_obj
 from .disp_points_object import disp_points_object
@@ -66,3 +67,34 @@ class Mogi_Source:
         self.zerolat = zerolat  # degrees
         self.depth = depth  # km
         self.dV = dV  # cubic meters
+
+
+class Stress_Results:
+    """
+    A container to hold results of a bunch of stress calculations on fault patches.
+    The sizes of all these arrays will match the length of the receivers
+    """
+    def __init__(self, eij, sigmaij, shear, dry_normal, pore_pressure, effective_normal, coulomb):
+        def _as_1d_array(name, values):
+            array = np.asarray(values).reshape(-1)
+            if array.ndim != 1:
+                raise ValueError(f"{name} must be convertible to a 1D array.")
+            return array
+
+        self.shear = _as_1d_array("shear", shear)  # in kPa
+        expected_shape = self.shear.shape
+
+        def _validate_shape(name, values):
+            array = _as_1d_array(name, values)
+            if array.shape != expected_shape:
+                raise ValueError(
+                    f"{name} must have shape {expected_shape} to match shear, got {array.shape}."
+                )
+            return array
+
+        self.eij = eij  # units?
+        self.sigmaij = sigmaij  # in Pa
+        self.dry_normal = _validate_shape("dry_normal", dry_normal)  # in kPa
+        self.pore_pressure = _validate_shape("pore_pressure", pore_pressure)  # in kPa
+        self.effective_normal = _validate_shape("effective_normal", effective_normal)  # in kPa
+        self.coulomb = _validate_shape("coulomb", coulomb)   # in kPa
