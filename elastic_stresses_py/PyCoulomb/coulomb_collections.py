@@ -19,7 +19,7 @@ Faults_object = pyc_fault_object.Faults_object
 # Output from the Coulomb stress calculation
 class Out_object:
     def __init__(self, x, y, x2d, y2d, u_disp, v_disp, w_disp, zerolon, zerolat, model_disp_points, strains,
-                 source_object, receiver_object, receiver_normal, receiver_shear, receiver_coulomb, receiver_profile):
+                 source_object, receiver_object, receiver_results, receiver_profile):
         self.x, self.y = x, y
         self.x2d, self.y2d = x2d, y2d
         self.u_disp, self.v_disp, self.w_disp = u_disp, v_disp, w_disp
@@ -28,10 +28,8 @@ class Out_object:
         self.strains = strains
         self.source_object = source_object
         self.receiver_object = receiver_object
-        self.receiver_normal = receiver_normal
-        self.receiver_shear = receiver_shear
-        self.receiver_coulomb = receiver_coulomb
-        self.receiver_profile = receiver_profile  # list of several other fields
+        self.receiver_results = receiver_results  # Stress_Results object
+        self.receiver_profile = receiver_profile  # Stress_Results object
 
 
 class Receiver_Horiz_Profile:

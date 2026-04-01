@@ -36,8 +36,8 @@ def write_gmt_fault_file(fault_object_list, outfile, color_mappable=get_blank_fa
     ofile = open(outfile, 'w')
     for i, fault in enumerate(fault_object_list):
         lons, lats = fault.get_four_corners_lon_lat()
-        if isinstance(color_mappable, collections.abc.Sequence):
-            color_string = "-Z"+str(color_mappable[i])  # if separately providing the color array
+        if isinstance(color_mappable, (collections.abc.Sequence, np.ndarray)):
+            color_string = "-Z"+str(color_mappable[i])  # if separately providing the color array, as a list or array
         else:
             color_string = "-Z"+str(color_mappable(fault))  # call the function that you've provided
         ofile.write("> "+color_string+"\n")

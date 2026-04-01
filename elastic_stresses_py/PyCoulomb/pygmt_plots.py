@@ -22,12 +22,13 @@ def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1, cb
     if not out_object.receiver_object:
         return
 
+    receiver_results = out_object.receiver_results
     if stress_type == 'Shear':
-        plotting_stress = out_object.receiver_shear
+        plotting_stress = receiver_results.shear
     elif stress_type == 'Normal':
-        plotting_stress = out_object.receiver_normal
+        plotting_stress = receiver_results.effective_normal
     else:
-        plotting_stress = out_object.receiver_coulomb  # The default option
+        plotting_stress = receiver_results.coulomb  # The default option
 
     # Make stress bounds for color map.
     [cmap_opts, cbar_opts] = utilities.define_colorbar_series(plotting_stress, vmin=vmin, vmax=vmax)

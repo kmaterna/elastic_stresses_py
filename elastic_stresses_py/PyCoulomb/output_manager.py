@@ -42,9 +42,9 @@ def produce_outputs(params, inputs, obs_disp_points, obs_strain_points, out_obje
                                          os.path.join(params.outdir, "vector_plot"+params.save_file_type))
     if params.plot_stress:  # write the outputs of stress calculation, if doing a stress calculation
         fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(out_object.receiver_object)
-        fso.file_io.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_shear,
-                                                                 out_object.receiver_normal,
-                                                                 out_object.receiver_coulomb,
+        fso.file_io.io_slippy.write_stress_results_slippy_format(fault_dict_list, out_object.receiver_results.shear,
+                                                                 out_object.receiver_results.effective_normal,
+                                                                 out_object.receiver_results.coulomb,
                                                                  os.path.join(params.outdir, 'stresses_full.txt'))
         stress_plot(params, out_object, stress_type='Shear')  # can give vmin, vmax here if desired.
         stress_plot(params, out_object, stress_type='Normal')
@@ -148,12 +148,13 @@ def stress_plot(params, out_object, stress_type, vmin=None, vmax=None):
     outfile = os.path.join(params.outdir, 'Stresses_' + stress_type + params.save_file_type)
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile))
 
+    receiver_results = out_object.receiver_results
     if stress_type == 'Shear':
-        stress_component = out_object.receiver_shear
+        stress_component = receiver_results.shear
     elif stress_type == 'Normal':
-        stress_component = out_object.receiver_normal
+        stress_component = receiver_results.effective_normal
     else:
-        stress_component = out_object.receiver_coulomb
+        stress_component = receiver_results.coulomb
 
     # Select boundaries of color map.
     vmin, vmax = utilities.produce_vmin_vmax_symmetric(stress_component, vmin, vmax)
@@ -225,12 +226,13 @@ def stress_cross_section_cartesian(params, out_object, stress_type, vmin=None, v
 
     print("Making plot of %s stress on receiver fault patches: %s. " % (stress_type, outfile))
 
+    receiver_results = out_object.receiver_results
     if stress_type == 'Shear':
-        stress_component = out_object.receiver_shear
+        stress_component = receiver_results.shear
     elif stress_type == 'Normal':
-        stress_component = out_object.receiver_normal
+        stress_component = receiver_results.effective_normal
     else:
-        stress_component = out_object.receiver_coulomb
+        stress_component = receiver_results.coulomb
 
     max_depth_array = [x.bottom for x in out_object.receiver_object]
     min_depth_array = [x.top for x in out_object.receiver_object]

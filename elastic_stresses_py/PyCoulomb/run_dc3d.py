@@ -27,15 +27,14 @@ def do_stress_computation(params, inputs, disp_points=(), strain_points=()):
     [x, y, x2d, y2d, u_disps, v_disps, w_disps] = compute_grid_def(subfaulted_inputs, params)
     model_disp_points = compute_ll_def(subfaulted_inputs, params, disp_points)
     strain_tensor_results = compute_ll_strain(inputs, params, strain_points)
-    receiver_normal, receiver_shear, receiver_coulomb = compute_strains_stresses(params, subfaulted_inputs)
+    receiver_results = compute_strains_stresses(params, subfaulted_inputs)
     receiver_profile_results = compute_stresses_horiz_profile(params, subfaulted_inputs)
 
     MyOutObject = cc.Out_object(x=x, y=y, x2d=x2d, y2d=y2d, u_disp=u_disps, v_disp=v_disps, w_disp=w_disps,
                                 strains=strain_tensor_results, model_disp_points=model_disp_points,
                                 zerolon=inputs.zerolon, zerolat=inputs.zerolat,
                                 source_object=inputs.source_object, receiver_object=subfaulted_inputs.receiver_object,
-                                receiver_normal=receiver_normal, receiver_shear=receiver_shear,
-                                receiver_coulomb=receiver_coulomb, receiver_profile=receiver_profile_results)
+                                receiver_results=receiver_results, receiver_profile=receiver_profile_results)
     return MyOutObject
 
 
@@ -186,15 +185,19 @@ def compute_strains_stresses(params, inputs):
     """
     Pseudocode:
     For each receiver, at the center point, sum up the strain and stress for each source.
-    Return : lists of shear stress, normal stress, and coulomb stress on each receiver.
+    Return : a Stress_Results object, with lists of length of receivers.
     """
 
     # The values we're actually going to output.
-    receiver_shear, receiver_normal, receiver_coulomb, target_points = [], [], [], []
+    receiver_dry_normal, receiver_shear = [], []
+    receiver_coulomb, receiver_pore_pressure = [], []
+    receiver_effective_normal, target_points = [], []
     if not inputs.receiver_object:
-        return [receiver_normal, receiver_shear, receiver_coulomb]
+        return cc.Stress_Results([], [], receiver_shear, receiver_dry_normal, receiver_pore_pressure,
+                                 receiver_effective_normal, receiver_coulomb)
     if not params.plot_stress:
-        return [receiver_normal, receiver_shear, receiver_coulomb]
+        return cc.Stress_Results([], [], receiver_shear, receiver_dry_normal, receiver_pore_pressure,
+                                 receiver_effective_normal, receiver_coulomb)
 
     print("Resolving stresses on receiver fault(s).")
     for rec in inputs.receiver_object:
@@ -207,13 +210,15 @@ def compute_strains_stresses(params, inputs):
 
     for rec, stress_tensor in zip(inputs.receiver_object, stress_tensors):
         # Then compute shear, normal, and coulomb stresses.
-        [shear, _dry_normal, _pore_pressure, normal, coulomb] = \
+        [shear, dry_normal, pore_pressure, normal, coulomb] = \
             conversion_math.get_coulomb_stresses_internal(stress_tensor, rec.strike_unit_vector, rec.rake,
                                                           rec.dip_unit_vector, rec.plane_normal, inputs.FRIC,
                                                           params.B)
-        receiver_normal.append(normal)
+        receiver_dry_normal.append(dry_normal)
+        receiver_pore_pressure.append(pore_pressure)
+        receiver_effective_normal.append(normal)
         receiver_shear.append(shear)
         receiver_coulomb.append(coulomb)
 
-    # return lists of normal, shear, coulomb values for each receiver.
-    return receiver_normal, receiver_shear, receiver_coulomb
+    return cc.Stress_Results(strain_tensors, stress_tensors, receiver_shear, receiver_dry_normal,
+                             receiver_pore_pressure, receiver_effective_normal, receiver_coulomb)

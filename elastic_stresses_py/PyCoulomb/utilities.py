@@ -79,7 +79,7 @@ def produce_vmin_vmax_symmetric(plotting_array, vmin, vmax):
     :param vmin: float
     :param vmax: float
     """
-    if not plotting_array:
+    if plotting_array.size == 0:
         return -1, 1
     auto_vmin = np.nanmin(plotting_array)  # one number
     auto_vmax = np.nanmax(plotting_array)  # one number
