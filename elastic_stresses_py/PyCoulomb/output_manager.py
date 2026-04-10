@@ -311,7 +311,7 @@ def reshape_profile_arrays(lon1d, lat1d, shape):
 
 
 def map_horiz_profile(horiz_profile, profile_results_1d, outfile, vmin=-200, vmax=200, cap_colorbar=1,
-                      stress_type='Coulomb'):
+                      stress_type='Coulomb', disp_points=None, region=None):
     """Display a small map of a horizontal profile of stresses. Default colors for now."""
     x, y = reshape_profile_arrays(horiz_profile.lon1d, horiz_profile.lat1d, horiz_profile.shape)
     plotting_stress = np.reshape(profile_results_1d, horiz_profile.shape)
@@ -332,6 +332,14 @@ def map_horiz_profile(horiz_profile, profile_results_1d, outfile, vmin=-200, vma
     dislay_map = plt.contourf(x, y, plotting_stress, levels=levels, cmap='RdYlBu_r', vmin=vmin, vmax=vmax)
     plt.title(stress_type + ' stresses on horizontal profile, fixed strike/dip/rake/depth of '+str(horiz_profile.strike)
               + ', ' + str(horiz_profile.dip)+', '+str(horiz_profile.rake)+', '+str(horiz_profile.depth_km))
+
+    if disp_points:  # plot displacement points if desired
+        for item in disp_points:
+            plt.plot(item.lon, item.lat, '.', color='black')
+
+    if region:
+        plt.xlim([region[0], region[1]])
+        plt.ylim([region[2], region[3]])
 
     cb = fig.colorbar(dislay_map, ax=plt.gca(), location='right')
     cb.set_label('Stress (kPa)', fontsize=22)
