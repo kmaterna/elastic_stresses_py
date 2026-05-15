@@ -3,6 +3,7 @@
 import numpy as np
 import pygmt
 import os
+import xarray as xr
 from . import io_additionals, utilities
 from tectonic_utils.geodesy import fault_vector_functions
 
@@ -64,6 +65,54 @@ def map_stress_plot(params, inputs, out_object, stress_type, vmin=-1, vmax=1, cb
     fig = annotate_figure_with_aftershocks(fig, aftershocks_file=params.aftershocks, style='c0.02c')
     print("Mapping stress in %s " % os.path.join(params.outdir, stress_type + '_map'+params.save_file_type))
     fig.savefig(os.path.join(params.outdir, stress_type + '_map'+params.save_file_type))
+    return
+
+
+def map_stress_profile(inputs, horiz_profile, profile_results_1d, outfile, vmin=-4, vmax=4,
+                       region=(),
+                       disp_points=()):
+    """
+    Map of a horizontal stress profile with coastline and annotations.
+    """
+    print("Mapping horizontal stress profile in %s " % outfile)
+
+    proj = 'M4i'
+
+    if not region:
+        region = inputs.define_map_region()
+
+    x = np.reshape(horiz_profile.lon1d, horiz_profile.shape)
+    y = np.reshape(horiz_profile.lat1d, horiz_profile.shape)
+    plotting_stress = np.reshape(profile_results_1d, horiz_profile.shape)
+
+    grid = xr.DataArray(
+        plotting_stress,
+        coords={
+            "y": y[:, 0],
+            "x": x[0, :],
+        },
+        dims=("y", "x"),
+        name="z",
+    )
+
+    # Build a PyGMT plot
+    fig = pygmt.Figure()
+    pygmt.makecpt(cmap="roma", series=str(vmin) + "/"+str(vmax)+"/0.2", background="o", output="mycpt.cpt")
+    fig.basemap(region=region, projection=proj, frame="+tStress")
+    fig.coast(region=region, projection=proj, borders=['1', '2'], shorelines='1.0p,black', water='lightblue',
+              map_scale="n0.23/0.06+c" + str(region[2]) + "+w20", frame="1.0")
+    fig.grdimage(grid=grid,
+                region=region,
+                projection=proj,
+                cmap='mycpt.cpt')
+    if disp_points:
+        dx = [x.lon for x in disp_points]
+        dy = [x.lat for x in disp_points]
+        fig.plot(x=dx, y=dy, style='c0.05c', pen="0.1p,black", fill="black")
+
+    fig.colorbar(position="JCR+w4.0i+v+o0.7i/0i", cmap="mycpt.cpt", truncate=str(vmin)+"/"+str(vmax),
+                 frame=["x0.5", "y+LStress"])
+    fig.savefig(outfile)
     return
 
 
