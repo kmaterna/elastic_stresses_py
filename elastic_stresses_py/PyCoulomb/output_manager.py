@@ -442,12 +442,17 @@ def write_synthetic_grid_full_results(out_object, outfile):
 def write_horiz_profile(horiz_profile, profile_results, outfile):
     print("Writing %s " % outfile)
     ofile = open(outfile, 'w')
-    ofile.write("# lon lat depth_km normal_kPa shear_kPa coulomb_kPa\n")
+    ofile.write("# lon lat depth_km shear_kPa dry_normal_kPa pore_pressure_change effective_normal_kPa coulomb_kPa\n")
     ofile.write("# strike %f, dip %f, rake %f\n" % (horiz_profile.strike, horiz_profile.dip, horiz_profile.rake))
     for i in range(len(horiz_profile.lon1d)):
-        ofile.write("%f %f %f %f %f %f\n" % (horiz_profile.lon1d[i], horiz_profile.lat1d[i], horiz_profile.depth_km,
-                                             profile_results.effective_normal[i], profile_results.shear[i],
-                                             profile_results.coulomb[i]))
+        ofile.write("%f %f %f %f %f %f %f %f\n" % (horiz_profile.lon1d[i],
+                                                   horiz_profile.lat1d[i],
+                                                   horiz_profile.depth_km,
+                                                   profile_results.shear[i],
+                                                   profile_results.dry_normal[i],
+                                                   profile_results.pore_pressure[i],
+                                                   profile_results.effective_normal[i],
+                                                   profile_results.coulomb[i]))
     return
 
 
