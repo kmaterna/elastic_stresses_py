@@ -125,9 +125,10 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     fig = pygmt.Figure()
     fig_width_deg = region[1] - region[0]
     fig_height_deg = region[3] - region[2]
-    fig.basemap(region=region, projection=proj, frame="+t\"" + title + "\"")
-    fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame=str(fig_width_deg/5))
-    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='lightblue')
+    fig.basemap(region=region, projection=proj, frame="+t" + title)
+    fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame=str(fig_width_deg/5),
+              water='lightblue')
+    # fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='lightblue')
 
     # Draw fault slip for a list of faults and draw a color scale.
     if len(fault_dict_list) > 0:
@@ -218,7 +219,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                      font='14p,Helvetica,black')  # scale label
 
     # Map km scale
-    fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w" +
+    fig.coast(region=region, projection=proj, borders='1', shorelines='0.5p,black', map_scale="jBL+o0.7c/1c+w" +
                                                                                               str(map_scale))
     fig.savefig(outfile)
     return fig
