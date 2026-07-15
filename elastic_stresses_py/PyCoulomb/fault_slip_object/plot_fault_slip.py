@@ -92,7 +92,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
                                  fault_traces_from_memory=None, fault_traces_from_dict=None,
                                  fault_traces_from_file=None, title="", vmin=None, vmax=None, v_labeling_interval=None,
                                  plot_slip_colorbar=True, vert_disp_units="m", vert_mult=1, map_scale=25,
-                                 slip_cbar_opts=(-1, 1, 0.001), slip_cbar_label="Slip(m)"):
+                                 slip_cbar_opts=(-1, 1, 0.001), slip_cbar_label="Slip(m)",
+                                 plot_level_2_borders=True):
     """
     Plot a map of slip distribution from fault_dict_list, a general format for slip distributions of rectangular faults.
     In order to use this function with other fault formats, convert to the internal rectangular fault dict first.
@@ -116,6 +117,7 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     :param map_scale: int, in km
     :param slip_cbar_opts: tuple with (cbar_min, cbar_max, cbar_int) for fault slip cbar
     :param slip_cbar_label: string, default 'Slip(m)'
+    :param plot_level_2_borders: if True, plot N2 GMT borders. Default True.
     :returns: handle to the pygmt figure, for the option of later additions
     """
     print("Plotting outfile %s " % outfile)
@@ -128,7 +130,8 @@ def map_source_slip_distribution(fault_dict_list, outfile, disp_points=(), regio
     fig.basemap(region=region, projection=proj, frame="+t" + title)
     fig.coast(shorelines="1.0p,black", region=region, borders="1", projection=proj, frame=str(fig_width_deg/5),
               water='lightblue')
-    # fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='lightblue')
+    if plot_level_2_borders:
+        fig.coast(region=region, projection=proj, borders='2', shorelines='0.5p,black', water='lightblue')
 
     # Draw fault slip for a list of faults and draw a color scale.
     if len(fault_dict_list) > 0:
