@@ -5,6 +5,7 @@ from tectonic_utils.seismo import moment_calculations
 from . import fault_slip_object as fso
 from . import pyc_fault_object as pycfaults
 from . import coulomb_collections as cc
+from . import fault_slip_triangle as fst
 from .disp_points_object.disp_points_object import Displacement_points
 from tectonic_utils.geodesy import fault_vector_functions
 
@@ -161,10 +162,10 @@ def call_gmt_surface(xyzfile, outfile, region, inc):
 
 def print_metrics_on_sources(source_object, mu):
     """
-    Print overall magnitude of rectangular source objects.
+    Print overall magnitude of rectangular source objects and other metrics.
     """
     print("Number of total sources:", len(source_object))
-    rect_sources, pt_sources, mogi_sources = separate_source_types(source_object)
+    rect_sources, tri_sources, pt_sources, mogi_sources = separate_source_types(source_object)
     if len(rect_sources) > 0:
         mw = moment_calculations.mw_from_moment(pycfaults.get_faults_slip_moment(rect_sources, mu))
         print("Number of rectangular sources: %d" % len(rect_sources))
@@ -173,24 +174,30 @@ def print_metrics_on_sources(source_object, mu):
         print("Number of point sources: %d" % len(pt_sources))
     if len(mogi_sources) > 0:
         print("Number of Mogi sources: %d" % len(mogi_sources))
+    if len(tri_sources) > 0:
+        print("Number of triangular sources: %d" % len(tri_sources))
+        mw = moment_calculations.mw_from_moment(fst.fault_slip_triangle.get_total_moment(tri_sources, mu))
+        print("Moment Magnitude from Triangular Fault Patches (assuming G=%.1fGPa): %f" % (mu/1e9, mw))
     return
 
 
 def separate_source_types(source_object):
     """
     Take a list of source objects and separate it into lists:
-    one of rectangular sources, one of point sources, one of mogi sources
+    one of rectangular sources, one of triangular sources, one of point sources, one of mogi sources
     """
-    rect_sources, pt_sources, mogi_sources = [], [], []
+    rect_sources, tri_sources, pt_sources, mogi_sources = [], [], [], []
     for source in source_object:
         if isinstance(source, cc.Mogi_Source):
             mogi_sources.append(source)
+        if isinstance(source, fst.fault_slip_triangle.TriangleFault):
+            tri_sources.append(source)
         if isinstance(source, cc.Faults_object):
             if source.is_point_source:
                 pt_sources.append(source)
             else:
                 rect_sources.append(source)
-    return rect_sources, pt_sources, mogi_sources
+    return rect_sources, tri_sources, pt_sources, mogi_sources
 
 
 def convert_ll2xy_disp_points(disp_points, zerolon, zerolat):
@@ -245,9 +252,10 @@ def get_zeros_strain_points(strain_points):
 
 def write_fault_edges_to_gmt_file(fault_object, outfile='tmp.txt', color_array=lambda x: x.get_total_slip()):
     """
-    This speeds up pygmt plotting.  Color_array can be a function of x, or a numpy array
+    This speeds up pygmt plotting.  Color_array can be a function of x, or a numpy array.
+    Currently only writes rectangular fault patches.
     """
-    rect_sources, _, _ = separate_source_types(fault_object)
+    rect_sources, _, _, _ = separate_source_types(fault_object)
     fault_dict_list = fso.fault_slip_object.coulomb_fault_to_fault_object(rect_sources)
     fso.file_io.outputs.write_gmt_fault_file(fault_dict_list, outfile, color_mappable=color_array, verbose=False)
     return

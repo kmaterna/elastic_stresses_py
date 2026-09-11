@@ -4,6 +4,7 @@ Reading aftershock tables and GPS lon/lat pairs
 
 from .disp_points_object.disp_points_object import Displacement_points
 from . import utilities, conversion_math
+from .fault_slip_triangle import fault_slip_triangle as fst
 import numpy as np
 from tectonic_utils.seismo import moment_calculations
 from . import pyc_fault_object as pycfaults
@@ -126,12 +127,12 @@ def write_disp_points_locations(disp_points_list, filename, precision=6):
 
 def write_fault_traces_gmt(fault_list, outfile):
     """
-    Write the top edge of each fault in GMT map coordinates
+    Write the top edge of each rectangular fault in GMT map coordinates
 
     :param fault_list: pycoulomb source object
     :param outfile: string, filename for printing traces
     """
-    fault_list, pt_sources, mogis = utilities.separate_source_types(fault_list)
+    fault_list, tri_sources, pt_sources, mogis = utilities.separate_source_types(fault_list)
     if not fault_list:
         return
     print("Writing %s" % outfile)
@@ -225,13 +226,19 @@ def write_results_metrics(inputs, metrics_file, mu):
     """
     with open(metrics_file, 'w') as f:
         f.write("Number of sources: %d \n" % len(inputs.source_object))
-        rect_sources, pt_sources, mogi_sources = utilities.separate_source_types(inputs.source_object)
+        rect_sources, tri_sources, pt_sources, mogi_sources = utilities.separate_source_types(inputs.source_object)
         if len(rect_sources) > 0:
             mw = moment_calculations.mw_from_moment(pycfaults.get_faults_slip_moment(rect_sources, mu))
             f.write(" ->  Number of rectangular sources: %d\n" % len(rect_sources))
             f.write("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f\n\n" % (mu / 1e9, mw))
+            print("Moment Magnitude from Rectangular Fault Patches (assuming G=%.1fGPa): %f" % (mu / 1e9, mw))
         if len(pt_sources) > 0:
             f.write(" ->  Number of point sources: %d\n" % len(pt_sources))
+        if len(tri_sources) > 0:
+            f.write(" ->  Number of triangular sources: %d\n" % len(tri_sources))
+            mw = moment_calculations.mw_from_moment(fst.get_total_moment(tri_sources, mu))
+            f.write("Moment Magnitude from Triangular Fault Patches (assuming G=%.1fGPa): %f\n\n" % (mu / 1e9, mw))
+            print("Moment Magnitude from Triangular Fault Patches (assuming G=%.1fGPa): %f" % (mu / 1e9, mw))
         if len(mogi_sources) > 0:
             f.write(" ->  Number of Mogi sources: %d\n" % len(mogi_sources))
         f.write("Number of receivers: %d \n" % len(inputs.receiver_object))

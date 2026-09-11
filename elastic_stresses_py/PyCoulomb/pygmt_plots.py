@@ -5,6 +5,7 @@ import pygmt
 import os
 import xarray as xr
 from . import io_additionals, utilities
+from .fault_slip_triangle.file_io import tri_outputs
 from tectonic_utils.geodesy import fault_vector_functions
 
 
@@ -216,16 +217,19 @@ def annotate_figure_with_sources(fig, inputs, mu=30e9, fmscale="0.3c", dotstyle=
     if len(inputs.source_object) == 0:
         return fig
 
+    rect_sources, tri_sources, pt_sources, _ = utilities.separate_source_types(inputs.source_object)
+
     # Draw dots for EQ sources
     eq_lon, eq_lat = [], []
-    for source in inputs.source_object:  # Plotting all types of sources
+    rect_plus_pts = rect_sources+pt_sources
+    for source in rect_plus_pts:  # Plotting rectangular and point sources
         source_lon, source_lat = fault_vector_functions.xy2lonlat(source.xstart, source.ystart, inputs.zerolon,
                                                                   inputs.zerolat)
         eq_lon.append(source_lon)
         eq_lat.append(source_lat)
-    fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, fill="purple", pen="thin,black")
+    if rect_plus_pts:
+        fig.plot(x=eq_lon, y=eq_lat, style=dotstyle, fill="purple", pen="thin,black")
 
-    rect_sources, pt_sources, _ = utilities.separate_source_types(inputs.source_object)
     for source in pt_sources:  # draw focal mechanisms
         # Draw small sources with focal mechanisms
         [x_total, y_total, _, _] = source.get_fault_four_corners()
@@ -237,6 +241,12 @@ def annotate_figure_with_sources(fig, inputs, mu=30e9, fmscale="0.3c", dotstyle=
     if rect_sources:
         # draw the fault patches, no special color code
         utilities.write_fault_edges_to_gmt_file(rect_sources, "tmp.txt")
+        fig.plot(data='tmp.txt', pen="0.2p,black")
+        os.remove('tmp.txt')
+    # plot the triangular sources
+    if tri_sources:
+        # draw the fault patches, no special color code
+        tri_outputs.write_gmt_plots_geographic(tri_sources, "tmp.txt")
         fig.plot(data='tmp.txt', pen="0.2p,black")
         os.remove('tmp.txt')
     return fig

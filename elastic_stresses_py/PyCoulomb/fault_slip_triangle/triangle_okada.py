@@ -30,7 +30,8 @@ def convert_rect_sources_into_tris(rect_sources):
 
 def compute_cartesian_strain_tris(inputs, params, strain_points):
     """
-    Loop through a list of lon/lat and compute their strains due to all sources put together.
+    Loop through a list of strain points and compute their strains due to all rect+tri sources put together.
+    Strain_points are in cartesian.
     Returns list of strain tensors
     """
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
@@ -39,6 +40,11 @@ def compute_cartesian_strain_tris(inputs, params, strain_points):
 
 
 def compute_cartesian_def_tris(inputs, params, obs_disp_points):
+    """
+    Loop through a list of disp_points and compute their deformation due to all rect+tri sources put together.
+    Disp_points are in cartesian.
+    Returns list of Disp_points in cartesian
+    """
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
     modeled_tri_points = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
     return modeled_tri_points
@@ -50,7 +56,7 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     Requires all fault_triangles to have the same reference lon/lat
 
     :param fault_triangles: list
-    :param disp_points: list
+    :param disp_points: list, in cartesian coordinates
     :param poisson_ratio: float
     :returns: list of disp_points objects
     """
@@ -93,7 +99,7 @@ def compute_strain_points_from_triangles(fault_triangles, strain_points, poisson
     Requires all fault_triangles to have the same reference lon/lat
 
     :param fault_triangles: list
-    :param strain_points: list
+    :param strain_points: list, in cartesian coordinates
     :param poisson_ratio: float
     :returns: list of disp_points objects, list of strain tensors in 3x3 matrix
     """

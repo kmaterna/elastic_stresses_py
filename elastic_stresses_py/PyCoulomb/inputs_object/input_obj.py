@@ -1,5 +1,6 @@
 import numpy as np
 from tectonic_utils.geodesy import fault_vector_functions
+from .. import utilities
 
 
 class Input_object:
@@ -47,7 +48,8 @@ class Input_object:
             allfaults = self.receiver_object + self.source_object
         if len(allfaults) == 0:
             raise ValueError("Error! No faults given, so automatic region cannot be determined.")
-        for item in allfaults:
+        rectangles, tris, points, mogis = utilities.separate_source_types(allfaults)
+        for item in rectangles:  # If source faults are rectangles:
             lon, lat = fault_vector_functions.xy2lonlat(item.xstart, item.ystart, self.zerolon, self.zerolat)
             if lon < region[0]:
                 region[0] = lon
