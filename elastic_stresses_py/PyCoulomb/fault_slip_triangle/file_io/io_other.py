@@ -23,7 +23,7 @@ def convert_points_to_wgs84(x, y):
     return newtuple
 
 
-def read_brawley_lohman_2005(filename):
+def read_brawley_lohman_2005(filename, reflon=None, reflat=None):
     """
     Read a matlab structure from Rowena Lohman, originally reported in utm zone 11 easting and northing meters
     Matlab structure from Rowena Lohman, from McGuire et al. 2015:
@@ -31,11 +31,18 @@ def read_brawley_lohman_2005(filename):
     xfault = 3 arrays of 250 each in the range of 600K [632840.42547992]  UTM Zone 11
     yfault = 3 arrays of 250 each in the range of 3M [3670484.48912303]  UTM Zone 11
     zfault = 3 arrays of 250 each in the range of ~1000, assuming meters below the surface
+
+    :param filename: string
+    :param reflon: float, default None. If provide one, must provide both
+    :param reflat: float, default None. If provide one, must provide both
     """
     print("Reading file %s " % filename)
     triangle_list = []
     mat = scipy.io.loadmat(filename)
-    (reference_lat, reference_lon, ref_depth) = convert_points_to_wgs84(mat['xfault'][0][0], mat['yfault'][0][0])
+    if reflon and reflat:
+        reference_lon, reference_lat, ref_depth = reflon, reflat, 0
+    else:  # if not providing a reference lon or reference lat
+        (reference_lat, reference_lon, ref_depth) = convert_points_to_wgs84(mat['xfault'][0][0], mat['yfault'][0][0])
     for i in range(len(mat['xfault'][0])):  # collect lon/lat of 3 vertices of the triangles
         first_vertex = np.array([mat['xfault'][0][i]-mat['xfault'][0][0], mat['yfault'][0][i]-mat['yfault'][0][0],
                                 mat['zfault'][0][i]])
@@ -88,17 +95,18 @@ def read_csz_bartlow_2019(input_file):
     return fault_patches, nodes
 
 
-def read_superstition_hills_mesh_2024(triangles, mesh, slip):
+def read_superstition_hills_mesh_2024(triangles, mesh, slip, reflon=-115.70124, reflat=32.93049):
     """
     Reading the triangular mesh of the Superstition Hills model from Vavra et al., GRL, 2024
 
     :param triangles: string, filename
     :param mesh: string, filename
     :param slip: string, filename
+    :param reflon: float, default -115.70124 (creepmeter location)
+    :param reflat: float, default 32.93049 (creepmeter location)
     :return: list of fault patches
     """
     print("Reading file %s " % triangles)
-    reflon, reflat = -115.70124, 32.93049  # creepmeter location
     iv1, iv2, iv3 = np.loadtxt(triangles, unpack=True, skiprows=1, usecols=(0, 1, 2))
     slip_mm = np.loadtxt(slip, unpack=True, skiprows=1, usecols=(0, ))
     vx, vy, vz = np.loadtxt(mesh, unpack=True, skiprows=2, usecols=(0, 1, 2))  # in km, with negative meaning down

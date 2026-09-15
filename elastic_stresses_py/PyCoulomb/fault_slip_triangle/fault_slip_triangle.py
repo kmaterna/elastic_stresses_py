@@ -10,6 +10,7 @@ class TriangleFault:
     """
     The internal format is a class for a triangular fault segment, specified by three vertices and a reference point.
     If the fault is a receiver fault, we put slip = 0.
+    For vertices, the X/Y coordinates are in meters away from the reference lon/lat
 
     :param vertex1: array containing [x, y, z] of vertex 1 in m, z is positive downward. z in meters below surface.
     :param vertex2: array containing [x, y, z] of vertex 2 in m, z is positive downward. z in meters below surface.

@@ -28,49 +28,49 @@ def convert_rect_sources_into_tris(rect_sources):
     return tri_faults
 
 
-def compute_cartesian_strain_tris(inputs, params, strain_points):
+def compute_cartesian_strain_tris(inputs, params, cart_strain_points):
     """
     Loop through a list of strain points and compute their strains due to all rect+tri sources put together.
     Strain_points are in cartesian.
     Returns list of strain tensors
     """
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    strain_tensors = compute_strain_points_from_triangles(tri_faults, strain_points, params.nu)
+    strain_tensors = compute_strain_points_from_triangles(tri_faults, cart_strain_points, params.nu)
     return strain_tensors
 
 
-def compute_cartesian_def_tris(inputs, params, obs_disp_points):
+def compute_cartesian_def_tris(inputs, params, cart_disp_points):
     """
     Loop through a list of disp_points and compute their deformation due to all rect+tri sources put together.
     Disp_points are in cartesian.
     Returns list of Disp_points in cartesian
     """
     tri_faults = convert_rect_sources_into_tris(inputs.source_object)
-    modeled_tri_points = compute_disp_points_from_triangles(tri_faults, obs_disp_points, params.nu)
+    modeled_tri_points = compute_disp_points_from_triangles(tri_faults, cart_disp_points, params.nu)
     return modeled_tri_points
 
 
-def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_ratio):
+def compute_disp_points_from_triangles(fault_triangles, cart_disp_points, poisson_ratio):
     """
     Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points).
     Requires all fault_triangles to have the same reference lon/lat
 
     :param fault_triangles: list
-    :param disp_points: list, in cartesian coordinates
+    :param cart_disp_points: list, in cartesian coordinates
     :param poisson_ratio: float
-    :returns: list of disp_points objects
+    :returns: list of disp_points objects, in cartesian coordinates
     """
-    if not disp_points:
+    if not cart_disp_points:
         return []
     if len(fault_triangles) == 0:
-        return utilities.get_zeros_disp_points(disp_points)
+        return utilities.get_zeros_disp_points(cart_disp_points)
     proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
     if not proceed_code:
         raise ValueError("Error! Triangular faults do not have same reference")
 
-    obsx = [point.lon*1000 for point in disp_points]
-    obsy = [point.lat*1000 for point in disp_points]   # calculation works in meters
-    obsz = [point.depth * -1000 for point in disp_points]  # in meters, negative is down
+    obsx = [point.lon * 1000 for point in cart_disp_points]
+    obsy = [point.lat * 1000 for point in cart_disp_points]   # calculation works in meters
+    obsz = [point.depth * -1000 for point in cart_disp_points]  # in meters, negative is down
     pts = np.vstack([obsx, obsy, obsz]).T   # shape: (Npts, 3)
 
     slip_array = np.array([[-src.rtlat_slip, src.dip_slip, src.tensile] for src in fault_triangles])  # shape:(Ntris, 3)
@@ -83,7 +83,7 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
 
     # Package the results into usable formats
     modeled_disp_points = []
-    for i, item in enumerate(disp_points):
+    for i, item in enumerate(cart_disp_points):
         new_disp_pt = Displacement_points(lon=item.lon, lat=item.lat, dE_obs=disp_grid[i][0],
                                           dN_obs=disp_grid[i][1], dU_obs=disp_grid[i][2], Se_obs=0, Sn_obs=0, Su_obs=0,
                                           depth=item.depth, endtime=item.endtime, starttime=item.starttime,
@@ -93,27 +93,27 @@ def compute_disp_points_from_triangles(fault_triangles, disp_points, poisson_rat
     return modeled_disp_points
 
 
-def compute_strain_points_from_triangles(fault_triangles, strain_points, poisson_ratio):
+def compute_strain_points_from_triangles(fault_triangles, cart_strain_points, poisson_ratio):
     """
     Similar to run_dc3d.compute_ll_def(inputs, alpha, disp_points).
     Requires all fault_triangles to have the same reference lon/lat
 
     :param fault_triangles: list
-    :param strain_points: list, in cartesian coordinates
+    :param cart_strain_points: list, in cartesian coordinates
     :param poisson_ratio: float
-    :returns: list of disp_points objects, list of strain tensors in 3x3 matrix
+    :returns: list of strain tensors in 3x3 matrix
     """
-    if not strain_points:
+    if not cart_strain_points:
         return []
     if len(fault_triangles) == 0:
-        return utilities.get_zeros_strain_points(strain_points)
+        return utilities.get_zeros_strain_points(cart_strain_points)
     proceed_code = fault_slip_triangle.check_consistent_reference_frame(fault_triangles)
     if not proceed_code:
         raise ValueError("Error! Triangular faults do not have same reference")
 
-    obsx = [point.lon*1000 for point in strain_points]
-    obsy = [point.lat*1000 for point in strain_points]   # calculation works in meters
-    obsz = [point.depth * -1000 for point in strain_points]  # in meters, negative is down
+    obsx = [point.lon * 1000 for point in cart_strain_points]
+    obsy = [point.lat * 1000 for point in cart_strain_points]   # calculation works in meters
+    obsz = [point.depth * -1000 for point in cart_strain_points]  # in meters, negative is down
     pts = np.vstack([obsx, obsy, obsz]).T   # shape: (Npts, 3)
 
     slip_array = np.array([[-src.rtlat_slip, src.dip_slip, src.tensile] for src in fault_triangles])  # shape:(Ntris, 3)
