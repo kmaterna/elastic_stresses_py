@@ -161,6 +161,13 @@ class FaultSlipObject:
         moment = moment_calculations.moment_from_muad(mu, A, d)
         return moment
 
+    def get_fault_potency(self) -> float:
+        """Get the potency for a fault patch, the product of fault area and slip. Units: km^2-m."""
+        A = self.get_fault_area()  # in square km
+        d = self.slip  # in meters
+        potency = A * d
+        return potency
+
     def change_fault_slip(self, new_slip=None, new_rake=None, new_tensile=None):
         """
         Set the fault slip to something different.
@@ -314,6 +321,17 @@ def get_total_moment(fault_object_list, mu=30e9) -> float:
     for item in fault_object_list:
         total_moment += item.get_fault_moment(mu=mu)
     return total_moment
+
+
+def get_total_potency(fault_object_list) -> float:
+    """
+    Return the total potency of a list of slip objects, in fault_object
+    Potency in km^2-m
+    """
+    total_potency = 0
+    for item in fault_object_list:
+        total_potency += item.get_fault_potency()
+    return total_potency
 
 
 def get_total_moment_depth_dependent(fault_object_list, depths, mus) -> float:
