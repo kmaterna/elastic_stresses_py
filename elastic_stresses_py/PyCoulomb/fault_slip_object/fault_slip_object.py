@@ -163,7 +163,7 @@ class FaultSlipObject:
 
     def get_fault_potency(self) -> float:
         """Get the potency for a fault patch, the product of fault area and slip. Units: km^2-m."""
-        A = self.get_fault_area()  # in square km
+        A = self.get_fault_area()/1e6  # in square km
         d = self.slip  # in meters
         potency = A * d
         return potency
